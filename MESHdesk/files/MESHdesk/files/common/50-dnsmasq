@@ -1,0 +1,12 @@
+#!/bin/sh
+
+[ "$ACTION" == "ifup" ] || exit 0
+logger -t "Prep MESHdesk" -p 6 "INTERFACE UP $INTERFACE";
+[ "$INTERFACE" = "one" ] && {
+	[ -e /tmp/gw ] && {
+	    #Give it ample time to settle down
+	    sleep 15
+		logger -t "Prep MESHdesk" -p 6 "Restarting dnsmasq"
+		/etc/init.d/dnsmasq reload
+	}
+}

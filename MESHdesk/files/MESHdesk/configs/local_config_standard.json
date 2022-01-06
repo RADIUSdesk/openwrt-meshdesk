@@ -1,0 +1,211 @@
+{
+    "config_settings": {
+        "wireless": [
+            {
+                "wifi-device": "radio0",
+                "options": {
+                    "channel": 44,
+                    "disabled": "0",
+                    "hwmode": "11a",
+                    "htmode": "VHT40"
+                }
+            },
+            {
+                "wifi-device": "radio1",
+                "options": {
+                    "channel": 6,
+                    "disabled": "0",
+                    "hwmode": "11n",
+                    "htmode": "HT20"
+                }
+            },
+            {
+                "wifi-iface": "zero",
+                "options": {
+                    "device": "radio0",
+                    "ifname": "mesh0",
+                    "network": "mesh",
+                    "mode": "mesh",
+                    "mesh_id": "REPL_MESH_ID",
+                    "macaddr": "REPL_MAC_ADDR",
+                    "mcast_rate": 18000,
+                    "disabled": 0,
+                    "mesh_ttl": 1,
+                    "mesh_fwding": 0,
+                    "encryption": "none"
+                }
+            },
+            {
+                "wifi-iface": "one",
+                "options": {
+                    "device": "radio1",
+                    "ifname": "one1",
+                    "mode": "ap",
+                    "encryption": "psk-mixed",
+                    "network": "one",
+                    "ssid": "REPL_MESH_NAME",
+                    "key": "radiusdesk",
+                    "hidden": "1"
+                }
+            },
+            {
+                "wifi-iface": "two",
+                "options": {
+                    "device": "radio0",
+                    "ifname": "two0",
+                    "mode": "ap",
+                    "network": "ex_two",
+                    "encryption": "none",
+                    "ssid": "REPL_MESH_SSID 5G",
+                    "key": "",
+                    "hidden": false,
+                    "isolate": false,
+                    "auth_server": "",
+                    "auth_secret": ""
+                }
+            },
+            {
+                "wifi-iface": "two_1",
+                "options": {
+                    "device": "radio1",
+                    "ifname": "two1",
+                    "mode": "ap",
+                    "network": "ex_two",
+                    "encryption": "none",
+                    "ssid": "REPL_MESH_SSID",
+                    "key": "",
+                    "hidden": false,
+                    "isolate": false,
+                    "auth_server": "",
+                    "auth_secret": ""
+                }
+            },
+            {
+                "wifi-iface": "three",
+                "options": {
+                    "device": "radio0",
+                    "ifname": "three0",
+                    "mode": "ap",
+                    "network": "ex_two",
+                    "encryption": "none",
+                    "ssid": "REPL_UNIQUE_SSID 5G",
+                    "key": "",
+                    "hidden": false,
+                    "isolate": false,
+                    "auth_server": "",
+                    "auth_secret": ""
+                }
+            },
+            {
+                "wifi-iface": "three_1",
+                "options": {
+                    "device": "radio1",
+                    "ifname": "three1",
+                    "mode": "ap",
+                    "network": "ex_two",
+                    "encryption": "none",
+                    "ssid": "REPL_UNIQUE_SSID",
+                    "key": "",
+                    "hidden": false,
+                    "isolate": false,
+                    "auth_server": "",
+                    "auth_secret": ""
+                }
+            }
+        ],
+        "network": [
+            {
+                "interface": "loopback",
+                "options": {
+                    "ifname": "lo",
+                    "proto": "static",
+                    "ipaddr": "127.0.0.1",
+                    "netmask": "255.0.0.0"
+                }
+            },
+            {
+                "interface": "lan",
+                "options": {
+                    "ifname": "eth0",
+                    "type": "bridge",
+                    "proto": "static",
+                    "ipaddr": "10.1.2.3",
+                    "netmask": "255.255.255.0"
+                }
+            },
+            {
+                "interface": "b",
+                "options": {
+                    "ifname": "bat0"
+                }
+            },
+            {
+                "interface": "mesh",
+                "options": {
+                    "mtu": "1560",
+                    "proto": "batadv",
+                    "mesh": "bat0"
+                }
+            },
+            {
+                "interface": "one",
+                "options": {
+                    "ifname": "bat0.1",
+                    "proto": "static",
+                    "ipaddr": "REPL_MESH_IP",
+                    "netmask": "255.255.255.0",
+                    "type": "bridge"
+                }
+            },
+            {
+                "interface": "bat_vlan_one",
+                "options": {
+                    "ifname": "bat0.1",
+                    "proto": "batadv_vlan",
+                    "ap_isolation": "0"
+                }
+            },
+            {
+                "interface": "ex_two",
+                "options": {
+                    "ifname": "bat0.2",
+                    "type": "bridge"
+                }
+            },
+            {
+                "interface": "bat_vlan_two",
+                "options": {
+                    "ifname": "bat0.2",
+                    "proto": "batadv_vlan",
+                    "ap_isolation": "0"
+                }
+            }
+        ],
+        "system": {
+            "password_hash": "$1$TJn8xhHP$BLhc3QEW54de0V8yCYD\/T.",
+            "heartbeat_interval": 60,
+            "heartbeat_dead_after": 300,
+            "timezone": "SAST-2",
+            "gw_dhcp_timeout": 120,
+            "gw_use_previous": true,
+            "gw_auto_reboot": false,
+            "gw_auto_reboot_time": 600,
+            "hostname": "MESHdesk"
+        },
+        "batman_adv": {
+            "aggregated_ogms": true,
+            "ap_isolation": false,
+            "bonding": false,
+            "bridge_loop_avoidance": true,
+            "fragmentation": true,
+            "distributed_arp_table": true,
+            "orig_interval": "1000",
+            "gw_sel_class": "20",
+            "connectivity": "mesh_point",
+            "encryption": false,
+            "encryption_key": ""
+        }
+    },
+    "success": true,
+    "timestamp": 1
+}

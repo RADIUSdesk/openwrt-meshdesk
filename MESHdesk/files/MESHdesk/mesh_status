@@ -1,0 +1,6 @@
+
+#Basic mesh status file to start off with
+config status 'status'
+	option drift '0'
+	option record_drift '1'
+

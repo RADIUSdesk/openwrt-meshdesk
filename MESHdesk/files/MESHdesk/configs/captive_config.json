@@ -1,0 +1,107 @@
+{
+    "config_settings": {
+        "wireless": [
+            {
+                "wifi-device": "radio0",
+                "options": {
+                    "channel": 1,
+                    "disabled": 0,
+                    "hwmode": "11g",
+                    "htmode": "HT20"
+                }
+            },  
+            {
+                "wifi-iface": "two",
+                "options": {
+                    "device": "radio0",
+                    "ifname": "two0",
+                    "mode": "ap",
+                    "network": "ex_two",
+                    "encryption": "none",
+                    "ssid": "_Replace_",
+                    "key": "",
+                    "hidden": false,
+                    "isolate": false,
+                    "auth_server": "",
+                    "auth_secret": ""
+                }
+            },
+            {
+                "wifi-iface": "web_by_w",
+                "options": {
+                    "device": "radio0",
+                    "mode": "sta",
+                    "network": "web_by_w",
+                    "encryption": "psk2",
+                    "key": "radiusdesk",
+                    "ssid": "meshdesk_config",
+                    "disabled": "1"
+                }
+            }
+        ],
+        "network": [
+            {
+                "interface": "loopback",
+                "options": {
+                    "ifname": "lo",
+                    "proto": "static",
+                    "ipaddr": "127.0.0.1",
+                    "netmask": "255.0.0.0"
+                }
+            },
+            {
+                "interface": "lan",
+                "options": {
+                    "ifname": "eth0",
+                    "type": "bridge",
+                    "proto": "static",
+                    "ipaddr": "10.50.50.50",
+                    "netmask": "255.255.255.0"
+                }
+            },
+            {
+                "interface": "ex_two",
+                "options": {
+                    "type": "bridge"
+                }
+            },
+            {
+                "interface": "web_by_w",
+                "options": {
+                    "proto": "dhcp"
+                }
+            },
+            {
+                "interface": "stabridge",
+                "options": {
+                    "proto": "relay",
+                    "network":"lan web_by_w"
+                }
+            }
+        ],
+        "gateways": [],
+        "captive_portals": [
+            {
+                "id": 2,
+                "mesh_exit_id": 2,
+                "radius_1": "_Replace_",
+                "radius_2": "",
+                "radius_secret": "testing123",
+                "radius_nasid": "ConfigureDevice",
+                "uam_url": "_Replace_",
+                "uam_secret": "greatsecret",
+                "walled_garden": "",
+                "swap_octets": false,
+                "coova_optional": "_Replace_",
+                "dns_manual": false,
+                "uamanydns": false,
+                "dnsparanoia": false,
+                "hslan_if": "br-ex_two",
+                "network": "ex_two",
+                "hswan_if": "br-lan"
+            }
+        ]
+    },
+    "success": true,
+    "timestamp": 1
+}

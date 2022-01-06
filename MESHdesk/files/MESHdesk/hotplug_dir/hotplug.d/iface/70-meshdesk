@@ -1,0 +1,3 @@
+#!/bin/sh
+
+/etc/MESHdesk/hotplug_lan.lua

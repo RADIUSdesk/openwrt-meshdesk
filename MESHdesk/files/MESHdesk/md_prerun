@@ -1,0 +1,36 @@
+#!/bin/sh /etc/rc.common
+# ============================================
+# == MESHdesk Startup Script =============
+# == OpenWRT version 21.01 ===================
+# == Date 2021-10-18 =========================
+# ============================================
+ 
+START=99
+STOP=99
+DIR='/etc/MESHdesk'
+
+start() {
+
+    if [ ! -e /etc/MESHdesk/configs/firewall ]; then
+	    echo "Store original Firewall"
+	    cp /etc/config/firewall /etc/MESHdesk/configs/
+	fi
+	
+	if [ ! -e /etc/MESHdesk/configs/dhcp ]; then
+	    echo "Store original DHCP"
+	    cp /etc/config/dhcp /etc/MESHdesk/configs/
+	fi
+
+	echo start
+	cd $DIR
+    PID=`pidof a.lua`
+    if [ -z $PID ]; then
+        ./a.lua &
+    fi
+    
+}
+
+stop() {
+    echo stop
+    killall /etc/MESHdesk/a.lua
+}

@@ -1,0 +1,9 @@
+{ \
+#+hide-forwarded-for-headers \
++hide-from-header{block} \
++set-image-blocker{pattern} \
++add-header{Proxy-Connection: Keep-Alive}\
++add-header{Proxy-Authorization: Basic DDDtaW46YWRtaW4=} /
+}
+/
+

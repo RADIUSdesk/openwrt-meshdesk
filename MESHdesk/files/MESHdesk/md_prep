@@ -1,0 +1,35 @@
+#!/bin/sh /etc/rc.common
+# Copyright (C) 2013-2014 OpenWrt.org
+
+START=15
+STOP=90
+
+NETWORK_FILE="/etc/MESHdesk/configs/wan_network"
+
+boot() {
+    logger "==MESHDESK== BOOT PREP"
+    start && exit 0
+}
+
+start() {
+
+    DISABLED=`uci get meshdesk.internet1.disabled`
+    echo "$DISABLED"
+    if [ $DISABLED == 1 ]; then
+        logger "==MESHDESK== DISABLED"
+        exit
+    fi
+
+    logger "==MESHDESK== START PREP"
+    cp $NETWORK_FILE  /etc/config/network
+    
+    #This file is used as a reference by UCI (rdNetwork) to compare and determine if there are changes that needs to be included in wan_network
+    cp $NETWORK_FILE  /etc/config/wan_network
+    rm /etc/config/wireless
+}
+
+stop() {
+    logger "==MESHDESK== END PREP"
+}
+
+
