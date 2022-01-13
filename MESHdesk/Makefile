@@ -38,7 +38,6 @@ define Package/MESHdesk/install
 	cp -r ./files/MESHdesk/reporting/* $(1)/etc/MESHdesk/reporting
 	cp -r ./files/MESHdesk/tests/* $(1)/etc/MESHdesk/tests
 	$(INSTALL_BIN) ./files/MESHdesk/a.lua $(1)/etc/MESHdesk/
-	$(INSTALL_BIN) ./files/MESHdesk/actions_checker.lua $(1)/etc/MESHdesk/
 	$(INSTALL_BIN) ./files/MESHdesk/batman_neighbours.lua $(1)/etc/MESHdesk/
 	$(INSTALL_BIN) ./files/MESHdesk/heartbeat.lua $(1)/etc/MESHdesk/
 	$(INSTALL_BIN) ./files/MESHdesk/hotplug_lan.lua $(1)/etc/MESHdesk/
