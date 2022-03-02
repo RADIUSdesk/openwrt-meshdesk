@@ -8,8 +8,9 @@ class "rdActions"
 
 --Init function for object
 function rdActions:rdActions()
-	require('rdLogger')
-	require('rdNetwork')
+	require('rdLogger');
+	require('rdNetwork');
+	require('rdConfig');
 	
 	local uci	    = require('uci')
 	self.version    = "1.0.1"
@@ -20,6 +21,7 @@ function rdActions:rdActions()
 	self.json	    = require('luci.json');
 	self.logger	    = rdLogger()
 	self.network	= rdNetwork()
+	self.config     = rdConfig();
 	self.x		    = uci.cursor()
 	self.waiting	= 115
 	self.completed	= 116
@@ -27,6 +29,7 @@ function rdActions:rdActions()
 	local id_if     = self.x.get('meshdesk','settings','id_if');
 	
 	self.id_if		= self.network:getMac(id_if)
+	self.server_tbl = self.config:getIpForHostname();
 	self.results	= '/tmp/actions_result.json'
 	self.d_waiting  = '/etc/MESHdesk/mesh_status/waiting';
 	self.d_completed= '/etc/MESHdesk/mesh_status/completed';
@@ -146,11 +149,13 @@ function rdActions._fetchActions(self)
     local proto 	= self.x.get('meshdesk','internet1','protocol')
     local mode      = self.network:getMode(); 
     local url       = self.x.get('meshdesk','internet1','actions_url')
-    local curl_data = '{"mac":"'..self.id_if..'","mode":"'..mode..'"}';
-    
-    url             = url.."?_dc="..os.time();
-        
-    local server    = self.x.get('meshdesk','internet1','ip')
+    local curl_data = '{"mac":"'..self.id_if..'","mode":"'..mode..'"}';   
+    url             = url.."?_dc="..os.time(); 
+           
+	local server    = self.server_tbl.hostname;
+	if(self.server_tbl.fallback)then
+	    server = self.server_tbl.ip;
+	end
     
 	local local_ip_v6   = self.network:getIpV6ForInterface('br-lan');
 	if(local_ip_v6)then
@@ -220,10 +225,12 @@ function rdActions._executeActions(self,actions)
                        
             local url       = 'cake3/rd_cake/node-actions/reply_to_action.json'
              --13-6-18 Add a cache buster--
-            url             = url.."?_dc="..os.time();
-    
-            local server    = self.x.get('meshdesk','internet1','ip')
-            
+            url             = url.."?_dc="..os.time();             
+	        local server    = self.server_tbl.hostname;
+	        if(self.server_tbl.fallback)then
+	            server = self.server_tbl.ip;
+	        end
+                        
 	        local local_ip_v6   = self.network:getIpV6ForInterface('br-lan');
 	        if(local_ip_v6)then
 	            server      = self.x.get("meshdesk", "internet1", "ip_6");

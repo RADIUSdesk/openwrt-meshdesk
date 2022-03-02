@@ -2,6 +2,7 @@
 -- Include libraries
 package.path = "../libs/?.lua;./libs/?.lua;" .. package.path
 require("rdNetwork");
+require("rdConfig");
 local utl           = require "luci.util";
 
 --Some variables
@@ -14,6 +15,7 @@ local x             = uci.cursor();
 local sys           = require("luci.sys");
 local util          = require("luci.util");
 local network       = rdNetwork();
+local config        = rdConfig();
 local report        = 'light'; -- can be light or full
 
 if(arg[1])then
@@ -28,9 +30,14 @@ end
 function lightReport()
     local proto     = x.get("meshdesk", "reporting", "report_adv_proto");
     local url       = x.get("meshdesk", "internet1", "status_url");
-    url             = url.."?_dc="..os.time();  
-    local server    = x.get("meshdesk", "internet1", "ip");  
-
+    url             = url.."?_dc="..os.time(); 
+    
+    local server_tbl= config:getIpForHostname();
+    local server    = server_tbl.hostname;
+	if(server_tbl.fallback)then
+	    server = server_tbl.ip;
+	end
+ 
 	local local_ip_v6   = network:getIpV6ForInterface('br-lan');
 	if(local_ip_v6)then
 	    server      = x.get("meshdesk", "internet1", "ip_6");
@@ -203,7 +210,12 @@ function fullReport()
     local mode      = x.get("meshdesk", "internet1", "mode");
     local url       = x.get("meshdesk", "internet1", "status_url");
     url             = url.."?_dc="..os.time();
-    local server    = x.get("meshdesk", "internet1", "ip");
+    
+    local server_tbl= config:getIpForHostname();
+    local server    = server_tbl.hostname;
+	if(server_tbl.fallback)then
+	    server = server_tbl.ip;
+	end
 
 	local local_ip_v6   = network:getIpV6ForInterface('br-lan');
 	if(local_ip_v6)then

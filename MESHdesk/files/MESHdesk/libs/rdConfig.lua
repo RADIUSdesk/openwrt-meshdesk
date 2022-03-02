@@ -62,6 +62,10 @@ function rdConfig:log(m,p)
 	end
 end
 
+function rdConfig:getIpForHostname()
+	return self:_get_ip_for_hostname()
+end
+
 function rdConfig:pingTest(server)
 	local handle = io.popen('ping -q -c ' .. self.ping_counts .. ' ' .. server .. ' 2>&1')
 	local result = handle:read("*a")                          
@@ -361,7 +365,8 @@ function rdConfig:tryForConfigServer(method)
 	        end
 	    else
             dns_works = true;
-	        self:log(server_tbl.hostname.." resolved to "..server_tbl.ip.." using DNS");
+            server    = server_tbl.hostname;
+	        self:log(server_tbl.hostname.." resolved to "..server_tbl.ip.." using DNS");	        
 		end
 		
 		--if(self:pingTest(server))then--Do httpTest by default rather
