@@ -2,7 +2,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=MESHdesk
 PKG_VERSION:=9.2.2
-PKG_RELEASE:=02
+PKG_RELEASE:=06
 
 include $(INCLUDE_DIR)/package.mk
 
@@ -48,6 +48,7 @@ define Package/MESHdesk/install
 	$(INSTALL_BIN) ./files/MESHdesk/mqtt.lua $(1)/etc/MESHdesk/
 	$(INSTALL_BIN) ./files/MESHdesk/mqtt_watcher.lua $(1)/etc/MESHdesk/
 	$(INSTALL_BIN) ./files/MESHdesk/rogue_scan.lua $(1)/etc/MESHdesk/
+	$(INSTALL_BIN) ./files/MESHdesk/mac_setter.lua $(1)/etc/MESHdesk/
 	mkdir -p $(1)/etc/init.d
 	$(INSTALL_BIN) ./files/MESHdesk/md_prerun $(1)/etc/init.d
 	$(INSTALL_BIN) ./files/MESHdesk/md_prep $(1)/etc/init.d

@@ -283,17 +283,24 @@ function rdCoovaChilli.__doConfigs(self,p)
 		    end
 		end
 		
+		--Allow for uamsecret to be left out in order to use chap authentication
+		local uamsecret_string = '';
+		if(v['uam_secret'] ~= nil)then
+		    uamsecret_string = "uamsecret   '" .. v['uam_secret'].."'\n";
+		end
+		
+		
 		local s_content = "radiusserver1  '"..v['radius_1'].."'\n"..
 			"radiusserver2  '".. r2 .."'\n"..
 			"radiussecret '".. v['radius_secret'].."'\n"..
 			"uamserver '"   .. v['uam_url'].."'\n"..
 			"radiusnasid '" .. v['radius_nasid'].."'\n"..
-			"uamsecret   '" .. v['uam_secret'].."'\n"..
 			"dhcpif	'"      .. v['hslan_if'].."'\n"..
 			"uamallowed '"  .. wg .."'\n"..
 			"cmdsocket  '/var/run/chilli." .. v['hslan_if'] .. ".sock'\n"..
 			"unixipc    'chilli." .. v['hslan_if'] .. ".ipc'\n"..
 			"pidfile    '/var/run/chilli." .. v['hslan_if'] .. ".pid'\n"..
+			uamsecret_string..
 			dns_string..
 			proxy_string..
 			uamanydns..

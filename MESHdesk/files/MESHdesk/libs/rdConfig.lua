@@ -223,7 +223,13 @@ function rdConfig:configureDevice(config,doWanSynch)
 		local a = rdGateway();
 		a:restartServices();
 	end
-
+	
+	--FIX FOR Loco---
+     os.execute("/etc/init.d/network restart");
+     self:_sleep(15);
+     --END FIX--
+     
+     
 	self.external:startOne('/etc/MESHdesk/heartbeat.lua &','heartbeat.lua');
     self:log('Starting Batman neighbour scan');
     self.external:startOne('/etc/MESHdesk/batman_neighbours.lua &','batman_neighbours.lua');
@@ -523,7 +529,8 @@ function rdConfig:fetchSettings(url,device_id,gateway,optional_data)
 	q_s['mac']      = device_id;
 	q_s['gateway']  = gw;	
 	--Add fw version to know how to adapt the back-end
-	q_s['version'] = '19.07';
+	q_s['version'] = '21.02';
+	--q_s['version'] = '19.07';
 	--q_s['version']  = '18.06';		
 	q_s['_dc']      = os.time();
 	
