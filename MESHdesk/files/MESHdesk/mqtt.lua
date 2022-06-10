@@ -20,7 +20,7 @@ end
 MQTT_USER = mqtt_data['mqtt_user']
 MQTT_PASS = mqtt_data['mqtt_password']
 MQTT_HOST = mqtt_data['mqtt_server_url']
-FW_HOST = "amp-dev01.mesh-manager.com"
+FW_HOST = "cloud.radiusdesk.com"
 
 -- Enable Debugging
 debug = true
@@ -35,7 +35,7 @@ client.ON_CONNECT = function()
         if mesh_id == nil then
             print("This node does not belong to a MESH!")
         else
-            local mid = client:subscribe("/AMPLE/NODE/" .. mesh_id .. "/COMMAND", 1) -- QoS 0
+            local mid = client:subscribe("/RD/NODE/" .. mesh_id .. "/COMMAND", 1) -- QoS 0
         end
 end
 
