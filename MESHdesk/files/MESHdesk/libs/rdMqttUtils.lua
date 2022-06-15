@@ -56,11 +56,10 @@ function rdMqttUtils.getMqttData()
         end
     else
         return nil
-    end
-    
+    end  
 end
 
-function rdMqttUtils.getMeshID()
+function rdMqttUtils.getMetaData()
     local config_file = '/etc/MESHdesk/configs/current.json'
 
     if rdMqttUtils.fileExists(config_file) then
@@ -68,23 +67,8 @@ function rdMqttUtils.getMeshID()
         local config_data = json.decode(cfg)
 
         if config_data['success'] == true then
-            local wireless = config_data['config_settings']['wireless']
-            local mesh_id = ""
-
-            for k,wifi in pairs(wireless) do
-                local wifi_iface = wifi['wifi-iface']
-                -- if wifi_iface ~= nil and wifi_iface == 'zero' then
-                if wifi_iface ~= nil and string.match(wifi_iface, 'zero') then
-                    mesh_id = mesh_id .. wifi['options']['mesh_id']
-                    break
-                end
-            end
-
-            if mesh_id ~= nil then
-                return string.upper(string.gsub(mesh_id,'_','-'))
-            else
-                return mesh_id
-            end
+            local meta_data = config_data['meta_data'];
+            return meta_data;
         else
             return nil   
         end
