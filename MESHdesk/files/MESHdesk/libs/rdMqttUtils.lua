@@ -78,39 +78,6 @@ function rdMqttUtils.getMetaData()
     
 end
 
-function rdMqttUtils.getNodeMacAddress()
-    local config_file = '/etc/MESHdesk/configs/current.json'
-
-    if rdMqttUtils.fileExists(config_file) then
-        local cfg = nfs.readfile(config_file)
-        local config_data = json.decode(cfg)
-
-        if config_data['success'] == true then
-            local ntwrk = config_data['config_settings']['network']
-            local mac_address = ""
-
-            for k,lan in pairs(ntwrk) do
-                local lan_iface = lan['interface']
-                if lan_iface ~= nil and lan_iface == 'lan' then
-                    mac_address = mac_address .. lan['options']['macaddr']
-                    break
-                end
-            end
-
-            if mac_address ~= nil then
-                return string.upper(string.gsub(mac_address,':','-'))
-            else
-                return mac_address
-            end
-        else
-            return nil   
-        end
-    else
-        return nil
-    end
-    
-end
-
 function rdMqttUtils.md5Check(checkfile)
 	local md5result = false
 	local handle = io.popen("md5sum -c " .. checkfile)

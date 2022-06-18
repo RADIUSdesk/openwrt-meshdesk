@@ -10,6 +10,7 @@ function rdConfig:rdConfig()
 	require('rdLogger');
 	require('rdExternal');
 	require('rdNetwork');
+	require("rdWireless");
 	require('luci.http');
     local uci 	    = require("uci");
     self.socket     = require("socket");
@@ -442,6 +443,96 @@ function rdConfig:tryForConfigServer(method)
     ret_table.got_settings  = got_settings;
     ret_table.dns_works     = dns_works;
     return ret_table; 
+end
+
+
+function rdConfig:fetchFreshConfig(method)
+
+    local got_settings	    = false; 
+	local loop	            = true;
+	local config_file		= self.x.get('meshdesk','settings','config_file');
+	local retry_counter     = 10;	
+	local gw                = true;
+	local dns_works         = false;
+	local ret_table         = { got_settings = got_settings, dns_works = dns_works };
+	
+	if(method == 'wifi')then
+	    gw = false;
+	end
+	
+	--Prime the hostmane / ip table
+	local server_tbl        = self:_get_ip_for_hostname();
+	local server            = server_tbl.ip;
+	
+	if(server_tbl.v6_enabled)then
+	    server            = server_tbl.ip_6;
+	end
+	
+	--local id	= "A8-40-41-13-60-E3"
+	local id_if         = self.x.get('meshdesk','settings','id_if');
+	local id		    = self:getMac(id_if);
+	local proto 	    = self.x.get('meshdesk','internet1','protocol');
+	local url   	    = self.x.get('meshdesk','internet1','url');
+	
+	local http_port     = self.x.get('meshdesk','internet1','http_port');
+    local https_port    = self.x.get('meshdesk','internet1','https_port');
+    local port_string   = '/';
+    
+    if(proto == 'http')then
+        if(http_port ~= '80')then
+            port_string = ":"..http_port.."/";
+        end
+    end
+    
+    if(proto == 'https')then
+        if(https_port ~= '443')then
+            port_string = ":"..https_port.."/";
+        end
+    end
+    
+    if(server_tbl.fallback)then
+	    --Try again
+	    self:log("Could not resolve "..server_tbl.hostname.." (try "..retry_counter..")");
+	    server_tbl   = self:_get_ip_for_hostname();
+	    server       = server_tbl.ip;
+	    if(server_tbl.v6_enabled)then
+            server  = server_tbl.ip_6;        
+        end
+    else
+        dns_works = true;
+        server    = server_tbl.hostname;
+        self:log(server_tbl.hostname.." resolved to "..server_tbl.ip.." using DNS");	        
+	end
+	
+	if(self:httpTest(server))then
+        	self:log("Ping os server was OK try to fetch the settings");
+        	local query     = proto .. "://" .. server .. port_string .. url;
+        	if(server_tbl.v6_enabled)then
+                query     = proto .. "://[" .. server .. "]".. port_string .. url;        
+            end     
+        	print("Query url is " .. query );
+        	
+        	local od = {};
+        	if(method == 'wbw')then --wbw we need specify the channel to the back-end
+        	    local channel       = 0; --default
+        	    local wbw_device    = self.x.get('meshdesk','web_by_wifi','device');
+                local iw            = self.sys.wifi.getiwinfo(wbw_device);
+                od.wbw_channel      = iw.channel;
+                od.wbw_active       = 1;
+            end
+            
+        	if(self:fetchSettings(query,id,gw,od))then
+	        	self:log("Cool -> got settings through "..method)
+	        	got_settings = true;
+        	end
+    else
+        self:log("Ping Controller Failed through "..method.." (try "..retry_counter..")");
+    end
+    
+    ret_table.got_settings  = got_settings;
+    ret_table.dns_works     = dns_works;
+    return ret_table; 
+
 end
 
 function rdConfig._is_interface_still_up(self,method)

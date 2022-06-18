@@ -69,79 +69,84 @@ client.ON_MESSAGE = function(mid, topic, payload)
         local retain    = false;
         local message   = '';
         local cmdTopic  = mqtt_data['mqtt_command_topic']; -- /RD/NODE/COMMAND/RESPONSE
-
-        if (jsonStr['cmd'] == 'fetch_config') then
-            -- Fectch Config
-            message = message..'{"node_id": '..nodeId..', "mesh_id": "'..meshId..'", "mac": "'..macAddr..'", "status": "config_fetched"}'
-            print(message)
-
-            client:publish(cmdTopic, json.encode(message), qos, retain)
-            -- FIX: A more drastic approach to fetching config
-            os.execute('reboot')
-            
-        elseif (jsonStr['cmd'] == 'check_for_coa') then
-            -- Possible COA / POD waiting 
-            local cmdId = jsonStr['cmd_id']
-            message = message..'{"node_id": '..nodeId..', "mesh_id": "'..meshId..'", "mac": "'..macAddr..'", "cmd_id": "'..cmdId..'", "status": "check_for_coa"}'
-            print(message);
-            client:publish(cmdTopic, json.encode(message), qos, retain)                
-            os.execute('/etc/MESHdesk/reporting/check_for_coa.lua')
-            
-         elseif (jsonStr['cmd'] == 'reboot') then
-            -- Reboot Node
-            local cmdId = jsonStr['cmd_id']
-            message = message..'{"node_id": '..nodeId..', "mesh_id": "'..meshId..'", "mac": "'..macAddr..'", "cmd_id": "'..cmdId..'", "status": "reboot"}'
-            client:publish(cmdTopic, json.encode(message), qos, retain)
-            os.execute('reboot');
-        else
-            -- Run OS Command
-            local cmdId = jsonStr['cmd_id']
-            
-            --Here depending on the value of jsonStr['action'] we will either just execute the command or execute and report the output
-            if(jsonStr['action'] == 'execute')then
-                print("MODE IS "..mode);
-                if(mode == 'mesh')then
-                    message = luci_json.stringify({mode=mode,node_id=nodeId,mesh_id=meshId,mac=macAddr,cmd_id=cmdId,status='os_command'});
-                end
-                if(mode == 'ap')then
-                    message = luci_json.stringify({mode=mode,ap_id=apId,mac=macAddr,cmd_id=cmdId,status='os_command'});
-                end              
-                client:publish(cmdTopic, message, qos, retain)
-                os.execute(jsonStr['cmd'])
+   
+        -- Run OS Command
+        local cmdId = jsonStr['cmd_id']
+        
+        --Here depending on the value of jsonStr['action'] we will either just execute the command or execute and report the output
+        if(jsonStr['action'] == 'execute')then
+            print("MODE IS "..mode);
+            if(mode == 'mesh')then
+                message = luci_json.stringify({mode=mode,node_id=nodeId,mesh_id=meshId,mac=macAddr,cmd_id=cmdId,status='os_command'});
+            end
+            if(mode == 'ap')then
+                message = luci_json.stringify({mode=mode,ap_id=apId,mac=macAddr,cmd_id=cmdId,status='os_command'});
             end
             
-            if(jsonStr['action'] == 'execute_and_reply')then 
-            
-                fetched_client  = mqtt.new();
-                fetched_client:login_set(MQTT_USER, MQTT_PASS)
-                fetched_client:connect(MQTT_HOST)
-                
-                fetched_client.ON_CONNECT = function()
-                    if(mode == 'mesh')then
-                        message = luci_json.stringify({mode=mode,node_id=nodeId,mesh_id=meshId,mac=macAddr,cmd_id=cmdId,status='fetched'});
-                    end
-                    if(mode == 'ap')then
-                        message = luci_json.stringify({mode=mode,ap_id=apId,mac=macAddr,cmd_id=cmdId,status='fetched'});
-                    end
-                    fetched_client:publish(cmdTopic, message, qos, retain)
-                end
-
-                fetched_client.ON_PUBLISH = function()
-                    fetched_client:disconnect()
-                end
-                fetched_client:loop_forever()                 
-                                        
-                local r     = luci_util.exec(jsonStr['cmd']);
-                local j_r   = luci_json.stringify({});
-                if(mode == 'mesh')then
-                    j_r     = luci_json.stringify({mode=mode,reply=r,node_id=nodeId,mesh_id=meshId,mac=macAddr,cmd_id=cmdId,status='replied'}) 
-                end
-                if(mode == 'ap')then
-                    j_r     = luci_json.stringify({mode=mode,reply=r,ap_id=apId,mac=macAddr,cmd_id=cmdId,status='replied'}) 
-                end
-                client:publish(cmdTopic, j_r, qos, retain)                   
-            end                 
+            local cl_execute = mqtt.new();
+            cl_execute:login_set(MQTT_USER, MQTT_PASS)
+            cl_execute:connect(MQTT_HOST)
+            --Connected now publish
+            cl_execute.ON_CONNECT = function()
+                cl_execute:publish(cmdTopic, message, qos, retain);
+            end
+            --Done publishing - now execute command 
+            cl_execute.ON_PUBLISH = function()
+                cl_execute:disconnect();
+                os.execute(jsonStr['cmd']);
+            end
+            cl_execute:loop_forever();                
         end
+            
+        if(jsonStr['action'] == 'execute_and_reply')then
+        
+            if(mode == 'mesh')then
+                message = luci_json.stringify({mode=mode,node_id=nodeId,mesh_id=meshId,mac=macAddr,cmd_id=cmdId,status='fetched'});
+            end
+            if(mode == 'ap')then
+                message = luci_json.stringify({mode=mode,ap_id=apId,mac=macAddr,cmd_id=cmdId,status='fetched'});
+            end
+        
+            --Reply with 'fetched'
+            local cl_execute_r = mqtt.new();
+            cl_execute_r:login_set(MQTT_USER, MQTT_PASS)
+            cl_execute_r:connect(MQTT_HOST)
+            --Connected now publish
+            cl_execute_r.ON_CONNECT = function()
+                cl_execute_r:publish(cmdTopic, message, qos, retain);
+            end
+            --Done publishing - now execute command 
+            cl_execute_r.ON_PUBLISH = function()
+                cl_execute_r:disconnect();
+            end
+            cl_execute_r:loop_forever();   
+                     
+            
+            --Reply with command--                       
+            local r     = luci_util.exec(jsonStr['cmd']);
+            local j_r   = luci_json.stringify({});
+            if(mode == 'mesh')then
+                j_r     = luci_json.stringify({mode=mode,reply=r,node_id=nodeId,mesh_id=meshId,mac=macAddr,cmd_id=cmdId,status='replied'}) 
+            end
+            if(mode == 'ap')then
+                j_r     = luci_json.stringify({mode=mode,reply=r,ap_id=apId,mac=macAddr,cmd_id=cmdId,status='replied'}) 
+            end
+            
+            --Reply with 'reply'
+            local cl_reply = mqtt.new();
+            cl_reply:login_set(MQTT_USER, MQTT_PASS)
+            cl_reply:connect(MQTT_HOST)
+            --Connected now publish
+            cl_reply.ON_CONNECT = function()
+                cl_reply:publish(cmdTopic, j_r, qos, retain);
+            end
+            --Done publishing - now execute command 
+            cl_reply.ON_PUBLISH = function()
+                cl_reply:disconnect();
+            end
+            cl_reply:loop_forever();                
+        end                 
+        
     end        
 end
 
