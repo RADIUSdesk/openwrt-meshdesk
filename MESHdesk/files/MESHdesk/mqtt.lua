@@ -93,7 +93,7 @@ client.ON_MESSAGE = function(mid, topic, payload)
             --Done publishing - now execute command 
             cl_execute.ON_PUBLISH = function()
                 cl_execute:disconnect();
-                os.execute(jsonStr['cmd']);
+                os.execute(jsonStr['cmd'].." &");
             end
             cl_execute:loop_forever();                
         end
