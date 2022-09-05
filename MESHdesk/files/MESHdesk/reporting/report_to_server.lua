@@ -2,6 +2,7 @@
 -- Include libraries
 package.path = "../libs/?.lua;./libs/?.lua;" .. package.path
 require("rdNetwork");
+require("rdSoftflowLogs");
 require("rdConfig");
 local utl           = require "luci.util";
 
@@ -67,7 +68,21 @@ function lightReport()
     local id    = network:getMac(id_if);
     local mode  = network:getMode();
     local curl_data= '{"report_type":"light","mac":"'..id..'","mode":"'..mode..'"}';
-    
+      
+    --Check if softflows is implemented 
+    local pid_sf = util.exec("pidof softflowd");
+    local softflows_enabled = false;
+    if(pid_sf ~= '')then
+        softflows_enabled   = true;
+        local s             = rdSoftflowLogs();
+        local flows_table   = s:doDumpFlows();
+        local flows_string  = j.encode(flows_table);
+	    print("==FLOWS==");
+	    print(flows_string);
+	    print("==END FLOWS==");
+        curl_data= '{"report_type":"light","mac":"'..id..'","mode":"'..mode..'","flows":'..flows_string..'}';
+    end 
+        
     --WBW--
     local wbw_dis   = x.get('meshdesk','web_by_wifi','disabled');
     if(wbw_dis == '0')then
@@ -75,6 +90,10 @@ function lightReport()
         local wbw_table     = fetchWbwInfo();
         local wbw_string    = j.encode(wbw_table);
         curl_data = '{"report_type":"light","mac":"'..id..'","mode":"'..mode..'","wbw_info":'..wbw_string..'}';
+        if(softflows_enabled == true)then
+            curl_data = '{"report_type":"light","mac":"'..id..'","mode":"'..mode..'","wbw_info":'..wbw_string..',"flows":'..flows_string..'}';
+        end
+        
     end
     --END WBW--
     

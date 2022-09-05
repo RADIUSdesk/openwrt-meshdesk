@@ -58,7 +58,8 @@ end
 function rdCoovaChilli:startPortals()
 	
 	for i=1,self.cpCount do	
-	        local s_file = self.specific..i.."/specific.conf"
+	        local s_file    = self.specific..i..'/specific.conf';
+	        local flow_file = self.specific..i..'/softflowd_enabled';
 	        print("Testing for file " .. s_file)
 	        local f=io.open(s_file,"r")
 	        if f~=nil then --File do exist; try to start this captive portal
@@ -70,15 +71,25 @@ function rdCoovaChilli:startPortals()
 	        	local ret_val = os.execute("chilli --conf "..config_file.." &");
 	        	print("Sleep first a bit...")
 	        	self:__sleep(5)
-	        end
+	        end        
+	        --Check if softflowd is enabled
+	        local fl = io.open(flow_file,"r");
+	        if fl ~= nil then
+	            local tun_nr = i-1;
+	            os.execute("softflowd -i tun"..tostring(tun_nr).." -d &");       
+	        end	        
  	end
 end
 
+
 function rdCoovaChilli:stopPortals()
     os.execute("/etc/init.d/chilli disable")--Disable regardless
+    os.execute("/etc/init.d/softflowd disable")
 	local ret_val = os.execute("killall chilli")
 	print("We have a return value of "..ret_val)
+	ret_val = os.execute("killall softflowd")
 end
+
 
 function rdCoovaChilli:setDnsMasq(cp)
     local dnsDeskFound  = false;
@@ -170,6 +181,7 @@ function rdCoovaChilli.__doConfigs(self,p)
 
 	for k,v in ipairs(p)do 
 		local s_file = self.specific..k.."/specific.conf" -- The file name to build
+		local flow_file = self.specific..k..'/softflowd_enabled';
 		print("Specific file is "..s_file)
 		--The file's content--
 		local r2 = v['radius_2']
@@ -315,50 +327,21 @@ function rdCoovaChilli.__doConfigs(self,p)
 			s_content = s_content.."swapoctets\n"
 		end
 		
-		--===OCT2020 FB XWF======
-		--Express Wi-Fi (xwf) will include the following
-		--xwf_enable (true/false) if true; add xwfmode
-		--xwf_traffic_class_id (can be null if never populated)
-		--xwf_homepage (url for FB login) replaces uamhomepage
-		--xwf_radiuslocationname replaces radiuslocationname
-		--traffic_class.content => xwfconfigfile /etc/chilli/tc.conf
-        --create tc.conf file and add it to config file
-        
-        if(v['xwf_enable'] == true)then
-        
-            local tc_conf   = '/etc/chilli/tc.conf';    
-		    s_content       = s_content.."xwfmode\n";	    
-	    
-		    if(v['xwf_uamhomepage'] ~= '')then
-		        self:_uamhomepage('disable',k);
-		        s_content = s_content.."uamhomepage "..v['xwf_uamhomepage'].."\n";
-		    end
-		    
-		    if(v['xwf_radiuslocationname'] ~= '')then
-		        s_content = s_content.."radiuslocationname "..v['xwf_radiuslocationname'].."\n";
-		    end
-		    
-		    --Write this to the config file
-		    if(v.traffic_class)then
-		        local fc,err = io.open(tc_conf,"w")
-		        if not fc then return print(err) end
-		        fc:write(v.traffic_class.content);
-		        fc:close();
-		        s_content = s_content.."xwfconfigfile "..tc_conf.."\n";
-		    end
-		    
-        else
-            self:_uamhomepage('enable',k);
-		    	    
-		end
-		--===END OCT2020 FB XWF======
-	
 		--print(s_content) 
 		--Write this to the config file
 		local f,err = io.open(s_file,"w")
 		if not f then return print(err) end
 		f:write(s_content)
 		f:close()
+		
+		--Sept 2022--
+		--We added 'softflowd_enabled' true / false for softflows 
+		if(v['softflowd_enabled'] ~= nil)then
+		    if(v['softflowd_enabled'] == true)then
+		        os.execute('touch '..flow_file);
+		    end
+		end
+		
 	end
 end
 
@@ -446,12 +429,21 @@ end
 
 function rdCoovaChilli.__removeConfigs(self)
 	print("Removing configs")
-	for i=1,self.cpCount do 
-	
-		local s_file = self.specific..i.."/specific.conf"
-		print("Removing file " .. s_file)
-		os.remove(s_file)
-		 
+	for i=1,self.cpCount do 	
+		local s_file    = self.specific..i.."/specific.conf";
+		local flow_file = self.specific..i..'/softflowd_enabled';
+		
+		local f=io.open(s_file,"r")
+	    if f~=nil then --If file exists
+		    print("Removing file " .. s_file)
+		    os.remove(s_file)
+        end
+        
+        local fl=io.open(flow_file,"r")
+	    if fl~=nil then --If file exists
+		    print("Removing file " .. flow_file)
+		    os.remove(flow_file)
+        end        		 
 	end
 end
 

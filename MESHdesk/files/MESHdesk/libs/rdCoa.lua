@@ -23,9 +23,9 @@ function rdCoa:rdCoa()
 	
 	self.util       = require("luci.util");
 	self.results	= '/tmp/coa_result.json';
-	self.coaForMac  = "/cake3/rd_cake/coa-requests/coa-for-mac.json";
+	self.coaForMac  = "/cake4/rd_cake/coa-requests/coa-for-mac.json";
 	self.ReplyRes	= '/tmp/reply_result.json';
-	self.coaReply   = "/cake3/rd_cake/coa-requests/coa-reply.json";
+	self.coaReply   = "/cake4/rd_cake/coa-requests/coa-reply.json";
 end
         
 function rdCoa:getVersion()

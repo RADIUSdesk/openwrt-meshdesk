@@ -13,7 +13,7 @@ require("rdConfig");
 require("rdNetwork");
 
 local l   	    = rdLogger();
-local url       =  'cake3/rd_cake/node-reports/submit_rogue_report.json';
+local url       =  'cake4/rd_cake/node-reports/submit_rogue_report.json';
 local url       = url.."?_dc="..os.time();
 local radio     = 'radio0';
 local res_file  = '/tmp/rogue_report_result.json';

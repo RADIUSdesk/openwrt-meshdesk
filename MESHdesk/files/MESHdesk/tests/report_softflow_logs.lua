@@ -40,8 +40,8 @@ function main()
 	--s:chilliInfo();	
 	local flows = s:doDumpFlows();		
 	local curl_data = '{"report_type":"softflow","nasid":"'..nasid..'","flows":'..luci.json.encode(flows)..'}';
-	local query     = "http://" .. report_to .. "/cake3/rd_cake/softflows/report.json";
-	--local query     = "http://cloud.radiusdesk.com/cake3/rd_cake/softflows/report.json";
+	local query     = "http://" .. report_to .. "/cake4/rd_cake/softflows/report.json";
+	--local query     = "http://cloud.radiusdesk.com/cake4/rd_cake/softflows/report.json";
 
 	os.remove(result_file)  
     os.execute('curl -k -o '..result_file..' -X POST -H "Content-Type: application/json" -d \''..curl_data..'\' '..query);	

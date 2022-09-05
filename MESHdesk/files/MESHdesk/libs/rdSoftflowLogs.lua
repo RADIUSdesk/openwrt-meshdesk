@@ -168,7 +168,7 @@ function rdSoftflowLogs._doDumpFlows(self)
             end           
         end
     end
-    self.util.dumptable(flows_info);
+    --self.util.dumptable(flows_info);
     self:_doDeleteAll(); -- clean up (Since we have now reported on the connections)
     return flows_info;
 end

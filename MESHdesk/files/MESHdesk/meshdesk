@@ -1,9 +1,9 @@
 config internet 'internet1'
     option disabled '1'
     option dns 'cloud.radiusdesk.com'
-    option url 'cake3/rd_cake/nodes/get-config-for-node.json'
-    option status_url 'cake3/rd_cake/node-reports/submit_report.json'
-    option actions_url 'cake3/rd_cake/node-actions/get_actions_for.json'
+    option url 'cake4/rd_cake/nodes/get-config-for-node.json'
+    option status_url 'cake4/rd_cake/node-reports/submit_report.json'
+    option actions_url 'cake4/rd_cake/node-actions/get_actions_for.json'
     option protocol 'https'
     option http_port 80
     option https_port 443
