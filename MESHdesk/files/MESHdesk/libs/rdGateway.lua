@@ -21,6 +21,7 @@ function rdGateway:rdGateway()
 	self.ntp_rule   = 'one_ntp'
 	self.dns_rule   = 'one_dns' -- We might want to make this rule more strict ---
 	self.mode       = 'mesh' -- Mode can be mesh or ap - With ap mode we do not need to set up the conf zone
+	self.block_rule = 'one_block'
 	
 	self.l_uci    	= require("luci.model.uci");
 	
@@ -253,42 +254,23 @@ function rdGateway.__fwGwEnable(self,network,forward)
 		self.l_uci.cursor():set('firewall',zone_name,'input',	'ACCEPT')	
 		self.l_uci.cursor():set('firewall',zone_name,'output',	'ACCEPT')	
 		self.l_uci.cursor():set('firewall',zone_name,'forward',	'REJECT') -- By default we are not forwarding traffic
-		self.l_uci.cursor():set('firewall',zone_name,'conntrack',	'1')	
 	end
 	
-	-- Add the SNAT rules
-	local no_redir = true
-	self.l_uci.cursor():foreach('firewall', 'redirect',
-		function(a)
-			if((a.src == network)and(a.dst == 'lan'))then
-				no_redir = false
-			end
-		end)
-	if(no_redir)then
-		local r = self.l_uci.cursor():add('firewall','redirect')
-		self.l_uci.cursor():set('firewall',r, 'src',network)
-		self.l_uci.cursor():set('firewall',r, 'dst','lan')
-		self.l_uci.cursor():set('firewall',r, 'target','SNAT')
-        self.l_uci.cursor():set('firewall',r, 'proto','tcpudp')
-        --According the the documentation we are also suppose to add src_dip (and specify the IP of the LAN)
-        --Problem is that the LAN IP can and will most probably change so it makes it impractical--
-          
-	end
 	
 	-- Add the forwarding entry
 	local no_forwarding = true
 	self.l_uci.cursor():foreach('firewall','forwarding',
 		function(a)
-			if((a.src == network)and(a.dst=='lan'))then
+			if((a.src == network)and(a.dest=='lan'))then
 				no_forwarding = false
 			end
 		end)
 
 	--We are not adding a forward rule for the conf_zone for security reasons
-	if(no_forwarding and (forward == 'yes')and(network ~= self.conf_zone))then -- Only if we specified to add a forward rule
+	if(no_forwarding and (forward == 'yes'))then -- Only if we specified to add a forward rule
 		local f = self.l_uci.cursor():add('firewall', 'forwarding')
 		self.l_uci.cursor():set('firewall',f,'src',network)
-		self.l_uci.cursor():set('firewall',f,'dst','lan')   	
+		self.l_uci.cursor():set('firewall',f,'dest','lan')   	
 	end
 	
 	--=====================================================
@@ -309,27 +291,10 @@ function rdGateway.__fwGwEnable(self,network,forward)
 	
 	if(mobile_enabled)then
 	
-	    local no_redir_mobile = true
-	    self.l_uci.cursor():foreach('firewall', 'redirect',
-		    function(a)
-			    if((a.src == network)and(a.dst == 'wwan'))then
-				    no_redir_mobile = false
-			    end
-		    end)
-	
-	    if(no_redir_mobile)then
-            --Create it
-            local r_wwan = self.l_uci.cursor():add('firewall','redirect')
-           	self.l_uci.cursor():set('firewall',r_wwan, 'src',network)
-            self.l_uci.cursor():set('firewall',r_wwan, 'dst','wwan')
-            self.l_uci.cursor():set('firewall',r_wwan, 'target','SNAT')
-            self.l_uci.cursor():set('firewall',r_wwan, 'proto','tcpudp')
-        end
-    
         local no_forwarding_mobile = true
 	    self.l_uci.cursor():foreach('firewall','forwarding',
 		    function(a)
-			    if((a.src == network)and(a.dst=='wwan'))then
+			    if((a.src == network)and(a.dest=='wwan'))then
 				    no_forwarding_mobile = false
 			    end
 		    end)
@@ -338,7 +303,7 @@ function rdGateway.__fwGwEnable(self,network,forward)
             --Create it
             local f_wwan = self.l_uci.cursor():add('firewall','forwarding')
            	self.l_uci.cursor():set('firewall',f_wwan,'src',network)
-            self.l_uci.cursor():set('firewall',f_wwan,'dst','wwan')    	
+            self.l_uci.cursor():set('firewall',f_wwan,'dest','wwan')    	
 	    end
 	    
     end 
@@ -438,6 +403,13 @@ function rdGateway.__fwGwEnable(self,network,forward)
 			self.l_uci.cursor():set('firewall',t,'target', 'ACCEPT')
 			self.l_uci.cursor():set('firewall',t,'name', self.dns_rule)
 			
+			--Block the rest
+			local t = self.l_uci.cursor():add('firewall','rule')
+			self.l_uci.cursor():set('firewall',t,'src', network)
+			self.l_uci.cursor():set('firewall',t,'dest', 'lan')
+			self.l_uci.cursor():set('firewall',t,'target', 'REJECT')
+			self.l_uci.cursor():set('firewall',t,'name', self.block_rule)
+			
 			if(mobile_enabled)then
 			
 			    local rm = self.l_uci.cursor():add('firewall','rule')
@@ -478,6 +450,13 @@ function rdGateway.__fwGwEnable(self,network,forward)
 			    self.l_uci.cursor():set('firewall',tm,'proto', 'tcp udp')
 			    self.l_uci.cursor():set('firewall',tm,'target', 'ACCEPT')
 			    self.l_uci.cursor():set('firewall',tm,'name', self.dns_rule)
+			    
+			    --Block the rest
+			    local t = self.l_uci.cursor():add('firewall','rule')
+			    self.l_uci.cursor():set('firewall',tm,'src', network)
+			    self.l_uci.cursor():set('firewall',tm,'dest', 'wwan')
+			    self.l_uci.cursor():set('firewall',tm,'target', 'REJECT')
+			    self.l_uci.cursor():set('firewall',tm,'name', self.block_rule)			    
 					
 			end
 			
@@ -520,6 +499,14 @@ function rdGateway.__fwGwEnable(self,network,forward)
 			    self.l_uci.cursor():set('firewall',tw,'proto', 'tcp udp')
 			    self.l_uci.cursor():set('firewall',tw,'target', 'ACCEPT')
 			    self.l_uci.cursor():set('firewall',tw,'name', self.dns_rule)
+			    
+			    --Block the rest
+			    local t = self.l_uci.cursor():add('firewall','rule')
+			    self.l_uci.cursor():set('firewall',tw,'src', network)
+			    self.l_uci.cursor():set('firewall',tw,'dest', 'web_by_w')
+			    self.l_uci.cursor():set('firewall',tw,'target', 'REJECT')
+			    self.l_uci.cursor():set('firewall',tw,'name', self.block_rule)		
+			    
 			end		
 
             self.l_uci.cursor():save('firewall');
@@ -578,12 +565,18 @@ function rdGateway.__fwGwDisable(self)
 				self.l_uci.cursor():delete('firewall',n)
 			end
 			
-			if(string.match(a.name, 'gw_allow_'))then     --Remove all the Home Agent Servers
-                local n = a['.name']
-				self.l_uci.cursor():delete('firewall',n);
+			if(a.name == self.block_rule)then
+				local n = a['.name']
+				self.l_uci.cursor():delete('firewall',n)
+			end
+			
+			if(a.name)then
+			    if(string.match(a.name, 'gw_allow_'))then     --Remove all the Home Agent Servers
+                    local n = a['.name']
+				    self.l_uci.cursor():delete('firewall',n);
+                end
             end
-			
-			
+						
 		end)
 	self.l_uci.cursor():save('firewall');
 	self.l_uci.cursor():commit('firewall');		
@@ -599,6 +592,13 @@ function rdGateway.__fwMasqEnable(self,network)
 			    self.l_uci.cursor():set('firewall',a['.name'],'mtu_fix',1)
 		    end
 	end)
+	
+	self.l_uci.cursor():foreach('firewall', 'defaults',
+	    function(a)
+		    self.l_uci.cursor():set('firewall',a['.name'],'forward','ACCEPT')
+	end)
+	
+	self.l_uci.cursor():set('firewall','defaults','forward','REJECT');
 	self.l_uci.cursor():save('firewall');
     self.l_uci.cursor():commit('firewall');
     
@@ -615,6 +615,12 @@ function rdGateway.__fwMasqDisable(self,network)
 				self.l_uci.cursor():save('firewall');
 		    end
 	end)
+	
+	self.l_uci.cursor():foreach('firewall', 'defaults',
+	    function(a)
+		    self.l_uci.cursor():set('firewall',a['.name'],'forward','REJECT')
+	end)
+	
 	self.l_uci.cursor():save('firewall');
     self.l_uci.cursor():commit('firewall'); 
 end
