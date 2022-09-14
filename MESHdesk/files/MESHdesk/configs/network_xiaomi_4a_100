@@ -1,16 +1,17 @@
 config interface 'loopback'
-    option proto 'static'
-    option ipaddr '127.0.0.1'
-    option netmask '255.0.0.0'
-    option ifname 'lo'
+	option device 'lo'
+	option proto 'static'
+	option ipaddr '127.0.0.1'
+	option netmask '255.0.0.0'
+    
+config device
+	option name 'br-lan'
+	option type 'bridge'
+	list ports 'eth0.1'
 
 config interface 'lan'
-    option ifname 'eth0.1'
-    option type 'bridge'
-    option proto 'dhcp'
-
-config interface 'client'
-    option proto 'dhcp'
+	option device 'br-lan'
+	option proto 'dhcp'
 
 config interface 'client_0'
     option proto 'dhcp'
@@ -32,4 +33,5 @@ config switch_vlan
     option device 'switch0'
     option vlan '2'
     option ports '4 2 6t'
+
 
