@@ -43,16 +43,28 @@
             {
                 "interface": "loopback",
                 "options": {
-                    "ifname": "lo",
+                    "device": "lo",
                     "proto": "static",
                     "ipaddr": "127.0.0.1",
                     "netmask": "255.0.0.0"
                 }
             },
             {
+                "device": "br-lan",
+                "options": {
+                    "name": "br-lan",
+                    "type": "bridge"
+                },
+                "lists": {
+                    "ports": [
+                        "eth0.1"
+                    ]
+                }
+            },           
+            {
                 "interface": "lan",
                 "options": {
-                    "ifname": "eth0",
+                    "device": "br-lan",
                     "type": "bridge",
                     "proto": "static",
                     "ipaddr": "10.50.50.50",

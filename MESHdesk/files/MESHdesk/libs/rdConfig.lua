@@ -225,10 +225,11 @@ function rdConfig:configureDevice(config,doWanSynch)
 		a:restartServices();
 	end
 	
-	--FIX FOR Loco---
-     os.execute("/etc/init.d/network restart");
-     self:_sleep(15);
-     --END FIX--
+	--FIX Sept 2022---
+	self:_sleep(10); --for 22.03 to stabalise 
+    os.execute("/etc/init.d/network restart");
+    self:_sleep(15);
+    --END FIX--
      
      
 	self.external:startOne('/etc/MESHdesk/heartbeat.lua &','heartbeat.lua');
@@ -620,7 +621,8 @@ function rdConfig:fetchSettings(url,device_id,gateway,optional_data)
 	q_s['mac']      = device_id;
 	q_s['gateway']  = gw;	
 	--Add fw version to know how to adapt the back-end
-	q_s['version'] = '21.02';
+	q_s['version'] = '22.03';
+	--q_s['version'] = '21.02';
 	--q_s['version'] = '19.07';
 	--q_s['version']  = '18.06';		
 	q_s['_dc']      = os.time();

@@ -15,6 +15,7 @@ function rdNetwork:rdNetwork()
 	self.logger	    = rdLogger()
 	self.nfs        = require('nixio.fs');
 	self.json	    = require('luci.json');
+	self.util       = require("luci.util");
 	self.debug	    = true
 	--self.debug	    = false
   
@@ -458,27 +459,47 @@ function rdNetwork.__configureFromTable(self,table)
 		local entry_type                                                 
 	    local entry_name                                                  
 	    local options = {} -- New empty array for this entry
+	    local lists   = {};
 		for key, val in pairs(setting_entry) do                           
-        	-- If it is not an options entry; it is a type with value                
-                if(key ~= 'options')then                                                 
-                	entry_type  = key                                                
-                        entry_name  = val                                                
-             	else                                                                                                   
-                -- Run through all the options                                                                 
-                	for key, val in pairs(val) do                                                                  
-                        	options[key] = val                                                                     
-                      	end                                                                                            
-                end                                                                                                    
+        	-- If it is not an options entry; it is a type with value
+            if((key ~= 'options') and (key ~= 'lists'))then                                                      
+            	entry_type  = key                                                
+                entry_name  = val                                                
+         	else                                                                                                   
+                -- Run through all the options
+                if(key == 'options')then
+                    for ko, vo in pairs(val) do                                                                  
+                        options[ko] = vo                                                                     
+                    end
+                end
+                if(key == 'lists')then
+                    for kl, vl in pairs(val) do                                                                  
+                        lists[kl] = vl                                                                     
+                    end
+                end                 	                                                                                            
+            end                                                                                                    
     	end
-
-    	-- Now we have gathered the info  
-    	self.x.set('network', entry_name, entry_type)
-        self.x.commit('network')        
+    	os.execute("cat /etc/config/network");
+    	-- Now we have gathered the info
+    	if(entry_type == 'device')then --device is anonymous
+    	    entry_name = self.x.add('network', 'device');
+        else
+            self.x.set('network', entry_name, entry_type);  
+    	end  	
+        self.x.commit('network')     
+        --Set all the options       
     	for key, val in pairs(options) do
-            print("There " .. key .. ' and '.. val)          
+            --print("There " .. key .. ' and '.. val)          
             self.x.set('network', entry_name,key, val);
             self.x.commit('network')           
         end
+        
+        --Set all the lists
+        --print("DOING LISTS");
+        for key, val in pairs(lists) do       
+            self.x.set('network', entry_name,key, val);
+            self.x.commit('network')           
+        end    
     end   
 end
 
