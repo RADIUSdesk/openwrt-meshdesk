@@ -224,14 +224,7 @@ function rdConfig:configureDevice(config,doWanSynch)
 		local a = rdGateway();
 		a:restartServices();
 	end
-	
-	--FIX Sept 2022---
-	self:_sleep(10); --for 22.03 to stabalise 
-    os.execute("/etc/init.d/network restart");
-    self:_sleep(15);
-    --END FIX--
-     
-     
+	   
 	self.external:startOne('/etc/MESHdesk/heartbeat.lua &','heartbeat.lua');
     self:log('Starting Batman neighbour scan');
     self.external:startOne('/etc/MESHdesk/batman_neighbours.lua &','batman_neighbours.lua');
