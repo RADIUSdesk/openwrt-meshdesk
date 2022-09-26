@@ -12,6 +12,7 @@ function rdNetwork:rdNetwork()
     local uci 	    = require("uci")
     self.x		    = uci.cursor()
 	self.version 	= "2.0.0"
+	self.board      = '/etc/board.json';
 	self.logger	    = rdLogger()
 	self.nfs        = require('nixio.fs');
 	self.json	    = require('luci.json');
@@ -69,6 +70,9 @@ function rdNetwork:configureFromTable(tbl)
 	self:log("==Configure Network from  Lua table==")
 	self:__configureFromTable(tbl)
 	
+	--Add the macs if needed
+	self:__addMacs();
+	
 	--Are we using 3G?
     self:__includeMobileWan()
     
@@ -86,6 +90,13 @@ function rdNetwork:configureFromTable(tbl)
     
 end
 
+--New addition 26 SEP 2022
+--We read /etc/board.json and extract any devices (new convention) with MAC addresses
+--If not in /etc/config/network we add them
+function rdNetwork:addMacs()
+    self:__addMacs()
+end
+
 function rdNetwork:log(m,p)
 	if(self.debug)then
 		self.logger:log(m,p)
@@ -98,6 +109,43 @@ end
 ========================================================
 (Note they are in the pattern function <rdName>._function_name(self, arg...) and called self:_function_name(arg...) )
 --]]--
+
+function rdNetwork.__addMacs(self)
+    --print("Add Macs");
+    local contents  = self.nfs.readfile(self.board);        
+    local o         = self.json.decode(contents);
+    if(o.network ~= nil)then
+        for key, val in pairs(o.network) do
+            if(o.network[key].macaddr ~= nil)then
+                local mac = o.network[key].macaddr;
+                local dev = o.network[key].device;
+                --print("MAC ADDRESS "..mac.." DEVICE IS "..dev);             
+                --Add if not in /etc/config/network
+                local match = false;
+                self.x.foreach('network' , 'device', function(a)
+                    if(a['name'] ~= nil)then
+                        if(a['macaddr'] ~= nil)then
+                            -- Lets see if they match
+                            if((mac == a['macaddr'])and(dev == a['name']))then
+                                match = true;
+                            end
+                        end
+                    end              
+                end)
+                if(match == false)then
+                    --print("Found NO Match - ADD ONE ! ")
+                    local entry_name = self.x.add('network', 'device');
+                    self.x.set('network', entry_name,'name', dev);
+                    self.x.set('network', entry_name,'macaddr', mac);
+                    self.x.commit('network');                  
+                end
+                --END if not in /etc/config/network 
+                             
+            end         
+        end
+    end
+end
+
 
 function rdNetwork.__doWanSynch(self)
 

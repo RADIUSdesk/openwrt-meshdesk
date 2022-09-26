@@ -21,8 +21,8 @@ start() {
     fi
 
     logger "==MESHDESK== START PREP"
-    /etc/MESHdesk/mac_setter.lua
     cp $NETWORK_FILE  /etc/config/network
+    /etc/MESHdesk/mac_setter.lua
     
     #This file is used as a reference by UCI (rdNetwork) to compare and determine if there are changes that needs to be included in wan_network
     cp $NETWORK_FILE  /etc/config/wan_network
