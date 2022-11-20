@@ -8,7 +8,7 @@ local utl           = require "luci.util";
 
 --Some variables
 local result_file   = '/tmp/result.json'
-local gw_file       = '/tmp/gw';
+local gw_file       = '/tmp/gw'; 
 local nfs           = require "nixio.fs";
 local j             = require("luci.json");
 local uci           = require("uci");
@@ -92,11 +92,28 @@ function lightReport()
         curl_data = '{"report_type":"light","mac":"'..id..'","mode":"'..mode..'","wbw_info":'..wbw_string..'}';
         if(softflows_enabled == true)then
             curl_data = '{"report_type":"light","mac":"'..id..'","mode":"'..mode..'","wbw_info":'..wbw_string..',"flows":'..flows_string..'}';
-        end
-        
+        end        
     end
     --END WBW--
     
+    --QMI--
+    local conf_file = x.get('meshdesk', 'settings','config_file');
+    local f_conf    = nfs.access(conf_file);   
+    if f_conf then      
+        local contents  = nfs.readfile(conf_file);        
+        local o         = j.decode(contents);
+        if(o.success == true)then
+            if(o.meta_data)then
+                if(o.meta_data.QmiActive == true)then
+                    local signal_info = util.exec("uqmi -d /dev/cdc-wdm0 --get-signal-info");
+                    local system_info = util.exec("uqmi -d /dev/cdc-wdm0 --get-system-info");
+                    curl_data = '{"report_type":"light","mac":"'..id..'","mode":"'..mode..'","qmi_info":{"signal" : '..signal_info..',"system":'..system_info..'}}';
+                end
+            end
+        end
+    end 
+    --END QMI--
+       
     --print(curl_data);
     os.remove(result_file)  
     os.execute('curl -k -o '..result_file..' -X POST -H "Content-Type: application/json" -d \''..curl_data..'\' '..query);
@@ -218,7 +235,29 @@ function fullReport()
                         lan_info['mac'] = id;                   
                         s_lan_info = j.encode(lan_info);
                     end
-                end   
+                end 
+                
+                --wwan
+                if(n == 'network.interface.wwan_4')then
+                    local info = conn:call("network.interface.wwan_4", "status",{});
+                    gateway = '3g';
+                    if(info['up'] == true)then
+                        lan_info['lan_proto'] = info['proto'];
+                        if(info['ipv4-address'] ~= nil)then
+                            lan_info['lan_ip']= info['ipv4-address'][1]['address']
+                        end
+                        if(info['route'] ~= nil)then
+                            lan_info['lan_gw']= info['route'][1]['nexthop']
+                        end
+                        --Add The MAC
+                        local uci   = require("uci");    
+                        local id_if = x.get('meshdesk','settings','id_if');
+                        local id    = network:getMac(id_if);
+                        lan_info['mac'] = id;                   
+                        s_lan_info = j.encode(lan_info);
+                    end
+                end 
+                                  
             end
         end
         --END LAN INFO--	    
