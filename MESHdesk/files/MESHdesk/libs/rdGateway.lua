@@ -595,10 +595,14 @@ function rdGateway.__fwMasqEnable(self,network)
 	
 	self.l_uci.cursor():foreach('firewall', 'defaults',
 	    function(a)
-		    self.l_uci.cursor():set('firewall',a['.name'],'forward','ACCEPT')
+	        for key, value in pairs(a) do
+	            if((key == 'input')or(key == 'forward')or(key == 'output'))then
+	                self.l_uci.cursor():set('firewall',a['.name'],key,'ACCEPT')
+	            end 
+            end		    
 	end)
 	
-	self.l_uci.cursor():set('firewall','defaults','forward','REJECT');
+	--self.l_uci.cursor():set('firewall','defaults','forward','REJECT');
 	self.l_uci.cursor():save('firewall');
     self.l_uci.cursor():commit('firewall');
     
@@ -618,7 +622,11 @@ function rdGateway.__fwMasqDisable(self,network)
 	
 	self.l_uci.cursor():foreach('firewall', 'defaults',
 	    function(a)
-		    self.l_uci.cursor():set('firewall',a['.name'],'forward','REJECT')
+		    for key, value in pairs(a) do
+	            if(key == 'forward')then --Here we only for forward for now it seems though the snapshot (JAN2023) also block output
+	                self.l_uci.cursor():set('firewall',a['.name'],key,'REJECT')
+	            end 
+            end	
 	end)
 	
 	self.l_uci.cursor():save('firewall');
