@@ -14,7 +14,7 @@ function printUsage()
 end
 
 
-function lightReport()
+function MainPart()
     local set_disabled_state = 0;
     if(action == 'off')then
         set_disabled_state = 1; 
@@ -59,6 +59,6 @@ end
 
 
 print("Setting "..ssid.." to "..action );
-lightReport();
+mainPart();
 
 
