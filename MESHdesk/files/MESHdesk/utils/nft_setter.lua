@@ -2,7 +2,9 @@
 -- Include libraries
 package.path = "../libs/?.lua;./libs/?.lua;" .. package.path
 
+require("rdNftables");
 
+local nft   = rdNftables();
 local mac;
 local action = 'off'; --default is to block
 local util   = require('luci.util'); --26Nov 2020 for posting command output
@@ -12,72 +14,32 @@ local bw_down;
 
 function printUsage()
     print("--- Utility Script by MESHdesk used to manage MAC Addresses on the **bridge meshdesk** table ----");
-    print("Usage -> /etc/MESHdesk/utils/nft_setter.lua '<MAC>' ['on'|'off'|'bw' (bw in kBps)]");
+    print("Usage -> /etc/MESHdesk/utils/nft_setter.lua '<MAC>' ['clear'|'on'|'off'|'bw' (bw in kBps)]");
     os.exit();
 end
 
-
 function initialConfig()
-
-    local i  = util.execi("nft list table bridge meshdesk 2>&1"); --Important to direct stderror also to stdout :-)
-    local table_missing = false;
-    if(i)then
-        for line in i do
-             if(string.match(line,"^Error: No such file or directory") ~= nil)then
-                table_missing = true;
-                break
-            end
-        end
-    end
-    if(table_missing)then
-        print("Table missing add it");    
-        util.exec("nft add table bridge meshdesk")
-        util.exec("nft add chain bridge meshdesk forward '{type filter hook forward priority 0; }'");
-        util.exec("nft add chain bridge meshdesk input '{type filter hook input priority 0; }'");
-        util.exec("nft add chain bridge meshdesk output '{type filter hook output priority 0; }'");
-    else
-        print("Table already there");    
-    end
+    nft:initConfig();
 end
 
-
 function macOn(m)
-    print("Clear Block on MAC "..m);   
-    for i, chain in ipairs(chains) do
-        print ('Clear rules in chain '..chain..' of mac '..m)      
-        local i  = util.execi("nft -e -a list chain bridge meshdesk "..chain);
-        if(i)then
-            for line in i do
-                 if(string.match(line,".+"..mac..".+ handle%s+") ~= nil)then
-                    local handle = string.gsub(line,".+"..mac..".+ handle%s+", "");
-                    print(handle);
-                    util.exec('nft delete rule bridge meshdesk '..chain..' handle '..handle);
-                 end
-            end
-        end        
-    end    
+    nft:macOn(m);  
 end
 
 function macOff(m)
-    print("Block MAC "..m);
-    for i, chain in ipairs(chains) do
-        print ('Add Block rule in chain '..chain..' for mac '..m)
-        util.exec('nft add rule bridge meshdesk '..chain..' ether daddr '..mac..' counter drop comment \\"DROP DST '..mac..'\\"');
-        util.exec('nft add rule bridge meshdesk '..chain..' ether saddr '..mac..' counter drop comment \\"DROP SRC '..mac..'\\"');   
-    end
+    nft:macOff(m);
 end
 
 function macLimit(m)
-    print("Limit MAC "..m);
-    for i, chain in ipairs(chains) do
-        print ('Add Limit rule in chain '..chain..' for mac '..m)
-        util.exec('nft add rule bridge meshdesk '..chain..' ether daddr '..mac..' limit rate over '..bw_down..' kbytes/second counter drop comment \\"LIMIT DST '..mac..'\\"');
-        util.exec('nft add rule bridge meshdesk '..chain..' ether saddr '..mac..' limit rate over '..bw_up..' kbytes/second counter drop comment \\"LIMIT SRC '..mac..'\\"');          
-    end    
+    nft:macLimit(m,bw_up,bw_down);    
 end
 
 function mainPart()
     initialConfig();
+    if(action == 'clear')then
+        nft:flushTable();
+    end
+    
     if(action == 'on')then
         macOn(mac)
     end
@@ -91,7 +53,7 @@ function mainPart()
         macOn(mac)
         macLimit(mac)
     end
-       
+          
 end
 
 
@@ -102,7 +64,7 @@ end
 
 if(arg[2])then
     action = arg[2];
-    if((action ~= 'on')and(action ~= 'off')and(action ~= 'bw'))then
+    if((action ~= 'clear')and(action ~= 'on')and(action ~= 'off')and(action ~= 'bw'))then
         printUsage();
     end
     if(action == 'bw')then
@@ -119,5 +81,31 @@ end
 
 
 print("Setting "..mac.." to "..action );
-mainPart();
+nft:initConfig();
+nft:flushTable();
+
+local url       = 'http://192.168.8.165/cake4/rd_cake/firewalls/get-config-for-node.json?gateway=true&_dc=1651070922&version=22.03&mac=64-64-4A-DD-07-FC'
+local retval    = util.exec("curl -k '" .. url .."'");
+local json      = require("json");
+local tblConfig = json.decode(retval);
+
+if(tblConfig.config_settings ~= nil)then
+    if(tblConfig.config_settings.firewall ~= nil)then
+        for a, rule in ipairs(tblConfig.config_settings.firewall) do
+            local mac   = rule.mac
+            print(mac);
+            if(rule.action == 'block')then
+                nft:macOff(mac);
+            end
+            if(rule.action == 'limit')then
+                nft:macLimit(mac,rule.bw_up,rule.bw_down)
+            end
+        end    
+    end
+end
+
+--print("Output Start");
+--print(retval);
+--print("Output END");
+--mainPart();
 
