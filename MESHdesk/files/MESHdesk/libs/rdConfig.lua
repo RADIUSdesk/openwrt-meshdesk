@@ -269,7 +269,26 @@ function rdConfig:configureDevice(config,doWanSynch)
         v:configureFromTable(o.config_settings.openvpn_bridges)
         os.execute("/etc/init.d/openvpn start")
     end
-         
+    
+    --Feb 2023 Firewall
+    if(o.config_settings.firewall ~= nil)then
+        print("Doing Firewall rules")
+        require("rdNftables");
+        local nft = rdNftables();
+        nft:initConfig();
+        nft:flushTable();
+        for a, rule in ipairs(o.config_settings.firewall) do
+            local mac   = rule.mac
+            print(mac);
+            if(rule.action == 'block')then
+                nft:macOff(mac);
+            end
+            if(rule.action == 'limit')then
+                nft:macLimit(mac,rule.bw_up,rule.bw_down)
+            end
+        end    
+    end
+             
     ret_table.config_success = true;
     return ret_table;
     
