@@ -1,8 +1,8 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=MESHdesk
-PKG_VERSION:=9.2.2
-PKG_RELEASE:=06
+PKG_VERSION:=9.4.4
+PKG_RELEASE:=07
 
 include $(INCLUDE_DIR)/package.mk
 
@@ -31,6 +31,7 @@ define Package/MESHdesk/install
 	$(INSTALL_DIR) $(1)/etc/MESHdesk/libs
 	$(INSTALL_DIR) $(1)/etc/MESHdesk/reporting
 	$(INSTALL_DIR) $(1)/etc/MESHdesk/tests
+	$(INSTALL_DIR) $(1)/etc/MESHdesk/utils
 	cp -r ./files/MESHdesk/captive_portals/* $(1)/etc/MESHdesk/captive_portals
 	cp -r ./files/MESHdesk/configs/* $(1)/etc/MESHdesk/configs
 	cp -r ./files/MESHdesk/files/* $(1)/etc/MESHdesk/files
