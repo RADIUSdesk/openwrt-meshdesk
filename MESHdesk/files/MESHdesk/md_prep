@@ -24,6 +24,19 @@ start() {
     cp $NETWORK_FILE  /etc/config/network
     /etc/MESHdesk/mac_setter.lua
     
+    DUMMY_CHECK=`cat /proc/modules | grep dummy`
+    if [ -z "$DUMMY_CHECK" ];
+    then
+        echo "dummy kernel module missing"
+    else
+        echo "dummy kernel module found"
+        for i in 0 1 2 3 4 5 6 7 8 9
+        do
+            /sbin/ip link add dummy$i type dummy
+            /sbin/ip link set name eth10$i dev dummy$i
+        done
+    fi
+  
     #This file is used as a reference by UCI (rdNetwork) to compare and determine if there are changes that needs to be included in wan_network
     cp $NETWORK_FILE  /etc/config/wan_network
     rm /etc/config/wireless
