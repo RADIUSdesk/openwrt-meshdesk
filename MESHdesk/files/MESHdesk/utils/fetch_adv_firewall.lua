@@ -2,9 +2,9 @@
 -- Include libraries
 package.path = "../libs/?.lua;./libs/?.lua;" .. package.path
 
-require("rdNftables");
-local nft   = rdNftables();
-local util  = require('luci.util'); --26Nov 2020 for posting command output
+require("rdAdvNftables");
+local adv_nft   = rdAdvNftables();
+local util      = require('luci.util');
 
 function getMac(interface)
 	interface = interface or "eth0"
@@ -21,7 +21,7 @@ local x		= uci.cursor();
 local id_if = x.get('meshdesk','settings','id_if');
 local id	= getMac(id_if);
 local proto = x.get('meshdesk','internet1','protocol');
-local url   = 'cake4/rd_cake/firewalls/get-config-for-node.json'
+local url   = 'cake4/rd_cake/firewalls/get-adv-config-for-node.json'
 local server= x.get('meshdesk','internet1','ip');	
 local http_port     = x.get('meshdesk','internet1','http_port');
 local https_port    = x.get('meshdesk','internet1','https_port');
@@ -47,26 +47,32 @@ q_s['version']  = '22.03';
 local enc_string= luci.http.build_querystring(q_s);
 url = query..enc_string;
 
-nft:initConfig();
-nft:flushTable();
+adv_nft:initConfig();
+adv_nft:flushTable();
+adv_nft:clearSets();
 
---local url       = 'http://192.168.8.165/cake4/rd_cake/firewalls/get-config-for-node.json?gateway=true&_dc=1651070922&version=22.03&mac=64-64-4A-DD-07-FC'
+--local url       = 'http://192.168.8.165/cake4/rd_cake/firewalls/get-adv-config-for-node.json?gateway=true&_dc=1651070922&version=22.03&mac=64-64-4A-DD-07-FC'
 local retval    = util.exec("curl -k '" .. url .."'");
 local json      = require("json");
 local tblConfig = json.decode(retval);
 
 if(tblConfig.config_settings ~= nil)then
-    if(tblConfig.config_settings.firewall ~= nil)then
-        for a, rule in ipairs(tblConfig.config_settings.firewall) do
-            local mac   = rule.mac
-            print(mac);
-            if(rule.action == 'block')then
-                nft:macOff(mac);
+
+    if(tblConfig.config_settings.adv_firewall ~= nil)then           
+        --add the sets
+        if(tblConfig.config_settings.adv_firewall.sets)then
+            for k in pairs(tblConfig.config_settings.adv_firewall.sets) do
+                local set = tblConfig.config_settings.adv_firewall.sets[k];
+                adv_nft:addSet(set);
             end
-            if(rule.action == 'limit')then
-                nft:macLimit(mac,rule.bw_up,rule.bw_down)
-            end
-        end    
+        end                
+        --add the entries
+        if(tblConfig.config_settings.adv_firewall.entries)then
+            for a, entry in ipairs(tblConfig.config_settings.adv_firewall.entries) do
+                adv_nft:addEntry(entry);          
+            end        
+        end  
     end
+    
 end
 
