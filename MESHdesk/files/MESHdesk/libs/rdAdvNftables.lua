@@ -15,6 +15,7 @@ function rdAdvNftables:rdAdvNftables()
 	self.priority	= "debug"
 	self.util       = require('luci.util'); --26Nov 2020 for posting command output
 	self.chains     = {'input', 'forward', 'output'}
+	self.days       = { mo = 'Monday', tu = 'Tuesday', we = 'Wednesday', th = 'Thursday', fr = 'Friday', sa = 'Saturday', su = 'Sunday'}
 end
         
 function rdAdvNftables:getVersion()
@@ -125,6 +126,8 @@ function rdAdvNftables._addEntry(self,entry)
         chain = 'forward';
     end
     
+    local add_string = 'nft add rule bridge adv_meshdesk';
+    
     local if_string = '';
     for i, interface in ipairs(entry.interfaces) do
         if_string = interface..','..if_string;
@@ -135,53 +138,84 @@ function rdAdvNftables._addEntry(self,entry)
     --Now the rules
     for j, rule in ipairs(entry.rules)do
         print(rule.action); 
-        print("RULE"); 
+        print("RULE");             
+        local time_part = self:_timePart(rule);
+        local a_c_part  = self:_actionComment(rule,if_string);
+        local ctg_set   = self:_categorySet(rule);
+        local app_flag  = false
+        if(rule.category == 'app')then
+            app_flag = true;
+        end
         
-        local time_set = '';
-        local time_set_2 = false;          
-        if(rule.schedule == 'every_day')then
+        --===        
+        if(a_c_part['allow'])then --allow and block is just one direction needed 
         
-            if(rule.start_time < rule.end_time)then
-                local start_m   = rule.start_time % 60;
-                local start_h   = rule.start_time / 60;
-                local end_m     = rule.end_time % 60;
-                local end_h     = rule.end_time / 60;         
-                time_set        = 'hour '..start_h..':'..start_m..'-'..end_h..':'..end_m;
-            else            
-                local start_m   = rule.start_time % 60;
-                local start_h   = rule.start_time / 60;
-                local end_m     = rule.end_time % 60;
-                local end_h     = rule.end_time / 60;         
-                time_set        = 'hour '..start_h..':'..start_m..'-'..'23:59';
-                time_set_2      = 'hour 00:00'..'-'..end_h..':'..end_m;                           
-            end                  
-        end           
-        if(rule.action == 'limit')then
-            print('Add Limit rule in chain '..chain..' for interfaces '..if_string)
-            if(chain == 'forward')then
-                self.util.exec('nft add rule bridge adv_meshdesk '..chain..' '..time_set..' iif {'..if_string..'} limit rate over '..rule.bw_up..' kbytes/second counter drop comment \\"LIMIT iif '..if_string..'\\"');
-                self.util.exec('nft add rule bridge adv_meshdesk '..chain..' '..time_set..' oif {'..if_string..'} limit rate over '..rule.bw_down..' kbytes/second counter drop comment \\"LIMIT oif '..if_string..'\\"');
-                
-                if(time_set_2)then
-                    self.util.exec('nft add rule bridge adv_meshdesk '..chain..' '..time_set_2..' iif {'..if_string..'} limit rate over '..rule.bw_up..' kbytes/second counter drop comment \\"LIMIT iif '..if_string..'\\"');
-                    self.util.exec('nft add rule bridge adv_meshdesk '..chain..' '..time_set_2..' oif {'..if_string..'} limit rate over '..rule.bw_down..' kbytes/second counter drop comment \\"LIMIT oif '..if_string..'\\"');
-                end
-                                
+            if(not(app_flag))then       
+                local s = add_string..' '..chain..' '..time_part..' iif {'..if_string..'} ip daddr '..ctg_set..' '..a_c_part['allow'];
+                print(s);
+                self.util.exec(s);
             end
-            if(chain == 'input')then
-                self.util.exec('nft add rule bridge adv_meshdesk '..chain..' '..time_set..' iif {'..if_string..'} limit rate over '..rule.bw_up..' kbytes/second counter drop comment \\"LIMIT iif '..if_string..'\\"');
-                self.util.exec('nft add rule bridge adv_meshdesk '..'output '..time_set..' oif {'..if_string..'} limit rate over '..rule.bw_down..' kbytes/second counter drop comment \\"LIMIT oif '..if_string..'\\"');
-                
-                if(time_set_2)then
-                    self.util.exec('nft add rule bridge adv_meshdesk '..chain..' '..time_set_2..' iif {'..if_string..'} limit rate over '..rule.bw_up..' kbytes/second counter drop comment \\"LIMIT iif '..if_string..'\\"');
-                    self.util.exec('nft add rule bridge adv_meshdesk '..'output '..time_set_2..' oif {'..if_string..'} limit rate over '..rule.bw_down..' kbytes/second counter drop comment \\"LIMIT oif '..if_string..'\\"');
-                end
+            
+            if(app_flag)then
+                for k, app in ipairs(rule.apps) do
+                    --rule (with app set) for each app
+                    local s = add_string..' '..chain..' '..time_part..' iif {'..if_string..'} ip daddr \\@'..app..' '..a_c_part['allow'];
+                    print(s);
+                    self.util.exec(s)            
+                end                    
             end
-           --nft add rule bridge filter forward ether daddr 0c:c6:fd:7b:8b:aa iif br-ex_zero limit rate over 200 kbytes/second counter drop      
-        end 
+                                    
+        end
+        
+        if(a_c_part['block'])then --allow and block is just one direction needed
+        
+            if(not(app_flag))then         
+                local s = add_string..' '..chain..' '..time_part..' iif {'..if_string..'} ip daddr '..ctg_set..' '..a_c_part['block'];
+                print(s);
+                self.util.exec(s);
+            end
+            
+            if(app_flag)then
+                for k, app in ipairs(rule.apps) do
+                    --rule (with app set) for each app
+                    local s = add_string..' '..chain..' '..time_part..' iif {'..if_string..'} ip daddr \\@'..app..' '..a_c_part['block'];
+                    print(s);
+                    self.util.exec(s)            
+                end                    
+            end
+                         
+        end
+        
+        if(a_c_part['limit'])then --limit needs out and in direction rate limit
          
-    end
-    
+            if(not(app_flag))then      
+                local s_up      = add_string..' '..chain..' '..time_part..' iif {'..if_string..'} ip daddr '..ctg_set..' '..a_c_part['limit_up'];
+                local s_down    = add_string..' '..chain..' '..time_part..' oif {'..if_string..'} ip saddr '..ctg_set..' '..a_c_part['limit_down']; --forward remain the same
+                if(chain == 'input')then
+                    s_down    = add_string..' output '..time_part..' oif {'..if_string..'} ip saddr '..ctg_set..' '..a_c_part['limit_down']; --input and output swaps
+                end
+                print(s_up);
+                self.util.exec(s_up);
+                print(s_down);
+                self.util.exec(s_down);
+            end
+            
+            if(app_flag)then
+                for k, app in ipairs(rule.apps) do
+                    local s_up      = add_string..' '..chain..' '..time_part..' iif {'..if_string..'} ip daddr \\@'..app..' '..a_c_part['limit_up'];
+                    local s_down    = add_string..' '..chain..' '..time_part..' oif {'..if_string..'} ip saddr \\@'..app..' '..a_c_part['limit_down']; --forward remain the same
+                    if(chain == 'input')then
+                        s_down    = add_string..' output '..time_part..' oif {'..if_string..'} ip saddr \\@'..app..' '..a_c_part['limit_down']; --input and output swaps
+                    end
+                    print(s_up);
+                    self.util.exec(s_up);
+                    print(s_down);
+                    self.util.exec(s_down);       
+                end                    
+            end
+                       
+        end                 
+    end    
 end
 
 
@@ -225,3 +259,73 @@ function rdAdvNftables._macLimit(self,m,bw_up,bw_down)
     end
 end
 
+function rdAdvNftables._round(self,number)
+    if (number - (number % 0.1)) - (number - (number % 1)) < 0.5 then
+        number = number - (number % 1)
+    else
+        number = (number - (number % 1)) + 1
+    end
+    return number
+end
+
+function rdAdvNftables._timePart(self,rule)
+
+    local time_part = '';
+    if(rule.schedule == 'every_week')then
+        local day_string = 'day {';
+    
+        for k in pairs(self.days) do
+            if(rule[k])then
+                day_string = day_string..' '..self.days[k]..' , ';
+            end        
+        end      
+        day_string = day_string..'} ';
+        time_part = day_string;       
+    end               
+    if((rule.schedule == 'every_day')or(rule.schedule == 'every_week')or(rule.schedule == 'one_time'))then
+        local start_m   = self:_round(rule.start_time % 60);
+        local start_h   = self:_round(rule.start_time / 60);
+        local end_m     = self:_round(rule.end_time % 60);
+        local end_h     = self:_round(rule.end_time / 60);        
+        if(rule.end_time < rule.start_time)then
+            time_part    = time_part..'hour != '..end_h..':'..end_m..'-'..start_h..':'..start_m;
+        else
+            time_part    = time_part..'hour '..start_h..':'..start_m..'-'..end_h..':'..end_m;           
+        end                      
+    end
+            
+    return time_part;
+end
+
+function rdAdvNftables._actionComment(self,rule,if_string)
+
+    local a_c_part = {
+        allow       = false,
+        block       = false,
+        limit_up    = false,
+        limit_down  = false,
+        limit       = false
+    };
+    
+    if(rule.action == 'limit')then 
+        a_c_part['limit']       = true;
+        a_c_part['limit_up']    = 'limit rate over '..rule.bw_up..' kbytes/second counter drop comment \\"LIMIT UPLOAD ON '..if_string..'\\"';
+        a_c_part['limit_down']  = 'limit rate over '..rule.bw_down..' kbytes/second counter drop comment \\"LIMIT DOWNLOAD ON '..if_string..'\\"';   
+    end
+    
+    if(rule.action == 'block')then   
+        a_c_part['block']  = ' counter drop comment \\"DROP ON '..if_string..'\\"';
+    end
+    
+    if(rule.action == 'allow')then
+        a_c_part['block']  = ' counter accept comment \\"ACCEPT ON '..if_string..'\\"'; 
+    end
+                
+    return a_c_part;
+end
+
+function rdAdvNftables._categorySet(self,rule)
+
+    return '!= {10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,255.255.255.255}';
+    
+end
