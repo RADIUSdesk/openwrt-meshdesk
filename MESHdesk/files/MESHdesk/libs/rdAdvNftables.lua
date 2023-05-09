@@ -34,9 +34,12 @@ function rdAdvNftables:clearSets()
     self:_clearSets();
 end
 
-
 function rdAdvNftables:addSet(set) 
     self:_addSet(set);
+end
+
+function rdAdvNftables:addMac(mac)
+    self:_addMac(mac);  
 end
 
 function rdAdvNftables:addEntry(entry)
@@ -115,6 +118,120 @@ function rdAdvNftables._addSet(self,set)
     -- name; elements list (string) and comment
     --print('nft add set bridge adv_meshdesk '..set.name..' { type ipv4_addr\\; flags interval\\; elements={ '..set.elements..' comment \"'..set.comment..'\" }\\; }');
     self.util.exec('nft add set bridge adv_meshdesk '..set.name..' { type ipv4_addr\\; flags interval\\; elements={ '..set.elements..' comment \\"'..set.comment..'\\" }\\; }'); 
+end
+
+function rdAdvNftables._addMac(self,mac)
+
+    local add_string = 'nft add rule bridge adv_meshdesk';
+    local m = mac.mac;
+    
+    --Now the rules
+    for j, rule in ipairs(mac.rules)do
+        print(rule.action); 
+        print("RULE");             
+        local time_part = self:_timePart(rule);
+        local a_c_part  = self:_actionComment(rule,mac.mac);
+        local ctg_set   = self:_categorySet(rule);
+        local app_flag  = false
+        if(rule.category == 'app')then
+            app_flag = true;
+        end
+        
+        --===        
+        if(a_c_part['allow'])then --allow and block is just one direction needed 
+        
+            if(not(app_flag))then
+            
+                for i, chain in ipairs(self.chains) do
+                    self:log('Add Limit rule in chain '..chain..' for mac '..m)
+                    local s = add_string..' '..chain..' '..time_part..' ether daddr '..m..' ip daddr '..ctg_set..' '..a_c_part['allow'];
+                    print(s);
+                    self.util.exec(s)
+                    s = add_string..' '..chain..' '..time_part..' ether saddr '..m..' ip daddr '..ctg_set..' '..a_c_part['allow'];
+                    print(s);
+                    self.util.exec(s)
+                end
+            end
+            
+            if(app_flag)then
+                for k, app in ipairs(rule.apps) do
+                    for i, chain in ipairs(self.chains) do
+                        --rule (with app set) for each app
+                        local s = add_string..' '..chain..' '..time_part..' ether daddr '..m..' ip daddr \\@'..app..' '..a_c_part['allow'];
+                        print(s);
+                        self.util.exec(s)
+                        s = add_string..' '..chain..' '..time_part..' ether saddr '..m..' ip daddr \\@'..app..' '..a_c_part['allow'];
+                        print(s);
+                        self.util.exec(s)
+                    end            
+                end                    
+            end
+                                    
+        end
+        
+        if(a_c_part['block'])then --allow and block is just one direction needed
+        
+            if(not(app_flag))then
+            
+                for i, chain in ipairs(self.chains) do         
+                    local s = add_string..' '..chain..' '..time_part..' ether daddr '..m..' ip daddr '..ctg_set..' '..a_c_part['block'];
+                    print(s);
+                    self.util.exec(s);
+                    s = add_string..' '..chain..' '..time_part..' ether saddr '..m..' ip daddr '..ctg_set..' '..a_c_part['block'];
+                    print(s);
+                    self.util.exec(s);
+                end
+            end
+            
+            if(app_flag)then
+                for k, app in ipairs(rule.apps) do
+                    for i, chain in ipairs(self.chains) do
+                        --rule (with app set) for each app
+                        local s = add_string..' '..chain..' '..time_part..' ether daddr '..m..' ip daddr \\@'..app..' '..a_c_part['block'];
+                        print(s);
+                        self.util.exec(s)
+                        s = add_string..' '..chain..' '..time_part..' ether saddr '..m..' ip daddr \\@'..app..' '..a_c_part['block'];
+                        print(s);
+                        self.util.exec(s)
+                    end            
+                end                    
+            end
+                         
+        end
+        
+        if(a_c_part['limit'])then --limit needs out and in direction rate limit
+         
+            if(not(app_flag))then 
+                 
+                for i, chain in ipairs(self.chains) do 
+                    local s_up      = add_string..' '..chain..' '..time_part..' ether saddr '..m..' ip daddr '..ctg_set..' '..a_c_part['limit_up'];
+                    local s_down    = add_string..' '..chain..' '..time_part..' ether daddr '..m..' ip saddr '..ctg_set..' '..a_c_part['limit_down']; --forward remain the same
+                    print(s_up);
+                    self.util.exec(s_up);
+                    print(s_down);
+                    self.util.exec(s_down);    
+                end
+               
+            end
+            
+            if(app_flag)then
+                for k, app in ipairs(rule.apps) do
+                
+                    for i, chain in ipairs(self.chains) do
+                        local s_up      = add_string..' '..chain..' '..time_part..' ether saddr '..m..' ip daddr \\@'..app..' '..a_c_part['limit_up'];
+                        local s_down    = add_string..' '..chain..' '..time_part..' ether daddr '..m..' ip saddr \\@'..app..' '..a_c_part['limit_down']; --forward remain the same
+                    
+                        print(s_up);
+                        self.util.exec(s_up);
+                        print(s_down);
+                        self.util.exec(s_down);
+                    end
+                           
+                end                    
+            end
+                       
+        end                 
+    end    
 end
 
 function rdAdvNftables._addEntry(self,entry)
@@ -326,6 +443,20 @@ end
 
 function rdAdvNftables._categorySet(self,rule)
 
-    return '!= {10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,255.255.255.255}';
+    if(rule.category == 'internet')then
+        return '!= \\@md_internet_not';
+    end
+    
+    if(rule.category == 'local_network')then
+        return '\\@md_lan';
+    end
+    
+    if(rule.category == 'ip_address')then
+        return '{'..rule.ip_address..'}';
+    end
+    
+    if(rule.category == 'domain')then
+        return '{'..rule.ip_address..'}';
+    end
     
 end

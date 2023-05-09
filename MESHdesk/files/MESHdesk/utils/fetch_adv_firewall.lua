@@ -65,7 +65,15 @@ if(tblConfig.config_settings ~= nil)then
                 local set = tblConfig.config_settings.adv_firewall.sets[k];
                 adv_nft:addSet(set);
             end
-        end                
+        end
+        
+        --add the macs
+        if(tblConfig.config_settings.adv_firewall.macs)then
+            for b, mac in ipairs(tblConfig.config_settings.adv_firewall.macs) do
+                adv_nft:addMac(mac);          
+            end        
+        end 
+                              
         --add the entries
         if(tblConfig.config_settings.adv_firewall.entries)then
             for a, entry in ipairs(tblConfig.config_settings.adv_firewall.entries) do
