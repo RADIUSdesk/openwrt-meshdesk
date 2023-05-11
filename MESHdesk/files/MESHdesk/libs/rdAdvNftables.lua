@@ -146,7 +146,7 @@ function rdAdvNftables._addMac(self,mac)
                     self:log('Add Limit rule in chain '..chain..' for mac '..m)
                     local s = add_string..' '..chain..' '..time_part..' ether daddr '..m..' ip daddr '..ctg_set..' '..a_c_part['allow'];
                     print(s);
-                    self.util.exec(s)
+                    --self.util.exec(s)
                     s = add_string..' '..chain..' '..time_part..' ether saddr '..m..' ip daddr '..ctg_set..' '..a_c_part['allow'];
                     print(s);
                     self.util.exec(s)
@@ -159,7 +159,7 @@ function rdAdvNftables._addMac(self,mac)
                         --rule (with app set) for each app
                         local s = add_string..' '..chain..' '..time_part..' ether daddr '..m..' ip daddr \\@'..app..' '..a_c_part['allow'];
                         print(s);
-                        self.util.exec(s)
+                        --self.util.exec(s)
                         s = add_string..' '..chain..' '..time_part..' ether saddr '..m..' ip daddr \\@'..app..' '..a_c_part['allow'];
                         print(s);
                         self.util.exec(s)
@@ -176,7 +176,7 @@ function rdAdvNftables._addMac(self,mac)
                 for i, chain in ipairs(self.chains) do         
                     local s = add_string..' '..chain..' '..time_part..' ether daddr '..m..' ip daddr '..ctg_set..' '..a_c_part['block'];
                     print(s);
-                    self.util.exec(s);
+                    --self.util.exec(s);
                     s = add_string..' '..chain..' '..time_part..' ether saddr '..m..' ip daddr '..ctg_set..' '..a_c_part['block'];
                     print(s);
                     self.util.exec(s);
@@ -189,7 +189,7 @@ function rdAdvNftables._addMac(self,mac)
                         --rule (with app set) for each app
                         local s = add_string..' '..chain..' '..time_part..' ether daddr '..m..' ip daddr \\@'..app..' '..a_c_part['block'];
                         print(s);
-                        self.util.exec(s)
+                        --self.util.exec(s)
                         s = add_string..' '..chain..' '..time_part..' ether saddr '..m..' ip daddr \\@'..app..' '..a_c_part['block'];
                         print(s);
                         self.util.exec(s)
