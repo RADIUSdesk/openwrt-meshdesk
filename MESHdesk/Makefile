@@ -1,8 +1,8 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=MESHdesk
-PKG_VERSION:=9.4.4
-PKG_RELEASE:=07
+PKG_VERSION:=9.5.5
+PKG_RELEASE:=08
 
 include $(INCLUDE_DIR)/package.mk
 
@@ -38,6 +38,7 @@ define Package/MESHdesk/install
 	cp -r ./files/MESHdesk/libs/* $(1)/etc/MESHdesk/libs
 	cp -r ./files/MESHdesk/reporting/* $(1)/etc/MESHdesk/reporting
 	cp -r ./files/MESHdesk/tests/* $(1)/etc/MESHdesk/tests
+	cp -r ./files/MESHdesk/utils/* $(1)/etc/MESHdesk/utils
 	$(INSTALL_BIN) ./files/MESHdesk/a.lua $(1)/etc/MESHdesk/
 	$(INSTALL_BIN) ./files/MESHdesk/batman_neighbours.lua $(1)/etc/MESHdesk/
 	$(INSTALL_BIN) ./files/MESHdesk/heartbeat.lua $(1)/etc/MESHdesk/
