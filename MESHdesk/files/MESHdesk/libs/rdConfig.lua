@@ -288,6 +288,39 @@ function rdConfig:configureDevice(config,doWanSynch)
             end
         end    
     end
+    
+    --May 2023 Adv Firewall
+    if(o.config_settings.adv_firewall ~= nil)then
+        print("Doing Advanced Firewall rules")
+        self:_sleep(15); --sleep 15 more seconds for everythin else to come up
+        require("rdAdvNftables");
+        local adv_nft = rdAdvNftables();
+        adv_nft:initConfig();
+        adv_nft:flushTable();
+        adv_nft:clearSets();
+        
+        --add the sets
+        if(o.config_settings.adv_firewall.sets)then
+            for k in pairs(o.config_settings.adv_firewall.sets) do
+                local set = o.config_settings.adv_firewall.sets[k];
+                adv_nft:addSet(set);
+            end
+        end
+        
+        --add the macs
+        if(o.config_settings.adv_firewall.macs)then
+            for b, mac in ipairs(o.config_settings.adv_firewall.macs) do
+                adv_nft:addMac(mac);          
+            end        
+        end 
+                              
+        --add the entries
+        if(o.config_settings.adv_firewall.entries)then
+            for a, entry in ipairs(o.config_settings.adv_firewall.entries) do
+                adv_nft:addEntry(entry);          
+            end        
+        end             
+    end
              
     ret_table.config_success = true;
     return ret_table;
