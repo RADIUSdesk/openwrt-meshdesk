@@ -23,8 +23,8 @@ function rdNetwork:rdNetwork()
 	--Add external command object
 	self.external	= rdExternal()
 	
-	self.new_file   = self.x.get('meshdesk', 'settings','config_file');
-    self.old_file   = self.x.get('meshdesk', 'settings','previous_config_file');
+	self.new_file   = self.x:get('meshdesk', 'settings','config_file');
+    self.old_file   = self.x:get('meshdesk', 'settings','previous_config_file');
     self.wan_network= 'wan_network';
     self.w_items    = { ssid=true, encryption=true, disabled=true, device=true, mode=true, key=true, network=true, ifname=true};
     --Only these items will be modified when synching (based on the value of proto)
@@ -122,7 +122,7 @@ function rdNetwork.__addMacs(self)
                 --print("MAC ADDRESS "..mac.." DEVICE IS "..dev);             
                 --Add if not in /etc/config/network
                 local match = false;
-                self.x.foreach('network' , 'device', function(a)
+                self.x:foreach('network' , 'device', function(a)
                     if(a['name'] ~= nil)then
                         if(a['macaddr'] ~= nil)then
                             -- Lets see if they match
@@ -134,10 +134,10 @@ function rdNetwork.__addMacs(self)
                 end)
                 if(match == false)then
                     --print("Found NO Match - ADD ONE ! ")
-                    local entry_name = self.x.add('network', 'device');
-                    self.x.set('network', entry_name,'name', dev);
-                    self.x.set('network', entry_name,'macaddr', mac);
-                    self.x.commit('network');                  
+                    local entry_name = self.x:add('network', 'device');
+                    self.x:set('network', entry_name,'name', dev);
+                    self.x:set('network', entry_name,'macaddr', mac);
+                    self.x:commit('network');                  
                 end
                 --END if not in /etc/config/network 
                              
@@ -153,44 +153,44 @@ function rdNetwork.__doWanSynch(self)
     local lan_proto = 'dhcp';
     local no_wwan   = true;
        
-    self.x.foreach('network' , 'interface', function(a)
+    self.x:foreach('network' , 'interface', function(a)
         if(a['.name'] == 'lan')then
             lan_proto = a['proto'];
             if(lan_proto == 'dhcp')then
                 --Delete Any Left-Overs
                 for key, val in pairs(self.sta_items) do
-                    local sta_val = self.x.get(self.wan_network,'lan',key);
+                    local sta_val = self.x:get(self.wan_network,'lan',key);
                     if(sta_val)then
                         self:log('==STATIC== VALUE DELETE '..key);
-                        self.x.delete(self.wan_network,'lan',key);
+                        self.x:delete(self.wan_network,'lan',key);
                         mod_flag = true;
                     end             
                 end
                 for key, val in pairs(self.ppp_items) do
-                    local ppp_val = self.x.get(self.wan_network,'lan',key);
+                    local ppp_val = self.x:get(self.wan_network,'lan',key);
                     if(ppp_val)then
                         self:log('==PPP== VALUE DELETE '..key);
-                        self.x.delete(self.wan_network,'lan',ppp_val);
+                        self.x:delete(self.wan_network,'lan',ppp_val);
                         mod_flag = true;
                     end             
                 end
             end
             if(lan_proto == 'static')then
                 for key, val in pairs(self.ppp_items) do
-                    local ppp_val = self.x.get(self.wan_network,'lan',key);
+                    local ppp_val = self.x:get(self.wan_network,'lan',key);
                     if(ppp_val)then
                         self:log('==PPP== VALUE DELETE '..key);
-                        self.x.delete(self.wan_network,'lan',ppp_val);
+                        self.x:delete(self.wan_network,'lan',ppp_val);
                         mod_flag = true;
                     end             
                 end                
                 for key, val in pairs(a) do
                     if(string.find(key, '.', 1, true) == nil)then
                         if(self.sta_items[key]) then 
-                            local sta_val = self.x.get(self.wan_network,'lan',key);
+                            local sta_val = self.x:get(self.wan_network,'lan',key);
                             if(sta_val ~= val)then
                                 self:log('==STATIC== SET '..key);
-                                self.x.set(self.wan_network,'lan',key,val);
+                                self.x:set(self.wan_network,'lan',key,val);
                                 mod_flag = true;
                             end
                         end                                  
@@ -199,20 +199,20 @@ function rdNetwork.__doWanSynch(self)
             end
             if(lan_proto == 'pppoe')then
                 for key, val in pairs(self.sta_items) do
-                    local sta_val = self.x.get(self.wan_network,'lan',key);
+                    local sta_val = self.x:get(self.wan_network,'lan',key);
                     if(sta_val)then
                         self:log('==STATIC== VALUE DELETE '..key);
-                        self.x.delete(self.wan_network,'lan',key);
+                        self.x:delete(self.wan_network,'lan',key);
                         mod_flag = true;
                     end             
                 end
                 for key, val in pairs(a) do
                     if(string.find(key, '.', 1, true) == nil)then                       
                         if(self.ppp_items[key]) then 
-                            local ppp_val = self.x.get(self.wan_network,'lan',key);
+                            local ppp_val = self.x:get(self.wan_network,'lan',key);
                             if(ppp_val ~= val)then
                                 self:log('==PPPoE== SET '..key);
-                                self.x.set(self.wan_network,'lan',key,val);
+                                self.x:set(self.wan_network,'lan',key,val);
                                 mod_flag = true;
                             end
                         end                                 
@@ -225,13 +225,13 @@ function rdNetwork.__doWanSynch(self)
 	    if(a['.name'] == 'wwan')then
 	        --See it it is perhaps already in wan_network
 	        no_wwan = false;
-	        local wwan_proto = self.x.get(self.wan_network,'wwan','proto');
+	        local wwan_proto = self.x:get(self.wan_network,'wwan','proto');
 	        if(wwan_proto == nil)then --Not found ADD IT
 	            mod_flag = true;
-	            self.x.set(self.wan_network, "wwan", "interface");
+	            self.x:set(self.wan_network, "wwan", "interface");
 	            for key, val in pairs(a) do
                     if(string.find(key, '.', 1, true) == nil)then                       
-                        self.x.set(self.wan_network,'wwan',key,val);
+                        self.x:set(self.wan_network,'wwan',key,val);
                         mod_flag = true;              
                     end
                 end
@@ -239,27 +239,27 @@ function rdNetwork.__doWanSynch(self)
                 self:log('==WWAN SETTINGS ALREADY PRESENT=='); 
                 for key, val in pairs(a) do
                     if(string.find(key, '.', 1, true) == nil)then                       
-                        local c_val = self.x.get(self.wan_network,'wwan',key);
+                        local c_val = self.x:get(self.wan_network,'wwan',key);
                         if(c_val ~= nil)then
                             if(c_val ~= val)then -- Only if there are changes
                                 self:log('==LTE== change '..c_val.." to "..val);
-                                self.x.set(self.wan_network,'wwan',key,val);
+                                self.x:set(self.wan_network,'wwan',key,val);
                                 mod_flag = true;
                             end
                         else
                             self:log('==LTE== addition '..val);
-                            self.x.set(self.wan_network,'wwan',key,val);
+                            self.x:set(self.wan_network,'wwan',key,val);
                             mod_flag = true;
                         end            
                     end
                 end
                 
                 for key, val in pairs(self.qmi_items) do
-                    local qmi_val = self.x.get(self.wan_network,'wwan',key);
+                    local qmi_val = self.x:get(self.wan_network,'wwan',key);
                     if(qmi_val)then
                         if(a[key] == nil)then
                             self:log('==LTE== VALUE DELETE '..key);
-                            self.x.delete(self.wan_network,'wwan',key);
+                            self.x:delete(self.wan_network,'wwan',key);
                             mod_flag = true;
                         end                        
                     end             
@@ -272,18 +272,18 @@ function rdNetwork.__doWanSynch(self)
     
     if(no_wwan == true)then
         --if we used wwan and turned it off we just disable the wwan interface 
-        local disabled = self.x.get(self.wan_network,'wwan','disabled');
+        local disabled = self.x:get(self.wan_network,'wwan','disabled');
         if(disabled ~= nil)then
             if(tostring(disabled) == "0")then --IF IT IS ACTIVE TURN IT OFF
-                self.x.set(self.wan_network,'wwan','disabled',"1");
+                self.x:set(self.wan_network,'wwan','disabled',"1");
                 mod_flag = true;
             end   
         end    
     end
 
     if(mod_flag == true)then
-        self.x.set(self.wan_network,'lan','proto',lan_proto);
-        self.x.commit(self.wan_network);
+        self.x:set(self.wan_network,'lan','proto',lan_proto);
+        self.x:commit(self.wan_network);
         self:log('==MODIFY SETTINGS==');
         os.execute("cp /etc/config/"..self.wan_network.." /etc/MESHdesk/configs");  
     end         
@@ -295,25 +295,25 @@ function rdNetwork.__includeWebByWifi(self)
     -- We need to find out if we perhaps also have wifi-iface configured and if it is enabled add it to the settings
     local iface_name_md         = 'web_by_wifi';
     local iface_name_wireless   = 'web_by_w'; 
-    self.x.foreach('meshdesk','wifi-iface', 
+    self.x:foreach('meshdesk','wifi-iface', 
 		function(a)
 		    if(a['.name'] == iface_name_md)then
 		        if(a['disabled'] ~= nil)then
 		            if(a['disabled'] == '0')then
 		                --Create it
-		                self.x.set('wireless', iface_name_wireless, "wifi-iface")
-	                    self.x.commit('wireless')
+		                self.x:set('wireless', iface_name_wireless, "wifi-iface")
+	                    self.x:commit('wireless')
 		                for key, val in pairs(a) do
 		                    if(string.find(key, '.', 1, true) == nil)then
 	                            if self.w_items[key] then --Only those in the list
-	                                self.x.set('wireless', iface_name_wireless,key, val)
+	                                self.x:set('wireless', iface_name_wireless,key, val)
 	                                if(key == 'device')then
-	                                    self.x.set('wireless',val,'disabled','0') --Enable the specified radio also
+	                                    self.x:set('wireless',val,'disabled','0') --Enable the specified radio also
 	                                end
 	                            end
 	                        end
 	                    end
-	                    self.x.commit('wireless');
+	                    self.x:commit('wireless');
 	                    
 	                    local wifi_proto = 'dhcp';
 	                    if(a['proto'] ~= nil)then
@@ -321,19 +321,19 @@ function rdNetwork.__includeWebByWifi(self)
 	                    end	                    	                    
 	                    
 	                    --Also include the configs in the netwok config
-	                    self.x.set('network', iface_name_wireless, "interface")
-	                    self.x.commit('network')
-	                    self.x.set('network', iface_name_wireless,'proto', wifi_proto)
+	                    self.x:set('network', iface_name_wireless, "interface")
+	                    self.x:commit('network')
+	                    self.x:set('network', iface_name_wireless,'proto', wifi_proto)
 	                    	                    
 	                    if(wifi_proto == 'static')then
 	                        if(a['ipaddr'] ~= nil)then
-	                            self.x.set('network', iface_name_wireless,'ipaddr', a['ipaddr']);
+	                            self.x:set('network', iface_name_wireless,'ipaddr', a['ipaddr']);
 	                        end
 	                        if(a['netmask'] ~= nil)then
-	                            self.x.set('network', iface_name_wireless,'netmask', a['netmask']);
+	                            self.x:set('network', iface_name_wireless,'netmask', a['netmask']);
 	                        end
 	                        if(a['gateway'] ~= nil)then
-	                            self.x.set('network', iface_name_wireless,'gateway', a['gateway']);
+	                            self.x:set('network', iface_name_wireless,'gateway', a['gateway']);
 	                        end
 	                        local dns = '';
 	                        if(a['dns_1'] ~= nil)then
@@ -343,22 +343,22 @@ function rdNetwork.__includeWebByWifi(self)
 	                            dns = dns..' '..a['dns_2'];
 	                        end	                        
 	                        if(dns ~= '')then
-	                            self.x.set('network', iface_name_wireless,'dns', dns);
+	                            self.x:set('network', iface_name_wireless,'dns', dns);
 	                        end	                        	                    
 	                    end
 	                    
 	                    if(wifi_proto == 'pppoe')then
 	                        if(a['username'] ~= nil)then
-	                            self.x.set('network', iface_name_wireless,'username', a['username']);
+	                            self.x:set('network', iface_name_wireless,'username', a['username']);
 	                        end
 	                        if(a['password'] ~= nil)then
-	                            self.x.set('network', iface_name_wireless,'password', a['password']);
+	                            self.x:set('network', iface_name_wireless,'password', a['password']);
 	                        end
 	                        if(a['mac'] ~= nil)then
-	                            self.x.set('network', iface_name_wireless,'mac', a['mac']);
+	                            self.x:set('network', iface_name_wireless,'mac', a['mac']);
 	                        end
 	                        if(a['mtu'] ~= nil)then
-	                            self.x.set('network', iface_name_wireless,'mtu', a['mtu']);
+	                            self.x:set('network', iface_name_wireless,'mtu', a['mtu']);
 	                        end
 	                        local dns = '';
 	                        if(a['dns_1'] ~= nil)then
@@ -368,22 +368,22 @@ function rdNetwork.__includeWebByWifi(self)
 	                            dns = dns..' '..a['dns_2'];
 	                        end	                        
 	                        if(dns ~= '')then
-	                            self.x.set('network', iface_name_wireless,'dns', dns);
+	                            self.x:set('network', iface_name_wireless,'dns', dns);
 	                        end	                        	                    
 	                    end
-	                    self.x.commit('network');
+	                    self.x:commit('network');
 	                    	                    	                    
-	                    self.x.set('network', 'stabridge', "interface")
-	                    self.x.commit('network')
-	                    self.x.set('network', 'stabridge','proto', 'relay')
-	                    self.x.set('network', 'stabridge','network', 'lan '..iface_name_wireless)
+	                    self.x:set('network', 'stabridge', "interface")
+	                    self.x:commit('network')
+	                    self.x:set('network', 'stabridge','proto', 'relay')
+	                    self.x:set('network', 'stabridge','network', 'lan '..iface_name_wireless)
 	                    	                    
 	                    --Also set a static address on the 'lan'
-	                    self.x.set('network', 'lan','proto', 'static')
-	                    self.x.set('network', 'lan','ipaddr','10.50.50.50')
-	                    self.x.set('network', 'lan','netmask','255.255.255.0')
+	                    self.x:set('network', 'lan','proto', 'static')
+	                    self.x:set('network', 'lan','ipaddr','10.50.50.50')
+	                    self.x:set('network', 'lan','netmask','255.255.255.0')
 	           
-	                    self.x.commit('network');	                    
+	                    self.x:commit('network');	                    
 	                    os.execute("/etc/init.d/network reload");
 	                    --os.execute("wifi") --Bring up the WiFi (This caused problems on the radio on Master 18-Jul-2020)
 		            end
@@ -397,20 +397,20 @@ end
 function rdNetwork.__includeMobileWan(self)
 
     -- We need to find out if we perhaps also have 3G (wwan) configured and if it is enabled add it to the settings 
-    self.x.foreach('meshdesk','interface', 
+    self.x:foreach('meshdesk','interface', 
 		function(a)
 		    if(a['.name'] == 'wwan')then
 		        if(a['enabled'] ~= nil)then
 		            if(a['enabled'] == '1')then
 		                --Create it
-		                self.x.set('network', 'wwan', "interface")
-	                    self.x.commit('network')
+		                self.x:set('network', 'wwan', "interface")
+	                    self.x:commit('network')
 		                for key, val in pairs(a) do
 		                    if(string.find(key, '.', 1, true) == nil)then
-	                            self.x.set('network', 'wwan',key, val)
+	                            self.x:set('network', 'wwan',key, val)
 	                        end
 	                    end
-	                    self.x.commit('network')
+	                    self.x:commit('network')
 		            end
 		        end
 		    end
@@ -420,22 +420,22 @@ end
 -- Check if there is perhaps a static IP defined --
 function rdNetwork.__includeStaticCheck(self)
     -- We need to find out if we perhaps also have 'lan' interface configured and if it is set to proto == 'static'
-    self.x.foreach('meshdesk','interface', 
+    self.x:foreach('meshdesk','interface', 
 		function(a)
 		    if(a['.name'] == 'lan')then
 		        if(a['proto'] ~= nil)then
 		            if(a['proto'] == 'static')then
 		                --Create it
-		                self.x.set('network', 'lan', "interface")
-	                    self.x.commit('network')
+		                self.x:set('network', 'lan', "interface")
+	                    self.x:commit('network')
 		                for key, val in pairs(a) do
 		                    if(string.find(key, '.', 1, true) == nil)then
 		                        if((key ~= 'vlan_number')and(key ~= 'use_vlan'))then
-	                                self.x.set('network', 'lan',key, val)
+	                                self.x:set('network', 'lan',key, val)
 	                            end
 	                        end
 	                    end
-	                    self.x.commit('network')
+	                    self.x:commit('network')
 		            end
 		        end
 		    end
@@ -445,23 +445,23 @@ end
 function rdNetwork.__includeVlanCheck(self)
     --We need to find out if the lan interface has a VLAN that needs to be set for it to operate correct
     --If so we also need to create a fallback interface called 'fallback'
-    self.x.foreach('meshdesk','interface',
+    self.x:foreach('meshdesk','interface',
         function(a)
              if(a['.name'] == 'lan')then
 		        if((a['use_vlan'] ~= nil)and(a['vlan_number'] ~= nil))then
 		            if(a['use_vlan'] == '1')then
-		                self.x.set('network', 'lan', "interface")
-	                    self.x.commit('network')    
-	                    self.x.set('network', 'lan','ifname', 'eth0.' .. a['vlan_number']);
-	                    self.x.commit('network')
+		                self.x:set('network', 'lan', "interface")
+	                    self.x:commit('network')    
+	                    self.x:set('network', 'lan','ifname', 'eth0.' .. a['vlan_number']);
+	                    self.x:commit('network')
 	                    --Also create a fallback interface
-	                    self.x.set('network', 'fallback', "interface")
-	                    self.x.commit('network')
-	                    self.x.set('network', 'fallback','ifname', 'eth0');
-	                    self.x.set('network', 'fallback','proto', 'static');
-	                    self.x.set('network', 'fallback','ipaddr', '10.1.2.3');
-	                    self.x.set('network', 'fallback','netmask', '255.255.255.0');
-	                    self.x.commit('network')   
+	                    self.x:set('network', 'fallback', "interface")
+	                    self.x:commit('network')
+	                    self.x:set('network', 'fallback','ifname', 'eth0');
+	                    self.x:set('network', 'fallback','proto', 'static');
+	                    self.x:set('network', 'fallback','ipaddr', '10.1.2.3');
+	                    self.x:set('network', 'fallback','netmask', '255.255.255.0');
+	                    self.x:commit('network')   
 		            end     
 		        end
 		    end    
@@ -530,23 +530,23 @@ function rdNetwork.__configureFromTable(self,table)
     	os.execute("cat /etc/config/network");
     	-- Now we have gathered the info
     	if(entry_type == 'device')then --device is anonymous
-    	    entry_name = self.x.add('network', 'device');
+    	    entry_name = self.x:add('network', 'device');
         else
-            self.x.set('network', entry_name, entry_type);  
+            self.x:set('network', entry_name, entry_type);  
     	end  	
-        self.x.commit('network')     
+        self.x:commit('network')     
         --Set all the options       
     	for key, val in pairs(options) do
             --print("There " .. key .. ' and '.. val)          
-            self.x.set('network', entry_name,key, val);
-            self.x.commit('network')           
+            self.x:set('network', entry_name,key, val);
+            self.x:commit('network')           
         end
         
         --Set all the lists
         --print("DOING LISTS");
         for key, val in pairs(lists) do       
-            self.x.set('network', entry_name,key, val);
-            self.x.commit('network')           
+            self.x:set('network', entry_name,key, val);
+            self.x:commit('network')           
         end    
     end   
 end

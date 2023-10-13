@@ -32,14 +32,14 @@ function rdConfig:rdConfig()
     self.current_try    = 0
 
     --Determine the Files to use--
-	self.new_file = self.x.get('meshdesk', 'settings','config_file');
-    self.old_file = self.x.get('meshdesk', 'settings','previous_config_file');
-    self.protocol = self.x.get('meshdesk', 'internet1','protocol');
+	self.new_file = self.x:get('meshdesk', 'settings','config_file');
+    self.old_file = self.x:get('meshdesk', 'settings','previous_config_file');
+    self.protocol = self.x:get('meshdesk', 'internet1','protocol');
     
     --Files that exists when connection is up
-    self.lan_up_file    = self.x.get('meshdesk','settings','lan_up_file');
-    self.wifi_up_file   = self.x.get('meshdesk','settings','wifi_up_file');
-    self.wbw_up_file    = self.x.get('meshdesk','settings','wbw_up_file');
+    self.lan_up_file    = self.x:get('meshdesk','settings','lan_up_file');
+    self.wifi_up_file   = self.x:get('meshdesk','settings','wifi_up_file');
+    self.wbw_up_file    = self.x:get('meshdesk','settings','wbw_up_file');
 
     
     --Settings For Config Captive Portal
@@ -139,9 +139,9 @@ function rdConfig:configureDevice(config,doWanSynch)
         --There might also be an option to point the device to another server for its settings
         if(o.new_server ~= nil)then
             self:log("Setting new config server to " .. o.new_server);
-            self.x.set('meshdesk','internet1','dns',o.new_server);
-            self.x.set('meshdesk','internet1','protocol',o.new_server_protocol); --We also add the protocol
-            self.x.commit('meshdesk');
+            self.x:set('meshdesk','internet1','dns',o.new_server);
+            self.x:set('meshdesk','internet1','protocol',o.new_server_protocol); --We also add the protocol
+            self.x:commit('meshdesk');
             self:reboot();
 	        return;  
         end
@@ -149,11 +149,11 @@ function rdConfig:configureDevice(config,doWanSynch)
         --Also an option return to base server (return_to_base)
         if((o.return_to_base ~= nil)and(o.return_to_base == true))then
             self:log("Returning the Hardware to Base server");
-            local base_dns  = self.x.get('meshdesk','internet1','base_dns');
-            local base_ip   = self.x.get('meshdesk','internet1','base_ip');
-            self.x.set('meshdesk','internet1','dns',base_dns);
-            self.x.set('meshdesk','internet1','ip',base_ip);
-            self.x.commit('meshdesk');
+            local base_dns  = self.x:get('meshdesk','internet1','base_dns');
+            local base_ip   = self.x:get('meshdesk','internet1','base_ip');
+            self.x:set('meshdesk','internet1','dns',base_dns);
+            self.x:set('meshdesk','internet1','ip',base_ip);
+            self.x:commit('meshdesk');
             self:reboot();
 	        return;  
         end
@@ -345,7 +345,7 @@ function rdConfig:tryForConfigServer(method)
     
     if(method == 'lan')then
         --See which protocol we are using
-        local lan_proto = self.x.get('network','lan','proto');
+        local lan_proto = self.x:get('network','lan','proto');
         --self:log("==== PROTO IS "..lan_proto.." ====");
         if(lan_proto == 'pppoe')then
             --self:log("==== EXTEND SLEEP FOR PPPOE ====");
@@ -365,7 +365,7 @@ function rdConfig:tryForConfigServer(method)
 	local loop	            = true;
 	local dhcp_try_flag     = false;
 	local start_time	    = os.time();
-	local config_file		= self.x.get('meshdesk','settings','config_file');
+	local config_file		= self.x:get('meshdesk','settings','config_file');
 	local retry_counter     = 10;	
 	local gw                = true;
 	local dns_works         = false;
@@ -384,13 +384,13 @@ function rdConfig:tryForConfigServer(method)
 	end
 	
 	--local id	= "A8-40-41-13-60-E3"
-	local id_if         = self.x.get('meshdesk','settings','id_if');
+	local id_if         = self.x:get('meshdesk','settings','id_if');
 	local id		    = self:getMac(id_if);
-	local proto 	    = self.x.get('meshdesk','internet1','protocol');
-	local url   	    = self.x.get('meshdesk','internet1','url');
+	local proto 	    = self.x:get('meshdesk','internet1','protocol');
+	local url   	    = self.x:get('meshdesk','internet1','url');
 	
-	local http_port     = self.x.get('meshdesk','internet1','http_port');
-    local https_port    = self.x.get('meshdesk','internet1','https_port');
+	local http_port     = self.x:get('meshdesk','internet1','http_port');
+    local https_port    = self.x:get('meshdesk','internet1','https_port');
     local port_string   = '/';
     
     if(proto == 'http')then
@@ -434,7 +434,7 @@ function rdConfig:tryForConfigServer(method)
 	        	local od = {};
 	        	if(method == 'wbw')then --wbw we need specify the channel to the back-end
 	        	    local channel       = 0; --default
-	        	    local wbw_device    = self.x.get('meshdesk','web_by_wifi','device');
+	        	    local wbw_device    = self.x:get('meshdesk','web_by_wifi','device');
                     local iw            = self.sys.wifi.getiwinfo(wbw_device);
 	                od.wbw_channel      = iw.channel;
 	                od.wbw_active       = 1;
@@ -463,9 +463,9 @@ function rdConfig:tryForConfigServer(method)
                 --retry cpounter run out on non-dhcp on LAN--
                 --set DHCP and retry again on LAN--
                 dhcp_try_flag = true; -- One shot
-                self.x.set('network','lan','proto','dhcp');            
-                self.x.save('network');
-                self.x.commit('network');
+                self.x:set('network','lan','proto','dhcp');            
+                self.x:save('network');
+                self.x:commit('network');
                 retry_counter = 10;
                 os.execute("/etc/init.d/network reload");
             end        
@@ -476,9 +476,9 @@ function rdConfig:tryForConfigServer(method)
             --retry cpounter run out on non-dhcp on LAN--
             --set DHCP and retry again on LAN--
             dhcp_try_flag = true; -- One shot
-            self.x.set('network','lan','proto','dhcp');            
-            self.x.save('network');
-            self.x.commit('network');
+            self.x:set('network','lan','proto','dhcp');            
+            self.x:save('network');
+            self.x:commit('network');
             retry_counter = 10;
             os.execute("/etc/init.d/network reload"); 
         end        
@@ -496,7 +496,7 @@ function rdConfig:fetchFreshConfig(method)
 
     local got_settings	    = false; 
 	local loop	            = true;
-	local config_file		= self.x.get('meshdesk','settings','config_file');
+	local config_file		= self.x:get('meshdesk','settings','config_file');
 	local retry_counter     = 10;	
 	local gw                = true;
 	local dns_works         = false;
@@ -515,13 +515,13 @@ function rdConfig:fetchFreshConfig(method)
 	end
 	
 	--local id	= "A8-40-41-13-60-E3"
-	local id_if         = self.x.get('meshdesk','settings','id_if');
+	local id_if         = self.x:get('meshdesk','settings','id_if');
 	local id		    = self:getMac(id_if);
-	local proto 	    = self.x.get('meshdesk','internet1','protocol');
-	local url   	    = self.x.get('meshdesk','internet1','url');
+	local proto 	    = self.x:get('meshdesk','internet1','protocol');
+	local url   	    = self.x:get('meshdesk','internet1','url');
 	
-	local http_port     = self.x.get('meshdesk','internet1','http_port');
-    local https_port    = self.x.get('meshdesk','internet1','https_port');
+	local http_port     = self.x:get('meshdesk','internet1','http_port');
+    local https_port    = self.x:get('meshdesk','internet1','https_port');
     local port_string   = '/';
     
     if(proto == 'http')then
@@ -561,7 +561,7 @@ function rdConfig:fetchFreshConfig(method)
         	local od = {};
         	if(method == 'wbw')then --wbw we need specify the channel to the back-end
         	    local channel       = 0; --default
-        	    local wbw_device    = self.x.get('meshdesk','web_by_wifi','device');
+        	    local wbw_device    = self.x:get('meshdesk','web_by_wifi','device');
                 local iw            = self.sys.wifi.getiwinfo(wbw_device);
                 od.wbw_channel      = iw.channel;
                 od.wbw_active       = 1;
@@ -597,14 +597,14 @@ end
 
 
 function rdConfig._get_ip_for_hostname(self)
-    local server        = self.x.get('meshdesk','internet1','ip');
-    local h_name        = self.x.get('meshdesk','internet1','dns');
-    local server_6      = self.x.get('meshdesk','internet1','ip_6');
+    local server        = self.x:get('meshdesk','internet1','ip');
+    local h_name        = self.x:get('meshdesk','internet1','dns');
+    local server_6      = self.x:get('meshdesk','internet1','ip_6');
 	local local_ip_v6   = self.n:getIpV6ForInterface('br-lan');
 	local v6_enabled    = false;
 	
-	local base_ip       = self.x.get('meshdesk','internet1','base_ip');
-    local base_dns      = self.x.get('meshdesk','internet1','base_dns');
+	local base_ip       = self.x:get('meshdesk','internet1','base_ip');
+    local base_dns      = self.x:get('meshdesk','internet1','base_dns');
 
 	if(local_ip_v6)then
 	    v6_enabled = true;
@@ -620,9 +620,9 @@ function rdConfig._get_ip_for_hostname(self)
         
         if(ip ~= server)then
             --Update the thing
-            self.x.set('meshdesk','internet1','ip', ip);
-	        self.x.save('meshdesk');
-	        self.x.commit('meshdesk'); 
+            self.x:set('meshdesk','internet1','ip', ip);
+	        self.x:save('meshdesk');
+	        self.x:commit('meshdesk'); 
         end
         return_table.ip = ip;
         return_table.fallback = false;     
@@ -633,9 +633,9 @@ function rdConfig._get_ip_for_hostname(self)
     if(b)then
         local b_ip = b[1]['address'];       
         if(b_ip ~= base_ip)then --Only if it was changed
-            self.x.set('meshdesk','internet1','base_ip', b_ip);
-	        self.x.save('meshdesk');
-	        self.x.commit('meshdesk'); 
+            self.x:set('meshdesk','internet1','base_ip', b_ip);
+	        self.x:save('meshdesk');
+	        self.x:commit('meshdesk'); 
         end
         return_table.base_ip = b_ip;    
     end   
@@ -685,9 +685,9 @@ function rdConfig:fetchSettings(url,device_id,gateway,optional_data)
     end
 	
 	--If there is a VLAN setting defined we should use it
-	local use_vlan = self.x.get('meshdesk', 'lan', 'use_vlan');
+	local use_vlan = self.x:get('meshdesk', 'lan', 'use_vlan');
 	if(use_vlan == '1')then
-	    local vlan_number = self.x.get('meshdesk','lan', 'vlan_number');
+	    local vlan_number = self.x:get('meshdesk','lan', 'vlan_number');
 	    q_s['vlan_number'] = vlan_number;
 	end
 	
@@ -722,14 +722,14 @@ function rdConfig:prepCaptiveConfig(dns_works,wifi_flag)
     local wifi_flag = wifi_flag or false;
 
     --First we need to get some values that we will use to replace values in the file
-    local id_if         = self.x.get('meshdesk','settings','id_if');
+    local id_if         = self.x:get('meshdesk','settings','id_if');
     local id            = self:getMac(id_if);
-    local protocol      = self.x.get('meshdesk','internet1','protocol');
-    local ip            = self.x.get('meshdesk','internet1','ip');
-    local dns           = self.x.get('meshdesk','internet1','dns');
-    local hardware      = self.x.get('meshdesk','settings','hardware');
-    local http_port     = self.x.get('meshdesk','internet1','http_port');
-    local https_port    = self.x.get('meshdesk','internet1','https_port');
+    local protocol      = self.x:get('meshdesk','internet1','protocol');
+    local ip            = self.x:get('meshdesk','internet1','ip');
+    local dns           = self.x:get('meshdesk','internet1','dns');
+    local hardware      = self.x:get('meshdesk','settings','hardware');
+    local http_port     = self.x:get('meshdesk','internet1','http_port');
+    local https_port    = self.x:get('meshdesk','internet1','https_port');
     local port_string   = '';
     
     if(protocol == 'http')then
@@ -822,10 +822,10 @@ function rdConfig:prepCaptiveConfig(dns_works,wifi_flag)
         --Make it more robust to fallback to IP if DNS is not working 
         if(dns_works == true)then
             self:log('*** DNS WORKS ***');
-            tblCpConfig.config_settings.captive_portals[1].uam_url = protocol..'://'..dns..port_string..'/conf_dev/index.html';    
+            tblCpConfig.config_settings.captive_portals[1].uam_url = protocol..'://'..dns..port_string..'/conf_dev/index:html';    
         else
             self:log('*** DNS NOT WORKING ***');
-            tblCpConfig.config_settings.captive_portals[1].uam_url = protocol..'://'..ip..port_string..'/conf_dev/index.html';
+            tblCpConfig.config_settings.captive_portals[1].uam_url = protocol..'://'..ip..port_string..'/conf_dev/index:html';
         end
         local strNewCpConf = self.json.encode(tblCpConfig);
         self.fs.writefile(cp_config,strNewCpConf);
@@ -860,7 +860,7 @@ function rdConfig:getWiFiInfo()
     connInfo.success    = false;
     --local iwinfo        = self.sys.wifi.getiwinfo('wlan0'); --FIXME WILL THIS STILL BE wlan0 when radio1 is used? please check
     
-    local wbw_device    = self.x.get('meshdesk','web_by_wifi','device');
+    local wbw_device    = self.x:get('meshdesk','web_by_wifi','device');
     local iwinfo        = self.sys.wifi.getiwinfo(wbw_device);
     
     if(iwinfo.channel)then
@@ -876,24 +876,24 @@ end
 
 function rdConfig:setWebByWifiFromTable(wbw)
      local mod_flag = false;
-     local dis = self.x.get('meshdesk','web_by_wifi','disabled');     
+     local dis = self.x:get('meshdesk','web_by_wifi','disabled');     
      for k, v in pairs(wbw) do
-        local c_val = self.x.get('meshdesk','web_by_wifi',k);
+        local c_val = self.x:get('meshdesk','web_by_wifi',k);
         local n_val = v;
         if(c_val ~= nil)then           
             if(c_val ~= n_val)then -- Only if there are changes
                 self:log('==WBW== change '..c_val.." to "..n_val);
-                self.x.set('meshdesk','web_by_wifi',k,n_val);
+                self.x:set('meshdesk','web_by_wifi',k,n_val);
                 mod_flag = true;
             end
         else
             self:log('==WBW== addition '..n_val);
-            self.x.set('meshdesk','web_by_wifi',k,n_val);
+            self.x:set('meshdesk','web_by_wifi',k,n_val);
             mod_flag = true;
         end
     end
     
-    self.x.foreach('meshdesk', 'wifi-iface', function(a)
+    self.x:foreach('meshdesk', 'wifi-iface', function(a)
         if(a['.name'] == 'web_by_wifi')then
             for key, val in pairs(a) do
                 if(string.find(key, '.', 1, true) == nil)then
@@ -902,7 +902,7 @@ function rdConfig:setWebByWifiFromTable(wbw)
                         self:log('==WBW== keep '..key);
                     else
                         self:log('==WBW== delete '..key);
-                        self.x.delete('meshdesk','web_by_wifi',key);
+                        self.x:delete('meshdesk','web_by_wifi',key);
                         mod_flag = true;   
                     end
                 end
@@ -912,27 +912,27 @@ function rdConfig:setWebByWifiFromTable(wbw)
     
     
     if(dis == '1')then
-        self.x.set('meshdesk','web_by_wifi','disabled','0'); --Enable it
+        self.x:set('meshdesk','web_by_wifi','disabled','0'); --Enable it
         mod_flag = true;
     end
            
     if(mod_flag == true)then
-        self.x.set('meshdesk','web_by_wifi','disabled','0'); --Enable it
-        self.x.commit('meshdesk');
+        self.x:set('meshdesk','web_by_wifi','disabled','0'); --Enable it
+        self.x:commit('meshdesk');
     end
 end
 
 function rdConfig:disableWebByWifi()
-    local c_dis = self.x.get('meshdesk','web_by_wifi','disabled');
+    local c_dis = self.x:get('meshdesk','web_by_wifi','disabled');
     if(c_dis ~= '1')then
         self:log('==WBW== found to be '..c_dis..' need to disable it');
-        self.x.set('meshdesk','web_by_wifi','disabled','1');
-        self.x.commit('meshdesk');    
+        self.x:set('meshdesk','web_by_wifi','disabled','1');
+        self.x:commit('meshdesk');    
     end    
 end
 
 function rdConfig:ignoreWebByWifiCheck()
-    local config_file	    = self.x.get('meshdesk','settings','config_file');
+    local config_file	    = self.x:get('meshdesk','settings','config_file');
     local contents          = self.fs.readfile(config_file);
 	local tblConfig         = self.json.decode(contents);	
 	local ignore            = true;
@@ -947,8 +947,8 @@ function rdConfig:ignoreWebByWifiCheck()
         end
     end
     
-    self:log('==WBW== WBW disabled setting setting '..self.x.get('meshdesk','web_by_wifi','disabled'));   
-    if(self.x.get('meshdesk','web_by_wifi','disabled') == '0')then
+    self:log('==WBW== WBW disabled setting setting '..self.x:get('meshdesk','web_by_wifi','disabled'));   
+    if(self.x:get('meshdesk','web_by_wifi','disabled') == '0')then
         ignore = false; --its not disabled thus we can't ignore it
         self:log('==WBW== WBW DO NOT IGNORE');
     end 

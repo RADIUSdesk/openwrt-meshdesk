@@ -82,26 +82,26 @@ function rdWireless.__includeWebByWifi(self)
     -- We need to find out if we perhaps also have wifi-iface configured and if it is enabled add it to the settings
     local iface_name_md         = 'web_by_wifi';
     local iface_name_wireless   = 'web_by_w'; 
-    self.x.foreach('meshdesk','wifi-iface', 
+    self.x:foreach('meshdesk','wifi-iface', 
 		function(a)
 		    if(a['.name'] == iface_name_md)then
 		        if(a['disabled'] ~= nil)then
 		            if(a['disabled'] == '0')then
 		                --Create it
-		                self.x.set('wireless', iface_name_wireless, "wifi-iface")
-	                    self.x.commit('wireless')
+		                self.x:set('wireless', iface_name_wireless, "wifi-iface")
+	                    self.x:commit('wireless')
 		                for key, val in pairs(a) do
 		                    if(string.find(key, '.', 1, true) == nil)then
 		                        if self.w_items[key] then --Only those in the list
-	                                self.x.set('wireless', iface_name_wireless,key, val)
+	                                self.x:set('wireless', iface_name_wireless,key, val)
 	                                if(key == 'device')then
-	                                    self.x.set('wireless',val,'disabled','0') --Enable the specified radio also
+	                                    self.x:set('wireless',val,'disabled','0') --Enable the specified radio also
 	                                end
 	                            end
 	                        end
 	                    end
-	                    self.x.save('wireless');
-	                    self.x.commit('wireless');
+	                    self.x:save('wireless');
+	                    self.x:commit('wireless');
 	                    
 	                    local wifi_proto = 'dhcp';
 	                    if(a['proto'] ~= nil)then
@@ -109,20 +109,20 @@ function rdWireless.__includeWebByWifi(self)
 	                    end
 	                    
 	                    --Also include the configs in the netwok config
-	                    self.x.set('network', iface_name_wireless, "interface")
-	                    self.x.commit('network')
-	                    self.x.set('network', iface_name_wireless,'proto', wifi_proto)
-	                    self.x.commit('network')
+	                    self.x:set('network', iface_name_wireless, "interface")
+	                    self.x:commit('network')
+	                    self.x:set('network', iface_name_wireless,'proto', wifi_proto)
+	                    self.x:commit('network')
 	                    
 	                    if(wifi_proto == 'static')then
 	                        if(a['ipaddr'] ~= nil)then
-	                            self.x.set('network', iface_name_wireless,'ipaddr', a['ipaddr']);
+	                            self.x:set('network', iface_name_wireless,'ipaddr', a['ipaddr']);
 	                        end
 	                        if(a['netmask'] ~= nil)then
-	                            self.x.set('network', iface_name_wireless,'netmask', a['netmask']);
+	                            self.x:set('network', iface_name_wireless,'netmask', a['netmask']);
 	                        end
 	                        if(a['gateway'] ~= nil)then
-	                            self.x.set('network', iface_name_wireless,'gateway', a['gateway']);
+	                            self.x:set('network', iface_name_wireless,'gateway', a['gateway']);
 	                        end
 	                        local dns = '';
 	                        if(a['dns_1'] ~= nil)then
@@ -132,22 +132,22 @@ function rdWireless.__includeWebByWifi(self)
 	                            dns = dns..' '..a['dns_2'];
 	                        end	                        
 	                        if(dns ~= '')then
-	                            self.x.set('network', iface_name_wireless,'dns', dns);
+	                            self.x:set('network', iface_name_wireless,'dns', dns);
 	                        end	                        	                    
 	                    end
 	                    
 	                    if(wifi_proto == 'pppoe')then
 	                        if(a['username'] ~= nil)then
-	                            self.x.set('network', iface_name_wireless,'username', a['username']);
+	                            self.x:set('network', iface_name_wireless,'username', a['username']);
 	                        end
 	                        if(a['password'] ~= nil)then
-	                            self.x.set('network', iface_name_wireless,'password', a['password']);
+	                            self.x:set('network', iface_name_wireless,'password', a['password']);
 	                        end
 	                        if(a['mac'] ~= nil)then
-	                            self.x.set('network', iface_name_wireless,'mac', a['mac']);
+	                            self.x:set('network', iface_name_wireless,'mac', a['mac']);
 	                        end
 	                        if(a['mtu'] ~= nil)then
-	                            self.x.set('network', iface_name_wireless,'mtu', a['mtu']);
+	                            self.x:set('network', iface_name_wireless,'mtu', a['mtu']);
 	                        end
 	                        local dns = '';
 	                        if(a['dns_1'] ~= nil)then
@@ -157,22 +157,22 @@ function rdWireless.__includeWebByWifi(self)
 	                            dns = dns..' '..a['dns_2'];
 	                        end	                        
 	                        if(dns ~= '')then
-	                            self.x.set('network', iface_name_wireless,'dns', dns);
+	                            self.x:set('network', iface_name_wireless,'dns', dns);
 	                        end	                        	                    
 	                    end
-	                    self.x.commit('network');
+	                    self.x:commit('network');
 	                    	                    
-	                    self.x.set('network', 'stabridge', "interface")
-	                    self.x.commit('network')
-	                    self.x.set('network', 'stabridge','proto', 'relay')
-	                    self.x.set('network', 'stabridge','network', 'lan '..iface_name_wireless)
+	                    self.x:set('network', 'stabridge', "interface")
+	                    self.x:commit('network')
+	                    self.x:set('network', 'stabridge','proto', 'relay')
+	                    self.x:set('network', 'stabridge','network', 'lan '..iface_name_wireless)
 	                    
 	                    --Also set a static address on the 'lan'
-	                    self.x.set('network', 'lan','proto', 'static')
-	                    self.x.set('network', 'lan','ipaddr','10.50.50.50')
-	                    self.x.set('network', 'lan','netmask','255.255.255.0')
+	                    self.x:set('network', 'lan','proto', 'static')
+	                    self.x:set('network', 'lan','ipaddr','10.50.50.50')
+	                    self.x:set('network', 'lan','netmask','255.255.255.0')
 	                    
-	                    self.x.commit('network')
+	                    self.x:commit('network')
 	                    
 		            end
 		        end
@@ -185,7 +185,7 @@ function rdWireless.__newWireless(self)
 	self:log("Removing "..self.config)
 	os.execute("rm "..self.config)
 	--Check if there are a basic file available for this hardware
-	local hardware = self.x.get('meshdesk','settings','hardware')
+	local hardware = self.x:get('meshdesk','settings','hardware')
 	if(hardware ~= nil)then
 		local name = '/etc/MESHdesk/files/'..hardware..'/wireless'
 		local f=io.open(name,"r")
@@ -218,7 +218,7 @@ end
 function rdWireless.__connectClient(self,radio_number)
 
 	--We can set up a client connection on any of the available radios
-	local client_settings = self.x.get_all('meshdesk','wifi_client')
+	local client_settings = self.x:get_all('meshdesk','wifi_client')
 	if(client_settings ~= nil)then
 		self:log("Starting clean")
 					
@@ -227,9 +227,9 @@ function rdWireless.__connectClient(self,radio_number)
 
 		local name		= client_settings['.name'].."_"..radio_number
 		self:log("Enabling radio on "..device)
-		self.x.set('wireless',device,'disabled',0)
+		self.x:set('wireless',device,'disabled',0)
 		self:log("Add wifi-iface "..name)
-		self.x.set('wireless',name,'wifi-iface')
+		self.x:set('wireless',name,'wifi-iface')
 		for k, v in pairs(client_settings)do                        
 			if(not(string.find(k,'^%.')))then -- we are not interested in the hidden values.
 			        --=====
@@ -237,18 +237,18 @@ function rdWireless.__connectClient(self,radio_number)
 			            v = mesh_name;
 			        end
 			        --=====
-		        	self.x.set('wireless',name,k,v)                                                             
+		        	self.x:set('wireless',name,k,v)                                                             
 		      	end                                                                             
 		end
 
 		-- We removed network and device from the meshdesk config file in order to support multiple radios --
 
-		--self.x.set('wireless',	name,'ifname',name..'.'..radio_number)	--give it a unique interface name
+		--self.x:set('wireless',	name,'ifname',name..'.'..radio_number)	--give it a unique interface name
         --(ifname does not belong in the Wireless config file. Prior to Chaos Calmer the releases were more forgiving... now we need to remove it)
 
-		self.x.set('wireless',	name,'device',device)					--device typically radio0 or radio1
-		self.x.set('wireless',	name,'network','client_'..radio_number) --give it a unique network name
-		self.x.commit('wireless')
+		self.x:set('wireless',	name,'device',device)					--device typically radio0 or radio1
+		self.x:set('wireless',	name,'network','client_'..radio_number) --give it a unique network name
+		self.x:commit('wireless')
 		self:log("Reload the network and restart wifi")
 		os.execute("/etc/init.d/network reload");
 	end
@@ -256,7 +256,7 @@ end
 
 function rdWireless.__getRadioCount(self)
 	local radio_count = 0 --begin empty
-	self.x.foreach('wireless','wifi-device', 
+	self.x:foreach('wireless','wifi-device', 
 	function(a)
 		radio_count = radio_count +1;
 	end)
@@ -306,7 +306,7 @@ function rdWireless.__configureFromTable(self,tbl)
 		end
 		-- Now we hava gathered the info
 		self:log("Configuring "..entry_type..' '..entry_name)
-		self.x.set('wireless',entry_name,entry_type)
+		self.x:set('wireless',entry_name,entry_type)
 		
 		local l	= {}
 		for i, list in ipairs(lists) do
@@ -318,8 +318,8 @@ function rdWireless.__configureFromTable(self,tbl)
 			table.insert(l[list_item], value)			
 		end
 		for key, val in pairs(l) do
-			self.x.set('wireless',entry_name,key, val)
-            self.x.commit('wireless')
+			self.x:set('wireless',entry_name,key, val)
+            self.x:commit('wireless')
 		end
 		
 		for key, val in pairs(options) do
@@ -329,15 +329,15 @@ function rdWireless.__configureFromTable(self,tbl)
 				if(val)then
 					bool_val = "1"
 				end
-				self.x.set('wireless',entry_name,key,bool_val)
+				self.x:set('wireless',entry_name,key,bool_val)
 			else
-				self.x.set('wireless',entry_name,key,val)
+				self.x:set('wireless',entry_name,key,val)
 			end
-            self.x.commit('wireless')
+            self.x:commit('wireless')
 		end
 	end
-	self.x.save('wireless')
-	self.x.commit('wireless')
+	self.x:save('wireless')
+	self.x:commit('wireless')
 end
 
 function rdWireless.__readAll(self,file)

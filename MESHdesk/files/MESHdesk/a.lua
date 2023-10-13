@@ -23,9 +23,9 @@ local l			        = rdLogger();
 local ext 			    = rdExternal();
 local n                 = rdNetwork();
 local c 				= rdConfig();
-local lan_up_file       = uci_cursor.get('meshdesk','settings','lan_up_file');
-local wifi_up_file      = uci_cursor.get('meshdesk','settings','wifi_up_file');
-local wbw_up_file       = uci_cursor.get('meshdesk','settings','wbw_up_file');
+local lan_up_file       = uci_cursor:get('meshdesk','settings','lan_up_file');
+local wifi_up_file      = uci_cursor:get('meshdesk','settings','wifi_up_file');
+local wbw_up_file       = uci_cursor:get('meshdesk','settings','wbw_up_file');
 
 --Rerun Checks on Failure
 config_success          = false;
@@ -91,14 +91,14 @@ function try_wifi()
 	--Determine how many radios there are
 	local wireless = rdWireless();
 	wireless:newWireless();
-	local config_file = uci_cursor.get('meshdesk','settings','config_file');
+	local config_file = uci_cursor:get('meshdesk','settings','config_file');
 	--After this we can fetch a count of the radios
 	radio_count = wireless:getRadioCount()
 	log("Try to fetch the settings through the WiFi radios")
 	log("Device has "..radio_count.." radios")
 	local radio = 0 --first radio
 	
-	if(uci_cursor.get('meshdesk','settings','skip_radio_0') == '1')then
+	if(uci_cursor:get('meshdesk','settings','skip_radio_0') == '1')then
 	    radio = 1
 	end 
 	
@@ -146,7 +146,7 @@ function wait_for_wifi(radio_number)
 	local start_time	= os.time()
 	local loop			= true
 	local wifi_is_up	= false --default
-	local wait_wifi_counter = tonumber(uci_cursor.get('meshdesk','settings','wifi_timeout'));
+	local wait_wifi_counter = tonumber(uci_cursor:get('meshdesk','settings','wifi_timeout'));
 	
 	while (wait_wifi_counter > 0) do
 		sleep(sleep_time);
@@ -171,7 +171,7 @@ function wait_for_wbw()
 	local start_time	= os.time()
 	local loop			= true
 	local wbw_is_up	    = false --default
-	local wait_wbw_counter = tonumber(uci_cursor.get('meshdesk','settings','wifi_timeout'));
+	local wait_wbw_counter = tonumber(uci_cursor:get('meshdesk','settings','wifi_timeout'));
 	
 	os.execute("/etc/MESHdesk/main_led.lua start wbw");
 	
@@ -200,7 +200,7 @@ function wait_for_wbw()
 end
 
 function check_for_previous_settings()
-    local previous_config_file 	= uci_cursor.get('meshdesk','settings','previous_config_file');
+    local previous_config_file 	= uci_cursor:get('meshdesk','settings','previous_config_file');
     if(file_exists(previous_config_file))then
         print("Using previous settings")
         log("Using previous settings");
@@ -215,7 +215,7 @@ end
 function try_web_by_wifi()
     local found_config = false;
     --It might be that the device have web-by-wifi enabled
-    local w_b_w = uci_cursor.get('meshdesk','web_by_wifi','disabled');
+    local w_b_w = uci_cursor:get('meshdesk','web_by_wifi','disabled');
     if(w_b_w)then
         if(w_b_w == '0')then
             log("WEB BY WIFI IS ACTIVE");
@@ -239,8 +239,8 @@ function try_web_by_wifi()
 end
 
 function try_for_connectivity()
-    local config_file	    = uci_cursor.get('meshdesk','settings','config_file');
-    local cp_config_file	= uci_cursor.get('meshdesk','settings','cp_config_file');
+    local config_file	    = uci_cursor:get('meshdesk','settings','config_file');
+    local cp_config_file	= uci_cursor:get('meshdesk','settings','cp_config_file');
     local wifi_captive      = false;
     local found_config      = false;
  
@@ -302,7 +302,7 @@ end
 --======================================
 
 --== START HERE ==
-local disabled = uci_cursor.get('meshdesk','internet1','disabled');                                                                          
+local disabled = uci_cursor:get('meshdesk','internet1','disabled');                                                                          
 if(disabled)then                                                          
         if(disabled == '1')then                                           
                 os.exit();                                                

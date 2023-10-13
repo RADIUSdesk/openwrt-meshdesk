@@ -30,27 +30,27 @@ function rdLocalMesh:doGateway()
     local mac   = rdLocalMesh:_getMac();
     local name  = "Local Gateway",
     
-    self.x.foreach("local_mesh", "member", function(s) 
+    self.x:foreach("local_mesh", "member", function(s) 
         if(s['mac'] == mac)then
             found = true;
         end
     end);
       
     if not found then
-        local member    = self.x.add("local_mesh", "member")
-		self.x.set('local_mesh',member,"human_name",name);
-		self.x.set('local_mesh',member,'mac',mac);
-		self.x.set('local_mesh',member,'role','gateway');
-		self.x.set('local_mesh',member,'number_in_mesh',1);
-		self.x.commit('local_mesh');   
+        local member    = self.x:add("local_mesh", "member")
+		self.x:set('local_mesh',member,"human_name",name);
+		self.x:set('local_mesh',member,'mac',mac);
+		self.x:set('local_mesh',member,'role','gateway');
+		self.x:set('local_mesh',member,'number_in_mesh',1);
+		self.x:commit('local_mesh');   
     end 
     
     --Next we will use /etc/MESHdesk/configs/local_config_gateway.json 
     --Apply our unique settings to it and create /etc/MESHdesk/configs/local_config.json
     
     local mes_id    = rdLocalMesh:_getMac('eth0','_');
-    local mesh_name = self.x.get('meshdesk','settings','local_network');
-    local ssid      = self.x.get('meshdesk','settings','local_ssid');
+    local mesh_name = self.x:get('meshdesk','settings','local_network');
+    local ssid      = self.x:get('meshdesk','settings','local_ssid');
     
     local f = assert(io.open('/etc/MESHdesk/configs/local_config_gateway.json', "r"))
     local t = f:read("*all")

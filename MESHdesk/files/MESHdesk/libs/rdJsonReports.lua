@@ -37,8 +37,8 @@ function rdJsonReports:rdJsonReports()
     self.util       = require('luci.util');
     self.sys        = require('luci.sys');
    
-    self.new_file   = self.x.get('meshdesk', 'settings','config_file');
-    self.old_file   = self.x.get('meshdesk', 'settings','previous_config_file');
+    self.new_file   = self.x:get('meshdesk', 'settings','config_file');
+    self.old_file   = self.x:get('meshdesk', 'settings','previous_config_file');
     
 end
         

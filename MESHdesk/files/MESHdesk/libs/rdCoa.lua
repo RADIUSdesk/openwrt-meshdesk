@@ -18,7 +18,7 @@ function rdCoa:rdCoa()
 	self.logger	    = rdLogger()
 	self.network	= rdNetwork()
 	self.x		    = uci.cursor()
-	local id_if     = self.x.get('meshdesk','settings','id_if');	
+	local id_if     = self.x:get('meshdesk','settings','id_if');	
 	self.id_if		= self.network:getMac(id_if);
 	
 	self.util       = require("luci.util");
@@ -53,18 +53,18 @@ end
 
 function rdCoa._check(self)
 	local curl_data = '{"mac":"'..self.id_if..'"}'
-    local proto 	= self.x.get('meshdesk','internet1','protocol')
+    local proto 	= self.x:get('meshdesk','internet1','protocol')
     local url       = self.coaForMac;
-    local server    = self.x.get('meshdesk','internet1','ip')
+    local server    = self.x:get('meshdesk','internet1','ip')
     
 	local local_ip_v6   = self.network:getIpV6ForInterface('br-lan');
 	if(local_ip_v6)then
-	    server      = self.x.get("meshdesk", "internet1", "ip_6");
+	    server      = self.x:get("meshdesk", "internet1", "ip_6");
 	    server      = '['..server..']';
 	end
 	
-	local http_port     = self.x.get('meshdesk','internet1','http_port');
-    local https_port    = self.x.get('meshdesk','internet1','https_port');
+	local http_port     = self.x:get('meshdesk','internet1','http_port');
+    local https_port    = self.x:get('meshdesk','internet1','https_port');
     local port_string   = '/';
     
     if(proto == 'http')then
@@ -147,11 +147,11 @@ function rdCoa._executeActions(self,actions)
 	    local json_results  = self.json.encode(table_results);
 	    local curl_data     = '{"mac":"'..self.id_if..'","coa_results":'..json_results..'}';
 	    
-        local proto 	    = self.x.get('meshdesk','internet1','protocol')
+        local proto 	    = self.x:get('meshdesk','internet1','protocol')
         local url           = self.coaReply;
-        local server        = self.x.get('meshdesk','internet1','ip');  
-        local http_port     = self.x.get('meshdesk','internet1','http_port');
-        local https_port    = self.x.get('meshdesk','internet1','https_port');
+        local server        = self.x:get('meshdesk','internet1','ip');  
+        local http_port     = self.x:get('meshdesk','internet1','http_port');
+        local https_port    = self.x:get('meshdesk','internet1','https_port');
         local port_string   = '/';
         
         if(proto == 'http')then
@@ -169,7 +169,7 @@ function rdCoa._executeActions(self,actions)
         
 	    local local_ip_v6   = self.network:getIpV6ForInterface('br-lan');
 	    if(local_ip_v6)then
-	        server      = self.x.get("meshdesk", "internet1", "ip_6");
+	        server      = self.x:get("meshdesk", "internet1", "ip_6");
 	        server      = '['..server..']';
 	    end
 	    

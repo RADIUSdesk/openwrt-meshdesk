@@ -69,8 +69,8 @@ function rdMorse:rdMorse()
 	--Determine the LED to use--
 	--This is specified in the meshdesk config file under settings hardware
 	--and has to match a hardware definition in the same file
-	local hardware = self.x.get('meshdesk', 'settings','hardware')
-	self.x.foreach('meshdesk', 'hardware',
+	local hardware = self.x:get('meshdesk', 'settings','hardware')
+	self.x:foreach('meshdesk', 'hardware',
 		function(a)
 			if(a['.name'] == hardware)then
 				self.led = a['morse_led']

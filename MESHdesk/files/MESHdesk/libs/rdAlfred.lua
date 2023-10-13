@@ -47,27 +47,27 @@ end
 
 function rdAlfred:masterEnableAndStart()
 
-    local interface = self.x.get('alfred','alfred','interface')
+    local interface = self.x:get('alfred','alfred','interface')
     if(interface ~= self.interface)then
-        self.x.set('alfred','alfred','interface',self.interface)
+        self.x:set('alfred','alfred','interface',self.interface)
     end
 
-    local mode      = self.x.get('alfred','alfred','mode')
+    local mode      = self.x:get('alfred','alfred','mode')
     if(mode ~= 'master')then
-        self.x.set('alfred','alfred','mode','master')
+        self.x:set('alfred','alfred','mode','master')
     end
 
-    local disabled  = self.x.get('alfred','alfred','disabled')
+    local disabled  = self.x:get('alfred','alfred','disabled')
     if(disabled ~= '0')then
-        self.x.set('alfred','alfred','disabled','0')
+        self.x:set('alfred','alfred','disabled','0')
     end
       
 	--Enable this regardless
-   	self.x.set('alfred','alfred','start_vis','1')
+   	self.x:set('alfred','alfred','start_vis','1')
    	--Set this regardless
-   	self.x.set('alfred','alfred','batmanif','bat0')
+   	self.x:set('alfred','alfred','batmanif','bat0')
 
-    self.x.commit('alfred')
+    self.x:commit('alfred')
 
 	--Remove the /etc/alfred/bat-hosts.lua file since installer fails
 	local f=io.open(self.bat_hosts,"r")                                                   
@@ -84,37 +84,37 @@ end
 
 function rdAlfred:slaveEnableAndStart()
 
-    local interface = self.x.get('alfred','alfred','interface')
+    local interface = self.x:get('alfred','alfred','interface')
     if(interface ~= self.interface)then
-        self.x.set('alfred','alfred','interface', self.interface)
+        self.x:set('alfred','alfred','interface', self.interface)
     end
 
-    local mode  = self.x.get('alfred','alfred','mode')
+    local mode  = self.x:get('alfred','alfred','mode')
     --Make it master due to crashes / reboots
     
     --FIXME 20/12/17 We try a work-around - enable the slave mode again
     if(mode ~= 'slave')then
-        self.x.set('alfred','alfred','mode','slave')
+        self.x:set('alfred','alfred','mode','slave')
     end
     
     --FIXME We disable the initial workaround
     --if(mode ~= 'master')then
-    --    self.x.set('alfred','alfred','mode','master')
+    --    self.x:set('alfred','alfred','mode','master')
     --end
     --FIXME END
 
-    local disabled  = self.x.get('alfred','alfred','disabled')
+    local disabled  = self.x:get('alfred','alfred','disabled')
     if(disabled ~= '0')then
-        self.x.set('alfred','alfred','disabled','0')
+        self.x:set('alfred','alfred','disabled','0')
     end
 
 	--We also need to start the vis server so all can join in
     --Enable this regardless
-   	self.x.set('alfred','alfred','start_vis','1')
+   	self.x:set('alfred','alfred','start_vis','1')
    	--Set this regardless
-   	self.x.set('alfred','alfred','batmanif','bat0')
+   	self.x:set('alfred','alfred','batmanif','bat0')
 
-    self.x.commit('alfred')
+    self.x:commit('alfred')
 	--Remove the /etc/alfred/bat-hosts.lua file since installer fails
 	local f=io.open(self.bat_hosts,"r")                                                   
     if f~=nil then 
@@ -131,27 +131,27 @@ end
 --Because we are not always running Meshes!
 function rdAlfred:masterNoBatmanEnableAndStart()
 
-    local interface = self.x.get('alfred','alfred','interface')
+    local interface = self.x:get('alfred','alfred','interface')
     if(interface ~= self.no_mesh_interface)then
-        self.x.set('alfred','alfred','interface',self.no_mesh_interface)
+        self.x:set('alfred','alfred','interface',self.no_mesh_interface)
     end
 
-    local mode      = self.x.get('alfred','alfred','mode')
+    local mode      = self.x:get('alfred','alfred','mode')
     if(mode ~= 'master')then
-        self.x.set('alfred','alfred','mode','master')
+        self.x:set('alfred','alfred','mode','master')
     end
 
-    local disabled  = self.x.get('alfred','alfred','disabled')
+    local disabled  = self.x:get('alfred','alfred','disabled')
     if(disabled ~= '0')then
-        self.x.set('alfred','alfred','disabled','0')
+        self.x:set('alfred','alfred','disabled','0')
     end
       
 	--Disable this regardless
-   	self.x.set('alfred','alfred','start_vis','0')
+   	self.x:set('alfred','alfred','start_vis','0')
    	--Set this to none since we don't use mesh
-   	self.x.set('alfred','alfred','batmanif','none')
+   	self.x:set('alfred','alfred','batmanif','none')
 
-    self.x.commit('alfred')
+    self.x:commit('alfred')
 
 	--Remove the /etc/alfred/bat-hosts.lua file since installer fails
 	local f=io.open(self.bat_hosts,"r")                                                   
@@ -169,27 +169,27 @@ end
 --Because we are not always running Meshes!
 function rdAlfred:slaveNoBatmanEnableAndStart()
 
-    local interface = self.x.get('alfred','alfred','interface')
+    local interface = self.x:get('alfred','alfred','interface')
     if(interface ~= self.no_mesh_interface)then
-        self.x.set('alfred','alfred','interface',self.no_mesh_interface)
+        self.x:set('alfred','alfred','interface',self.no_mesh_interface)
     end
 
-    local mode      = self.x.get('alfred','alfred','mode')
+    local mode      = self.x:get('alfred','alfred','mode')
     if(mode ~= 'slave')then
-        self.x.set('alfred','alfred','mode','slave')
+        self.x:set('alfred','alfred','mode','slave')
     end
 
-    local disabled  = self.x.get('alfred','alfred','disabled')
+    local disabled  = self.x:get('alfred','alfred','disabled')
     if(disabled ~= '0')then
-        self.x.set('alfred','alfred','disabled','0')
+        self.x:set('alfred','alfred','disabled','0')
     end
       
 	--Disable this regardless
-   	self.x.set('alfred','alfred','start_vis','0')
+   	self.x:set('alfred','alfred','start_vis','0')
    	--Set this to none since we don't use mesh
-   	self.x.set('alfred','alfred','batmanif','none')
+   	self.x:set('alfred','alfred','batmanif','none')
 
-    self.x.commit('alfred')
+    self.x:commit('alfred')
 
 	--Remove the /etc/alfred/bat-hosts.lua file since installer fails
 	local f=io.open(self.bat_hosts,"r")                                                   

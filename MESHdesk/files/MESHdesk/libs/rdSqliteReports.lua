@@ -25,8 +25,8 @@ function rdSqliteReports:rdSqliteReports()
     self.tablesCreated	= false;
     self.max_rows   = 5000;
     
-    self.new_file   = self.x.get('meshdesk', 'settings','config_file');
-    self.old_file   = self.x.get('meshdesk', 'settings','previous_config_file');
+    self.new_file   = self.x:get('meshdesk', 'settings','config_file');
+    self.old_file   = self.x:get('meshdesk', 'settings','previous_config_file');
     
 end
         

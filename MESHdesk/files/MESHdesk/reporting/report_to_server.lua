@@ -29,8 +29,8 @@ function file_exists(name)
 end
 
 function lightReport()
-    local proto     = x.get("meshdesk", "reporting", "report_adv_proto");
-    local url       = x.get("meshdesk", "internet1", "status_url");
+    local proto     = x:get("meshdesk", "reporting", "report_adv_proto");
+    local url       = x:get("meshdesk", "internet1", "status_url");
     url             = url.."?_dc="..os.time(); 
     
     local server_tbl= config:getIpForHostname();
@@ -41,12 +41,12 @@ function lightReport()
  
 	local local_ip_v6   = network:getIpV6ForInterface('br-lan');
 	if(local_ip_v6)then
-	    server      = x.get("meshdesk", "internet1", "ip_6");
+	    server      = x:get("meshdesk", "internet1", "ip_6");
 	    server      = '['..server..']';
 	end
 	
-	local http_port     = x.get('meshdesk','internet1','http_port');
-    local https_port    = x.get('meshdesk','internet1','https_port');
+	local http_port     = x:get('meshdesk','internet1','http_port');
+    local https_port    = x:get('meshdesk','internet1','https_port');
     local port_string   = '/';
     
     if(proto == 'http')then
@@ -64,7 +64,7 @@ function lightReport()
     local query     = proto .. "://" .. server .. port_string .. url;
     print(query);
     
-    local id_if = x.get('meshdesk','settings','id_if');
+    local id_if = x:get('meshdesk','settings','id_if');
     local id    = network:getMac(id_if);
     local mode  = network:getMode();
     local curl_data= '{"report_type":"light","mac":"'..id..'","mode":"'..mode..'"}';
@@ -84,7 +84,7 @@ function lightReport()
     end 
         
     --WBW--
-    local wbw_dis   = x.get('meshdesk','web_by_wifi','disabled');
+    local wbw_dis   = x:get('meshdesk','web_by_wifi','disabled');
     if(wbw_dis == '0')then
         print("WBW Active find detail");
         local wbw_table     = fetchWbwInfo();
@@ -97,7 +97,7 @@ function lightReport()
     --END WBW--
     
     --QMI--
-    local conf_file = x.get('meshdesk', 'settings','config_file');
+    local conf_file = x:get('meshdesk', 'settings','config_file');
     local f_conf    = nfs.access(conf_file);   
     if f_conf then      
         local contents  = nfs.readfile(conf_file);        
@@ -144,7 +144,7 @@ function fullReport()
     end
     -- END Vis Info -- 
     
-    local id_if = x.get('meshdesk','settings','id_if');
+    local id_if = x:get('meshdesk','settings','id_if');
     local id    = network:getMac(id_if);
     local mode  = network:getMode();
       
@@ -181,7 +181,7 @@ function fullReport()
                                 --Add The MAC
                                 local uci   = require("uci");
                                 
-                                local id_if = x.get('meshdesk','settings','id_if');
+                                local id_if = x:get('meshdesk','settings','id_if');
                                 local id    = network:getMac(id_if);
                                 lan_info['mac'] = id;                   
                                 s_lan_info = j.encode(lan_info);
@@ -207,7 +207,7 @@ function fullReport()
                                 --Add The MAC
                                 local uci   = require("uci");
                                 
-                                local id_if = x.get('meshdesk','settings','id_if');
+                                local id_if = x:get('meshdesk','settings','id_if');
                                 local id    = network:getMac(id_if);
                                 lan_info['mac'] = id;                   
                                 s_lan_info = j.encode(lan_info);
@@ -230,7 +230,7 @@ function fullReport()
                         end
                         --Add The MAC
                         local uci   = require("uci");    
-                        local id_if = x.get('meshdesk','settings','id_if');
+                        local id_if = x:get('meshdesk','settings','id_if');
                         local id    = network:getMac(id_if);
                         lan_info['mac'] = id;                   
                         s_lan_info = j.encode(lan_info);
@@ -251,7 +251,7 @@ function fullReport()
                         end
                         --Add The MAC
                         local uci   = require("uci");    
-                        local id_if = x.get('meshdesk','settings','id_if');
+                        local id_if = x:get('meshdesk','settings','id_if');
                         local id    = network:getMac(id_if);
                         lan_info['mac'] = id;                   
                         s_lan_info = j.encode(lan_info);
@@ -264,9 +264,9 @@ function fullReport()
         curl_data= '{"report_type":"full","unix_timestamp":'..ts..',"mac":"'..id..'",'..n_stats..','..s_stats..','..'"lan_info":'..s_lan_info..',"vis":'..vis_string..',"gateway":"'..gateway..'","mode":"'..mode..'"}';
     end
 
-    local proto     = x.get("meshdesk", "reporting", "report_adv_proto");
-    local mode      = x.get("meshdesk", "internet1", "mode");
-    local url       = x.get("meshdesk", "internet1", "status_url");
+    local proto     = x:get("meshdesk", "reporting", "report_adv_proto");
+    local mode      = x:get("meshdesk", "internet1", "mode");
+    local url       = x:get("meshdesk", "internet1", "status_url");
     url             = url.."?_dc="..os.time();
     
     local server_tbl= config:getIpForHostname();
@@ -277,12 +277,12 @@ function fullReport()
 
 	local local_ip_v6   = network:getIpV6ForInterface('br-lan');
 	if(local_ip_v6)then
-	    server      = x.get("meshdesk", "internet1", "ip_6");
+	    server      = x:get("meshdesk", "internet1", "ip_6");
 	    server      = '['..server..']';
 	end
 	
-	local http_port     = x.get('meshdesk','internet1','http_port');
-    local https_port    = x.get('meshdesk','internet1','https_port');
+	local http_port     = x:get('meshdesk','internet1','http_port');
+    local https_port    = x:get('meshdesk','internet1','https_port');
     local port_string   = '/';
     
     if(proto == 'http')then
@@ -356,35 +356,35 @@ function checkReporting(r)
         local srvr_full     = tonumber(r.reporting.report_adv_full);
         local srvr_sampl    = tonumber(r.reporting.report_adv_sampling);
         
-        local unit_proto    = x.get("meshdesk", "reporting", "report_adv_proto");
-        local unit_light    = tonumber(x.get("meshdesk", "reporting", "report_adv_light"));
-        local unit_full     = tonumber(x.get("meshdesk", "reporting", "report_adv_full"));
-        local unit_sampl    = tonumber(x.get("meshdesk", "reporting", "report_adv_sampling"));
+        local unit_proto    = x:get("meshdesk", "reporting", "report_adv_proto");
+        local unit_light    = tonumber(x:get("meshdesk", "reporting", "report_adv_light"));
+        local unit_full     = tonumber(x:get("meshdesk", "reporting", "report_adv_full"));
+        local unit_sampl    = tonumber(x:get("meshdesk", "reporting", "report_adv_sampling"));
         
         local changed       = false;
          
         if(unit_proto ~= srvr_proto)then
-            x.set('meshdesk', 'reporting', 'report_adv_proto',srvr_proto);
+            x:set('meshdesk', 'reporting', 'report_adv_proto',srvr_proto);
             changed = true;
         end
         
         if(unit_light ~= srvr_light)then
-            x.set('meshdesk', 'reporting', 'report_adv_light',srvr_light);
+            x:set('meshdesk', 'reporting', 'report_adv_light',srvr_light);
             changed = true;
         end
         
         if(unit_full ~= srvr_full)then
-            x.set('meshdesk', 'reporting', 'report_adv_full',srvr_full);
+            x:set('meshdesk', 'reporting', 'report_adv_full',srvr_full);
             changed = true;
         end
         
         if(unit_sampl ~= srvr_sampl)then
-            x.set('meshdesk', 'reporting', 'report_adv_sampling',srvr_sampl);
+            x:set('meshdesk', 'reporting', 'report_adv_sampling',srvr_sampl);
             changed = true;
         end
 
         if(changed)then
-            x.commit('meshdesk');
+            x:commit('meshdesk');
             --create a flag file to force the heartbeat file to reload its values
             utl.exec("touch /tmp/reporting_changed.txt");
         end
@@ -393,8 +393,8 @@ function checkReporting(r)
 end
 
 function internetLED(state)
-    local hardware  = x.get('meshdesk', 'settings', 'hardware');
-    local led       = x.get('meshdesk', hardware, 'internet_led');
+    local hardware  = x:get('meshdesk', 'settings', 'hardware');
+    local led       = x:get('meshdesk', hardware, 'internet_led');
     os.execute('echo '..state..' > ' .. led );
 end
 
@@ -448,8 +448,8 @@ function checkForContollerReboot(state)
 	--Do this for state == '0' // implicit
 	local uci 		        = require('uci')
 	local x	  		        = uci.cursor()
-	local cnt_auto_reboot 	= x.get('meshdesk', 'settings', 'cnt_auto_reboot')
-	local reboot_time	    = x.get('meshdesk', 'settings', 'cnt_auto_reboot_time')
+	local cnt_auto_reboot 	= x:get('meshdesk', 'settings', 'cnt_auto_reboot')
+	local reboot_time	    = x:get('meshdesk', 'settings', 'cnt_auto_reboot_time')
 	
 	if(cnt_auto_reboot == '1')then
 	    --Check if it is the first time the controller is missing

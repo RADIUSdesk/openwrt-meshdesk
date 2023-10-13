@@ -44,7 +44,7 @@ function updateGateway()
     
     local set_gw       = false;
     local x            = uci.cursor();
-    local status_gw    = x.get("mesh_status", "status", "gateway");
+    local status_gw    = x:get("mesh_status", "status", "gateway");
     local current_gw   = getCurrentGateway();
     
     if(status_gw)then
@@ -57,8 +57,8 @@ function updateGateway()
             if(set_gw)then
                 --Add this one to the "mesh_status"
                  utl.exec("touch /etc/config/mesh_status")
-                 x.set('mesh_status', 'status', 'gateway', set_gw)
-                 x.commit('mesh_status')
+                 x:set('mesh_status', 'status', 'gateway', set_gw)
+                 x:commit('mesh_status')
             end
         end
     else
@@ -67,9 +67,9 @@ function updateGateway()
         if(set_gw)then
             --Add this one to the "mesh_status"
              utl.exec("touch /etc/config/mesh_status")
-             x.set('mesh_status','status','status')
-             x.set('mesh_status', 'status', 'gateway', set_gw)
-             x.commit('mesh_status')
+             x:set('mesh_status','status','status')
+             x:set('mesh_status', 'status', 'gateway', set_gw)
+             x:commit('mesh_status')
         end
     end
     
@@ -159,8 +159,8 @@ function checkForAutoReboot()
 
 	local uci 		= require('uci')
 	local x	  		= uci.cursor()
-	local gw_auto_reboot 	= x.get('meshdesk', 'settings', 'gw_auto_reboot')
-	local reboot_time	= x.get('meshdesk', 'settings', 'gw_auto_reboot_time')
+	local gw_auto_reboot 	= x:get('meshdesk', 'settings', 'gw_auto_reboot')
+	local reboot_time	= x:get('meshdesk', 'settings', 'gw_auto_reboot_time')
 
 	if(gw_auto_reboot == '1')then
 

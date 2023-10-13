@@ -51,7 +51,7 @@ function rdSystemstats._getStats(self)
 	self:log('Getting System stats')
 	local s 	= {}
 
-	local id_if = self.x.get('meshdesk','settings','id_if');
+	local id_if = self.x:get('meshdesk','settings','id_if');
     local id    = self.network:getMac(id_if)                                                                 
 	s['eth0']   = id 
 

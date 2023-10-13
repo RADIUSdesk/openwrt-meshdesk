@@ -6,6 +6,7 @@ package.path = "/etc/MESHdesk/libs/?.lua;" .. package.path;
 local fs    = require('nixio.fs');
 local json  = require("json");
 local uci   = require('uci');
+local uci_cursor = uci.cursor();
 local sys   = require("luci.sys")
 
 require("rdLogger");
@@ -19,11 +20,11 @@ local radio     = 'radio0';
 local res_file  = '/tmp/rogue_report_result.json';
 
 local j         = require("json")
-local proto     = uci.get("meshdesk", "internet1", "protocol");
-local server    = uci.get("meshdesk", "internet1", "ip");
+local proto     = uci_cursor:get("meshdesk", "internet1", "protocol");
+local server    = uci_cursor:get("meshdesk", "internet1", "ip");
 
-local id_if     = uci.get("meshdesk", "settings", "id_if");
-local mode      = uci.get("meshdesk", "settings", "mode");
+local id_if     = uci_cursor:get("meshdesk", "settings", "id_if");
+local mode      = uci_cursor:get("meshdesk", "settings", "mode");
  
 local conf      = rdConfig();
 local mac       = conf:getMac(id_if);
@@ -32,12 +33,12 @@ local n         = rdNetwork();
 local local_ip_v6   = n:getIpV6ForInterface('br-lan');
 
 if(local_ip_v6)then
-    server      = uci.get("meshdesk", "internet1", "ip_6");
+    server      = uci_cursor:get("meshdesk", "internet1", "ip_6");
     server      = '['..server..']';
 end
 
-local http_port     = uci.get('meshdesk','internet1','http_port');
-local https_port    = uci.get('meshdesk','internet1','https_port');
+local http_port     = uci_cursor:get('meshdesk','internet1','http_port');
+local https_port    = uci_cursor:get('meshdesk','internet1','https_port');
 local port_string   = '/';
 
 if(proto == 'http')then

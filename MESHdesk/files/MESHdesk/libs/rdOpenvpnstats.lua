@@ -59,7 +59,7 @@ function rdOpenvpnstats._getStats(self)
     months['Nov']=11;
     months['Dec']=12;
     
-    self.x.foreach('vpn-gateways', 'gateway',
+    self.x:foreach('vpn-gateways', 'gateway',
 		function(s)	
 		    local ipaddr;
 		    local vpn_client_id;

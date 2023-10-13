@@ -26,7 +26,7 @@ function rdActions:rdActions()
 	self.waiting	= 115
 	self.completed	= 116
 	
-	local id_if     = self.x.get('meshdesk','settings','id_if');
+	local id_if     = self.x:get('meshdesk','settings','id_if');
 	
 	self.id_if		= self.network:getMac(id_if)
 	self.server_tbl = self.config:getIpForHostname();
@@ -146,9 +146,9 @@ function rdActions._checkForNewActions(self,waiting,completed)
 end
 
 function rdActions._fetchActions(self)
-    local proto 	= self.x.get('meshdesk','internet1','protocol')
+    local proto 	= self.x:get('meshdesk','internet1','protocol')
     local mode      = self.network:getMode(); 
-    local url       = self.x.get('meshdesk','internet1','actions_url')
+    local url       = self.x:get('meshdesk','internet1','actions_url')
     local curl_data = '{"mac":"'..self.id_if..'","mode":"'..mode..'"}';   
     url             = url.."?_dc="..os.time(); 
            
@@ -159,12 +159,12 @@ function rdActions._fetchActions(self)
     
 	local local_ip_v6   = self.network:getIpV6ForInterface('br-lan');
 	if(local_ip_v6)then
-	    server      = self.x.get("meshdesk", "internet1", "ip_6");
+	    server      = self.x:get("meshdesk", "internet1", "ip_6");
 	    server      = '['..server..']';
 	end
 	
-	local http_port     = self.x.get('meshdesk','internet1','http_port');
-    local https_port    = self.x.get('meshdesk','internet1','https_port');
+	local http_port     = self.x:get('meshdesk','internet1','http_port');
+    local https_port    = self.x:get('meshdesk','internet1','https_port');
     local port_string   = '/';
     
     if(proto == 'http')then
@@ -216,7 +216,7 @@ function rdActions._executeActions(self,actions)
             local r         = self.util.exec(row.command);
             --local curl_data = '{"reply":'..s_reply..',"node_action_id":"'..row.id..'"}'; 
             local curl_data = self.luci_json.stringify({reply=r,node_action_id=row.id,mode=mode}); 
-            local proto 	= self.x.get('meshdesk','internet1','protocol')
+            local proto 	= self.x:get('meshdesk','internet1','protocol')
             print(curl_data);     
             local f,err     = io.open('/tmp/curl_data.txt',"w")
 	        if not f then return print(err) end
@@ -233,12 +233,12 @@ function rdActions._executeActions(self,actions)
                         
 	        local local_ip_v6   = self.network:getIpV6ForInterface('br-lan');
 	        if(local_ip_v6)then
-	            server      = self.x.get("meshdesk", "internet1", "ip_6");
+	            server      = self.x:get("meshdesk", "internet1", "ip_6");
 	            server      = '['..server..']';
 	        end
 	        
-	        local http_port     = self.x.get('meshdesk','internet1','http_port');
-            local https_port    = self.x.get('meshdesk','internet1','https_port');
+	        local http_port     = self.x:get('meshdesk','internet1','http_port');
+            local https_port    = self.x:get('meshdesk','internet1','https_port');
             local port_string   = '/';
             
             if(proto == 'http')then

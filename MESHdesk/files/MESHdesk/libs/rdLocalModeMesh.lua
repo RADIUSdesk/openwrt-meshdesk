@@ -54,24 +54,24 @@ function rdLocalModeMesh._doConfigMode(self)
 
 
 	--Now loop the config file activate ALL the radios
-	self.x.foreach("wireless", "wifi-device", function(s) 
+	self.x:foreach("wireless", "wifi-device", function(s) 
 		table.insert(radio_list, s['.name']);
-		self.x.set("wireless",s['.name'],'disabled',0);
+		self.x:set("wireless",s['.name'],'disabled',0);
 	end);
 
 	local ssid = self:_getSsid()
 
 	--Now loop the config file change all interfaces's SSIDs
-	self.x.foreach("wireless", "wifi-iface", function(s)
-		self.x.set("wireless",s['.name'], 'ssid', ssid);
+	self.x:foreach("wireless", "wifi-iface", function(s)
+		self.x:set("wireless",s['.name'], 'ssid', ssid);
 	end);
-	self.x.commit('wireless');
+	self.x:commit('wireless');
 	os.execute("wifi");
 
 	--Also change the LAN Address to 10.1.2.3 (Easy as 1.2.3)
-	print(self.x.get("network", "lan", "ipaddr"))
-	self.x.set("network", "lan", "ipaddr", "10.1.2.3")
-	self.x.commit("network");
+	print(self.x:get("network", "lan", "ipaddr"))
+	self.x:set("network", "lan", "ipaddr", "10.1.2.3")
+	self.x:commit("network");
 	print("Network changes comitted");
 	self.util.exec("/etc/init.d/network reload");
 	self.util.exec("/etc/init.d/dnsmasq restart");

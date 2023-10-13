@@ -23,7 +23,7 @@ function log(m,p)
 end
 
 function fetch_latest_config()
-    local config_file	    = uci_cursor.get('meshdesk','settings','config_file');
+    local config_file	    = uci_cursor:get('meshdesk','settings','config_file');
     local wifi_captive      = false;
     local found_config      = false;   
     os.execute("/etc/MESHdesk/main_led.lua start lan");

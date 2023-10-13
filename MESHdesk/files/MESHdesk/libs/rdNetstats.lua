@@ -40,8 +40,8 @@ end
 
 function rdNetstats:getEthernet()
 
-	local wifi = self.x.get('meshdesk', 'settings','hardware')
-	self.x.foreach('meshdesk', 'hardware',
+	local wifi = self.x:get('meshdesk', 'settings','hardware')
+	self.x:foreach('meshdesk', 'hardware',
 		function(a)
 			if(a['.name'] == hardware)then
 				self.led = a['morse_led']
@@ -78,7 +78,7 @@ function rdNetstats.__mapEthWithMeshMac(self)
 	--We have to go though each one since anit can have mesh1 running but not mesh0 , or both can be on...
 
 	local m     = {};
-	local id_if = self.x.get('meshdesk','settings','id_if');
+	local id_if = self.x:get('meshdesk','settings','id_if');
     local id    = self.network:getMac(id_if)                                                                           
 	m['eth0']   = id --FIXME The back-end still thinks its eth0 but it can be set in firmware to be another eth
 
@@ -135,12 +135,12 @@ function rdNetstats._getWifi(self)
 	local w 	= {}
 	w['radios']	= {}
 	
-	local id_if = self.x.get('meshdesk','settings','id_if');
+	local id_if = self.x:get('meshdesk','settings','id_if');
     local id    = self.network:getMac(id_if)
     w['eth0']   = id --FIXME The back-end still thinks its eth0 but it can be set in firmware
     
     --DEC 2020 We add a flag for the 9888(/6) to do an alternative wat to get the mesh stations since it seems to have a bug
-    local use_iwinfo = self.x.get('meshdesk','settings','use_iwinfo_for_mesh_stations');
+    local use_iwinfo = self.x:get('meshdesk','settings','use_iwinfo_for_mesh_stations');
 	
 	local phy 	= nil
 	local i_info	= {}
@@ -341,7 +341,7 @@ end
 
 function rdNetstats._getSsidForInterface(self,interface)
 	local retval = nil
-	self.x.foreach('wireless','wifi-iface', 
+	self.x:foreach('wireless','wifi-iface', 
 		function(a)
 			--print(a['.name'].." "..interface)
 			--Check the name--
@@ -359,7 +359,7 @@ function rdNetstats._createWirelessLookup(self)
 	--So we only call this once
  
 	local default_val = 'g' --We specify a 'sane' default of g	
-	self.x.foreach('wireless','wifi-device', 
+	self.x:foreach('wireless','wifi-device', 
 	function(a)
 		local dev_name 	= a['.name'];
 		local hwmode 	= a['hwmode'];
@@ -370,7 +370,7 @@ function rdNetstats._createWirelessLookup(self)
 		self[dev_name]['hwmode'] = hwmode;
 	end)
 
-	self.x.foreach('wireless','wifi-iface', 
+	self.x:foreach('wireless','wifi-iface', 
 		function(a)
 			--print(a['.name'].." "..interface)
 			--Check the name--
@@ -388,7 +388,7 @@ function rdNetstats._getWifiUbus(self)
 	local w 	= {}
 	w['radios']	= {}
 	
-	local id_if = self.x.get('meshdesk','settings','id_if');
+	local id_if = self.x:get('meshdesk','settings','id_if');
     local id    = self.network:getMac(id_if)
     w['eth0']   = id --FIXME The back-end still thinks its eth0 but it can be set in firmware
     	

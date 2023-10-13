@@ -48,9 +48,9 @@ end
 -- Run the config - send and receive                                               
 function rdFirmwareConfig.__runConfig(self)
 
-    local host      = self.x.get('meshdesk', 'settings','config_server')
-    local port      = self.x.get('meshdesk', 'settings','config_port')
-    local secret    = self.x.get('meshdesk', 'settings','shared_secret')
+    local host      = self.x:get('meshdesk', 'settings','config_server')
+    local port      = self.x:get('meshdesk', 'settings','config_port')
+    local secret    = self.x:get('meshdesk', 'settings','shared_secret')
 
     self.tcp 	    = assert(self.socket.tcp()) --Create a tcp connection
     self.tcp:connect(host, port)                --Connect to the host
@@ -125,16 +125,16 @@ function rdFirmwareConfig.__send_my_info(self)
     local a         = {}
 
     --Insert id_if (typically eth0)
-    local id_if   = self.x.get('meshdesk','settings','id_if');
+    local id_if   = self.x:get('meshdesk','settings','id_if');
     local id      = self.network:getMac(id_if)
     table.insert(a, 'eth0='..id) --FIXME Change the Node Config Utility to take whatever is specified
 
     --Insert server
-    local server    = self.x.get('meshdesk', 'internet1','ip')
+    local server    = self.x:get('meshdesk', 'internet1','ip')
     table.insert(a, 'server='..server)
     
     --Insert protocol
-    local protocol = self.x.get('meshdesk', 'internet1','protocol')
+    local protocol = self.x:get('meshdesk', 'internet1','protocol')
     table.insert(a, 'protocol='..protocol)
 
     --Insert firmware
@@ -145,11 +145,11 @@ function rdFirmwareConfig.__send_my_info(self)
     table.insert(a, 'firmware='..v)
 
 	--Insert the current client key
-	local key = self.x.get('meshdesk','wifi_client','key')
+	local key = self.x:get('meshdesk','wifi_client','key')
 	table.insert(a, 'key='..key)
 	
 	--Insert the current mode of the node
-	local mode = self.x.get('meshdesk','settings','mode')
+	local mode = self.x:get('meshdesk','settings','mode')
 	table.insert(a, 'mode='..mode)
 
     for i, v in ipairs(a) do
@@ -180,27 +180,27 @@ function rdFirmwareConfig.__get_my_settings(self)
         if(string.find(s, "hardware="))then
             local hw = string.gsub(s, "hardware=", "")
 			self:__set_up_hardware(hw)
-            self.x.set('meshdesk','settings','hardware',hw)
-            self.x.commit('meshdesk')
+            self.x:set('meshdesk','settings','hardware',hw)
+            self.x:commit('meshdesk')
         end
         
         if(string.find(s, "protocol="))then
             local protocol = string.gsub(s, "protocol=", "")
-            self.x.set('meshdesk','internet1','protocol',protocol)
-            self.x.commit('meshdesk')
+            self.x:set('meshdesk','internet1','protocol',protocol)
+            self.x:commit('meshdesk')
         end
         
 
         if(string.find(s, "server="))then
             local ip = string.gsub(s, "server=", "")
-            self.x.set('meshdesk','internet1','ip',ip)
-            self.x.commit('meshdesk')
+            self.x:set('meshdesk','internet1','ip',ip)
+            self.x:commit('meshdesk')
         end
 
         if(string.find(s, "secret="))then
             local secret = string.gsub(s, "secret=", "")
-            self.x.set('meshdesk','settings','shared_secret',secret)
-            self.x.commit('meshdesk')
+            self.x:set('meshdesk','settings','shared_secret',secret)
+            self.x:commit('meshdesk')
         end
 
 		if(string.find(s, "key="))then
@@ -208,15 +208,15 @@ function rdFirmwareConfig.__get_my_settings(self)
 		        print("Not this key")
 		    else
                 local key = string.gsub(s, "key=", "")
-			    self.x.set('meshdesk','wifi_client','key',key)
-                self.x.commit('meshdesk')
+			    self.x:set('meshdesk','wifi_client','key',key)
+                self.x:commit('meshdesk')
             end
         end
         
         if(string.find(s, "mode="))then
             local mode = string.gsub(s, "mode=", "")
-			self.x.set('meshdesk','settings','mode',mode)
-            self.x.commit('meshdesk')
+			self.x:set('meshdesk','settings','mode',mode)
+            self.x:commit('meshdesk')
         end
         
         --Mobile (3G) things
@@ -291,12 +291,12 @@ function rdFirmwareConfig.__get_my_settings(self)
         if(mobile_settings['enabled'] == '0')then
         
             --Only if it is there, gently remove it
-            self.x.foreach('meshdesk','interface', 
+            self.x:foreach('meshdesk','interface', 
 	            function(a)
 	                if(a['.name'] == 'wwan')then
 	                    --We found our man
-		                self.x.set('meshdesk',a['.name'],'enabled',mobile_settings['enabled'])
-		                self.x.commit('meshdesk')
+		                self.x:set('meshdesk',a['.name'],'enabled',mobile_settings['enabled'])
+		                self.x:commit('meshdesk')
 	                end
             end)
         end
@@ -305,13 +305,13 @@ function rdFirmwareConfig.__get_my_settings(self)
             --Remove existing one if there was one--
             self:__clear_mobile() 
             --Create a new one--
-            self.x.set('meshdesk', 'wwan', "interface")
-	        self.x.commit('meshdesk')	
+            self.x:set('meshdesk', 'wwan', "interface")
+	        self.x:commit('meshdesk')	
 	        --Populate it 
 	        for key, val in pairs(mobile_settings) do  
-	             self.x.set('meshdesk', 'wwan',key, val)
+	             self.x:set('meshdesk', 'wwan',key, val)
 	        end
-	        self.x.commit('meshdesk')
+	        self.x:commit('meshdesk')
         end
     end
     
@@ -320,12 +320,12 @@ function rdFirmwareConfig.__get_my_settings(self)
         if(web_by_wifi['disabled'] == '1')then
         
             --Only if it is there, gently remove it
-            self.x.foreach('meshdesk','wifi-iface', 
+            self.x:foreach('meshdesk','wifi-iface', 
 	            function(a)
 	                if(a['.name'] == 'web_by_wifi')then
 	                    --We found our man
-		                self.x.set('meshdesk',a['.name'],'disabled',web_by_wifi['disabled'])
-		                self.x.commit('meshdesk')
+		                self.x:set('meshdesk',a['.name'],'disabled',web_by_wifi['disabled'])
+		                self.x:commit('meshdesk')
 	                end
             end)
         end
@@ -334,16 +334,16 @@ function rdFirmwareConfig.__get_my_settings(self)
             --Remove existing one if there was one--
             self:__clear_web_by_wifi() 
             --Create a new one--
-            self.x.set('meshdesk', 'web_by_wifi', "wifi-iface")
-	        self.x.commit('meshdesk')	
+            self.x:set('meshdesk', 'web_by_wifi', "wifi-iface")
+	        self.x:commit('meshdesk')	
 	        --Populate it 
 	        for key, val in pairs(web_by_wifi) do  
-	             self.x.set('meshdesk', 'web_by_wifi',key, val)
+	             self.x:set('meshdesk', 'web_by_wifi',key, val)
 	        end
 	        --Add these two always
-	        self.x.set('meshdesk', 'web_by_wifi','mode', 'sta')
-	        self.x.set('meshdesk', 'web_by_wifi','network','web_by_wifi')
-	        self.x.commit('meshdesk')
+	        self.x:set('meshdesk', 'web_by_wifi','mode', 'sta')
+	        self.x:set('meshdesk', 'web_by_wifi','network','web_by_wifi')
+	        self.x:commit('meshdesk')
         end
     end
 	
@@ -353,15 +353,15 @@ end
 
 function rdFirmwareConfig.__set_up_hardware(self,hw)
 	--Only if there are a change in the hardware
-	local current_hw = self.x.get('meshdesk','settings','hardware')
+	local current_hw = self.x:get('meshdesk','settings','hardware')
 	if(current_hw ~= hw)then
-		self.x.set('meshdesk','settings','hardware',hw)
-        self.x.commit('meshdesk')
+		self.x:set('meshdesk','settings','hardware',hw)
+        self.x:commit('meshdesk')
 	end
 
 	--Add a fresh one if different
-	local model_led 	= self.x.get('meshdesk',hw,'wifi_led')
-	local current_led	= self.x.get('system','wifi_led', 'sysfs')
+	local model_led 	= self.x:get('meshdesk',hw,'wifi_led')
+	local current_led	= self.x:get('system','wifi_led', 'sysfs')
 	if(model_led == current_led)then
 		self:log("Wifi LEDs same - return")
 		return
@@ -375,47 +375,47 @@ function rdFirmwareConfig.__set_up_hardware(self,hw)
 	self:log("Wifi LEDs new config")
 
 	--Now we need to get rid of all the LED entries and populate it with ours
-	self.x.foreach('system','led', 
+	self.x:foreach('system','led', 
 		function(a)
-			self.x.delete('system',a['.name'])
+			self.x:delete('system',a['.name'])
 	end)
 
 	--Add a fresh one
-	local wifi_led = self.x.set('system', 'wifi_led', "led")
-	self.x.commit('system')	
-	self.x.set('system', 'wifi_led','name', 'wifi')
-	self.x.commit('system')	
-	self.x.set('system', 'wifi_led','sysfs', 	model_led)
-	self.x.commit('system')	
-	self.x.set('system', 'wifi_led','trigger','netdev')	
-	self.x.commit('system')	
-	self.x.set('system', 'wifi_led', 'dev', 	'bat0')		
-	self.x.commit('system')	
-	self.x.set('system', 'wifi_led', 'mode',  'link tx rx')
-	self.x.commit('system')	
+	local wifi_led = self.x:set('system', 'wifi_led', "led")
+	self.x:commit('system')	
+	self.x:set('system', 'wifi_led','name', 'wifi')
+	self.x:commit('system')	
+	self.x:set('system', 'wifi_led','sysfs', 	model_led)
+	self.x:commit('system')	
+	self.x:set('system', 'wifi_led','trigger','netdev')	
+	self.x:commit('system')	
+	self.x:set('system', 'wifi_led', 'dev', 	'bat0')		
+	self.x:commit('system')	
+	self.x:set('system', 'wifi_led', 'mode',  'link tx rx')
+	self.x:commit('system')	
 
 end
 
 function rdFirmwareConfig.__clear_mobile(self)
     --Now we need to get rid of the wwan interface entry
-	self.x.foreach('meshdesk','interface', 
+	self.x:foreach('meshdesk','interface', 
 		function(a)
 		    if(a['.name'] == 'wwan')then
 		        --We found our man
-			    self.x.delete('meshdesk',a['.name'])
-			    self.x.commit('meshdesk')
+			    self.x:delete('meshdesk',a['.name'])
+			    self.x:commit('meshdesk')
 		    end
 	end)
 end
 
 function rdFirmwareConfig.__clear_web_by_wifi(self)
     --Now we need to get rid of the wwan interface entry
-	self.x.foreach('meshdesk','wifi-iface', 
+	self.x:foreach('meshdesk','wifi-iface', 
 		function(a)
 		    if(a['.name'] == 'web_by_wifi')then
 		        --We found our man
-			    self.x.delete('meshdesk',a['.name'])
-			    self.x.commit('meshdesk')
+			    self.x:delete('meshdesk',a['.name'])
+			    self.x:commit('meshdesk')
 		    end
 	end)
 end

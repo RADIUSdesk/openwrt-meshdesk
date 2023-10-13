@@ -64,16 +64,16 @@ function batman_neighbour_count()
         		os.execute("/etc/MESHdesk/main_led.lua stop")
         	end
         	
-            local current_led = uci_cursor.get('system','wifi_led','sysfs');
+            local current_led = uci_cursor:get('system','wifi_led','sysfs');
             --Get the current hardware and also if they have 'single_led' and 'meshed_led' defined
-            local hw    = uci_cursor.get('meshdesk','settings','hardware');
-            local sled  = uci_cursor.get('meshdesk',hw,'single_led');
-            local mled  = uci_cursor.get('meshdesk',hw,'meshed_led');
+            local hw    = uci_cursor:get('meshdesk','settings','hardware');
+            local sled  = uci_cursor:get('meshdesk',hw,'single_led');
+            local mled  = uci_cursor:get('meshdesk',hw,'meshed_led');
             
             if((sled ~= nil)and(mled ~= nil))then
                 if((current_led == sled)and(r > 2))then
-                        uci_cursor.set('system','wifi_led','sysfs',mled);
-                        uci_cursor.commit('system');
+                        uci_cursor:set('system','wifi_led','sysfs',mled);
+                        uci_cursor:commit('system');
                         os.execute("/etc/init.d/led stop")
                         os.execute("/etc/init.d/led start")
                         os.execute("echo '0' > '/sys/class/leds/"..sled.."/brightness'")
@@ -81,8 +81,8 @@ function batman_neighbour_count()
 
                 --If we lost our neighbor - turn it green again
                 if((current_led == mled)and(r < 3))then
-                        uci_cursor.set('system','wifi_led','sysfs',sled);
-                        uci_cursor.commit('system');
+                        uci_cursor:set('system','wifi_led','sysfs',sled);
+                        uci_cursor:commit('system');
                         os.execute("/etc/init.d/led stop")
                         os.execute("/etc/init.d/led start")
                         os.execute("echo '0' > '/sys/class/leds/"..mled.."/brightness'")

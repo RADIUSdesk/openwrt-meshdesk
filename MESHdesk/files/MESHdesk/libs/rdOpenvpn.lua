@@ -107,10 +107,10 @@ function rdOpenvpn.__configureFromTable(self,table)
     	-- Now we have gathered the info ---
     	
     	-- Add entries to config file
-    	self.x.set('openvpn',interface,'openvpn')
+    	self.x:set('openvpn',interface,'openvpn')
 		for key, val in pairs(config_file) do
             print("There " .. key .. ' and '.. val);
-            self.x.set('openvpn',interface,key,val);
+            self.x:set('openvpn',interface,key,val);
         end
         
         -- Add the CA --
@@ -122,14 +122,14 @@ function rdOpenvpn.__configureFromTable(self,table)
         self:__writeAll(up_filename,up)
         
         -- Write the vpn-gateways
-        self.x.set('vpn-gateways',interface,'gateway')
-        self.x.set('vpn-gateways',interface,'ipaddr',vpn_gateway_address);
-        self.x.set('vpn-gateways',interface,'vpn_client_id',vpn_client_id);
-        self.x.set('vpn-gateways',interface,'interface',interface);
+        self.x:set('vpn-gateways',interface,'gateway')
+        self.x:set('vpn-gateways',interface,'ipaddr',vpn_gateway_address);
+        self.x:set('vpn-gateways',interface,'vpn_client_id',vpn_client_id);
+        self.x:set('vpn-gateways',interface,'interface',interface);
       
     end
-    self.x.commit('openvpn');
-    self.x.commit('vpn-gateways');
+    self.x:commit('openvpn');
+    self.x:commit('vpn-gateways');
 end
 
 -- Clean start OpenVPN                                                

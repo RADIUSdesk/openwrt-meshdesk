@@ -159,21 +159,21 @@ function rdCoovaChilli.__checkDnsDesk(self,p)
 		if not f then return print(err) end
 		f:write(resolv_string);
 		f:close();
-		self.x.foreach('dhcp','dnsmasq', 
+		self.x:foreach('dhcp','dnsmasq', 
 		    function(a)
-		        self.x.set('dhcp', a['.name'], 'addmac','1');
-		        self.x.set('dhcp', a['.name'], 'resolvfile',self.resolv_dnsdesk);
+		        self.x:set('dhcp', a['.name'], 'addmac','1');
+		        self.x:set('dhcp', a['.name'], 'resolvfile',self.resolv_dnsdesk);
 	    end)
-        self.x.commit('dhcp');
+        self.x:commit('dhcp');
     else
-        self.x.foreach('dhcp','dnsmasq', 
+        self.x:foreach('dhcp','dnsmasq', 
 		    function(a)
-		        self.x.delete('dhcp', a['.name'], 'addmac');
+		        self.x:delete('dhcp', a['.name'], 'addmac');
 		         --local auto_file     = '/tmp/resolv.conf.auto';            --Preferred one (Up to 19.07)  
                 local auto_file     = '/tmp/resolv.conf.d/resolv.conf.auto'; --Master July 2020       
-		        self.x.set('dhcp', a['.name'], 'resolvfile',auto_file);
+		        self.x:set('dhcp', a['.name'], 'resolvfile',auto_file);
 	    end)
-        self.x.commit('dhcp');
+        self.x:commit('dhcp');
     end    
 end
   
@@ -413,8 +413,8 @@ function rdCoovaChilli.__getDns(self)
 			local s = string.gsub(line, "^\s*nameserver", "")
 			s = s:find'^%s*$' and '' or s:match'^%s*(.*%S)' -- Remove leading and trailing spaces
 			if(s == '127.0.0.1')then -- We assume this is not normal
-				local one = self.x.get('meshdesk','captive_portal','default_dns_1')
-				local two = self.x.get('meshdesk','captive_portal','default_dns_2')
+				local one = self.x:get('meshdesk','captive_portal','default_dns_1')
+				local two = self.x:get('meshdesk','captive_portal','default_dns_2')
 				dns_list[1] = one
 				dns_list[2] = two
 				return dns_list

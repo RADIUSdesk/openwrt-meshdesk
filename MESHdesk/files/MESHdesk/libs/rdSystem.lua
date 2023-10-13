@@ -100,7 +100,7 @@ function rdSystem.__configureFromTable(self,tbl)
 	--Gateway and Heartbeat settings--
 	local items = {'gw_dhcp_timeout', 'gw_use_previous', 'gw_auto_reboot', 'gw_auto_reboot_time', 'heartbeat_dead_after' }
 	for i, item in ipairs(items) do
-  		local item_from_config = self.x.get('meshdesk', 'settings', item )
+  		local item_from_config = self.x:get('meshdesk', 'settings', item )
 		if(item_from_config)then
 			local new_item = tbl[item]
 			--Some changes for boolean items--
@@ -114,7 +114,7 @@ function rdSystem.__configureFromTable(self,tbl)
 			end
 			if(new_item)then
 				if(item_from_config ~= new_item)then
-					self.x.set('meshdesk', 'settings', item,new_item)
+					self.x:set('meshdesk', 'settings', item,new_item)
 				end
 			end
 		end
@@ -123,7 +123,7 @@ function rdSystem.__configureFromTable(self,tbl)
 	--Reporting settings--
 	items = {'report_adv_enable','report_adv_proto','report_adv_light','report_adv_full','report_adv_sampling'};
 	for i, item in ipairs(items) do
-  		local item_from_config = self.x.get('meshdesk', 'reporting', item )
+  		local item_from_config = self.x:get('meshdesk', 'reporting', item )
 		if(item_from_config)then
 			local new_item = tbl[item]
 			--Some changes for boolean items--
@@ -137,14 +137,14 @@ function rdSystem.__configureFromTable(self,tbl)
 			end
 			if(new_item)then
 				if(item_from_config ~= new_item)then
-					self.x.set('meshdesk', 'reporting', item,new_item)
+					self.x:set('meshdesk', 'reporting', item,new_item)
 					--FIXME DO we need to specify a something here (like touching a file in temp)
 					--So he heartbeat script knows about this...
 				end
 			end
 		end
 	end	
-	self.x.commit('meshdesk')
+	self.x:commit('meshdesk')
  
 end
 
@@ -186,38 +186,38 @@ end
 
 function rdSystem.__getCurrentHostname(self)
 	local hostname = nil
-	self.x.foreach('system','system', 
+	self.x:foreach('system','system', 
 		function(a)
-			hostname = self.x.get('system', a['.name'], 'hostname')
+			hostname = self.x:get('system', a['.name'], 'hostname')
 	end)
 	return hostname
 end
 
 function rdSystem.__setHostname(self,hostname)
-	self.x.foreach('system','system', 
+	self.x:foreach('system','system', 
 		function(a)
-			self.x.set('system', a['.name'], 'hostname',hostname)
+			self.x:set('system', a['.name'], 'hostname',hostname)
 	end)
-	self.x.commit('system')
+	self.x:commit('system')
 	--Activate it
 	os.execute("echo "..hostname.." > /proc/sys/kernel/hostname")	
 end
 
 function rdSystem.__getCurrentTimezone(self)
 	local timezone = nil
-	self.x.foreach('system','system', 
+	self.x:foreach('system','system', 
 		function(a)
-			timezone = self.x.get('system', a['.name'], 'timezone')
+			timezone = self.x:get('system', a['.name'], 'timezone')
 	end)
 	return timezone
 end
 
 function rdSystem.__setTimezone(self,timezone)
-	self.x.foreach('system','system', 
+	self.x:foreach('system','system', 
 		function(a)
-			self.x.set('system', a['.name'], 'timezone',timezone)
+			self.x:set('system', a['.name'], 'timezone',timezone)
 	end)
-	self.x.commit('system')
+	self.x:commit('system')
 end
 
 function rdSystem.__readAll(self,file)
