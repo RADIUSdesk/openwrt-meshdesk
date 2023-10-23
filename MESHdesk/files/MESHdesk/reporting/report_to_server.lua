@@ -4,6 +4,7 @@ package.path = "../libs/?.lua;./libs/?.lua;" .. package.path
 require("rdNetwork");
 require("rdSoftflowLogs");
 require("rdConfig");
+require("rdOpenvpnstats");
 local utl           = require "luci.util";
 
 --Some variables
@@ -17,6 +18,7 @@ local sys           = require("luci.sys");
 local util          = require("luci.util");
 local network       = rdNetwork();
 local config        = rdConfig();
+local vpn	    = rdOpenvpnstats();
 local report        = 'light'; -- can be light or full
 
 if(arg[1])then
@@ -68,6 +70,14 @@ function lightReport()
     local id    = network:getMac(id_if);
     local mode  = network:getMode();
     local curl_data= '{"report_type":"light","mac":"'..id..'","mode":"'..mode..'"}';
+
+    --Check if OpenVPN is active
+    local vpn_enabled = false;
+    local vpn_stats = vpn:getStats()
+    if(string.len(vpn_stats) > 20)then
+        vpn_enabled = true;
+        curl_data= '{"report_type":"light","mac":"'..id..'","mode":"'..mode..'","vpn_info":'..vpn_stats..'}';
+    end
       
     --Check if softflows is implemented 
     local pid_sf = util.exec("pidof softflowd");
@@ -92,6 +102,9 @@ function lightReport()
         curl_data = '{"report_type":"light","mac":"'..id..'","mode":"'..mode..'","wbw_info":'..wbw_string..'}';
         if(softflows_enabled == true)then
             curl_data = '{"report_type":"light","mac":"'..id..'","mode":"'..mode..'","wbw_info":'..wbw_string..',"flows":'..flows_string..'}';
+        end
+        if(vpn_enabled == true)then
+            curl_data = '{"report_type":"light","mac":"'..id..'","mode":"'..mode..'","wbw_info":'..wbw_string..'","vpn_info":'..vpn_stats..'}';
         end        
     end
     --END WBW--
@@ -108,6 +121,9 @@ function lightReport()
                     local signal_info = util.exec("uqmi -d /dev/cdc-wdm0 --get-signal-info");
                     local system_info = util.exec("uqmi -d /dev/cdc-wdm0 --get-system-info");
                     curl_data = '{"report_type":"light","mac":"'..id..'","mode":"'..mode..'","qmi_info":{"signal" : '..signal_info..',"system":'..system_info..'}}';
+                    if(vpn_enabled == true)then
+                        curl_data = '{"report_type":"light","mac":"'..id..'","mode":"'..mode..'","qmi_info":{"signal" : '..signal_info..',"system":'..system_info..'}","vpn_info":'..vpn_stats..'}';
+                    end 
                 end
             end
         end

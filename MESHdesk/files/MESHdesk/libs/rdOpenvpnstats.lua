@@ -45,19 +45,6 @@ function rdOpenvpnstats._getStats(self)
     stats['vpn_gateways']   = {}  
     require('rdConfig');
     local c                 = rdConfig();
-    local months            = {};
-    months['Jan']=1;
-    months['Feb']=2;
-    months['Mar']=3;
-    months['Apr']=4;
-    months['May']=5;
-    months['Jun']=6;
-    months['Jul']=7;
-    months['Aug']=8;
-    months['Sep']=9;
-    months['Oct']=10;
-    months['Nov']=11;
-    months['Dec']=12;
     
     self.x:foreach('vpn-gateways', 'gateway',
 		function(s)	
@@ -89,17 +76,12 @@ function rdOpenvpnstats._getStats(self)
                         --Figure out when last the update was
                         if(string.find(line, "Updated,"))then
                             local i = string.gsub(line, "^Updated,", "");
-                            --Fri Apr 14 08:27:00 2017
-                            local date_components = {};
-                            local j = 0;
-                            for i in string.gmatch(i, "%S+") do
-                                date_components[j] = i;
-                                j = j+1;
-                            end
-                            
-                            local month     = date_components[1];
-                            time_components = rdOpenvpnstats._mysplit(date_components[3], ":");   
-                            local stat_stamp = os.time({year=date_components[4], month=months[month], day=date_components[2], hour=time_components[1],min=time_components[2],sec=time_components[3]})
+			                --2023-10-22 20:14:03
+			                local date_side =  string.gsub(i, "%s+.+", "");
+			                local time_side =  string.gsub(i, ".+%s+", "");
+			                local date_components = rdOpenvpnstats._mysplit(date_side,'-');
+                            local time_components = rdOpenvpnstats._mysplit(time_side, ":");   
+                            local stat_stamp = os.time({year=date_components[1], month=date_components[2], day=date_components[3], hour=time_components[1],min=time_components[2],sec=time_components[3]})
                             local now_stamp  = os.time();
                             if((now_stamp - stat_stamp)< 240)then --Older then 4 minutes ... to old
                                 to_old = false;
