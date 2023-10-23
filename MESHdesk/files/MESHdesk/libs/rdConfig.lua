@@ -267,6 +267,14 @@ function rdConfig:configureDevice(config,doWanSynch)
         require("rdOpenvpn")
 	    local v = rdOpenvpn()
         v:configureFromTable(o.config_settings.openvpn_bridges)
+        
+        --Disable the startup script for OpenVPN. We need to start it after everything has been set up first--
+        
+        if(self:_file_exists('/etc/rc.d/S90openvpn'))then
+            os.execute("/etc/init.d/openvpn disable");
+            os.execute("/etc/init.d/openvpn stop");
+	    end
+        
         os.execute("/etc/init.d/openvpn start")
     end
     
