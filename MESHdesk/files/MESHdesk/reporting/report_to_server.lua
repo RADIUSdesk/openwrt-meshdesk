@@ -18,7 +18,7 @@ local sys           = require("luci.sys");
 local util          = require("luci.util");
 local network       = rdNetwork();
 local config        = rdConfig();
-local vpn	    = rdOpenvpnstats();
+local vpn	        = rdOpenvpnstats();
 local report        = 'light'; -- can be light or full
 
 if(arg[1])then
@@ -79,7 +79,8 @@ function lightReport()
         curl_data= '{"report_type":"light","mac":"'..id..'","mode":"'..mode..'","vpn_info":'..vpn_stats..'}';
     end
       
-    --Check if softflows is implemented 
+    
+    
     local pid_sf = util.exec("pidof softflowd");
     local softflows_enabled = false;
     if(pid_sf ~= '')then
@@ -92,7 +93,15 @@ function lightReport()
 	    print("==END FLOWS==");
         curl_data= '{"report_type":"light","mac":"'..id..'","mode":"'..mode..'","flows":'..flows_string..'}';
     end 
-        
+    
+    --Check if accel-pppd is implemented 
+    local pid_accel = util.exec("pidof accel-pppd");
+    local accel_enabled = false;
+    if(pid_accel ~= '')then
+        accel_enabled   = true;
+        os.execute("/etc/MESHdesk/reporting/accel_report_to_server.lua");
+    end 
+           
     --WBW--
     local wbw_dis   = x:get('meshdesk','web_by_wifi','disabled');
     if(wbw_dis == '0')then

@@ -1,0 +1,427 @@
+{
+    "config_settings": {
+        "wireless": [
+            {
+                "wifi-device": "radio0",
+                "options": {
+                    "channel": 1,
+                    "disabled": 0,
+                    "hwmode": "11g",
+                    "htmode": "HT20",
+                    "band": "2g",
+                    "cell_density": "0",
+                    "country": "US",
+                    "txpower": 3
+                },
+                "lists": []
+            },
+            {
+                "wifi-device": "radio1",
+                "options": {
+                    "channel": 161,
+                    "disabled": 0,
+                    "hwmode": "11a",
+                    "htmode": "VHT80",
+                    "band": "5g",
+                    "cell_density": "0",
+                    "country": "US",
+                    "txpower": 3
+                },
+                "lists": []
+            },
+            {
+                "wifi-iface": "zero_1",
+                "options": {
+                    "device": "radio1",
+                    "ifname": "mesh1",
+                    "network": "mesh",
+                    "mode": "mesh",
+                    "mesh_id": "02_CA_FE_CA_00_24",
+                    "mcast_rate": 18000,
+                    "disabled": 0,
+                    "mesh_ttl": 1,
+                    "mesh_fwding": 0,
+                    "encryption": "none"
+                }
+            },
+            {
+                "wifi-iface": "two",
+                "options": {
+                    "device": "radio0",
+                    "ifname": "two0",
+                    "mode": "ap",
+                    "network": "ex_three",
+                    "encryption": "none",
+                    "ssid": "Jhb-South Guest",
+                    "key": "",
+                    "hidden": false,
+                    "isolate": true,
+                    "auth_server": "",
+                    "auth_secret": "",
+                    "disabled": false,
+                    "acct_server": "",
+                    "acct_secret": ""
+                },
+                "lists": []
+            },
+            {
+                "wifi-iface": "three",
+                "options": {
+                    "device": "radio1",
+                    "ifname": "three1",
+                    "mode": "ap",
+                    "network": "ex_three",
+                    "encryption": "none",
+                    "ssid": "Jhb-South Guest",
+                    "key": "",
+                    "hidden": false,
+                    "isolate": true,
+                    "auth_server": "",
+                    "auth_secret": "",
+                    "disabled": false,
+                    "acct_server": "",
+                    "acct_secret": ""
+                },
+                "lists": []
+            },
+            {
+                "wifi-iface": "four",
+                "options": {
+                    "device": "radio0",
+                    "ifname": "four0",
+                    "mode": "ap",
+                    "network": "ex_two",
+                    "encryption": "psk2",
+                    "ssid": "Jhb-South Wireless",
+                    "key": "12345678",
+                    "hidden": false,
+                    "isolate": false,
+                    "auth_server": "",
+                    "auth_secret": "",
+                    "disabled": false,
+                    "nasid": "md_51_0_126"
+                },
+                "lists": []
+            },
+            {
+                "wifi-iface": "five",
+                "options": {
+                    "device": "radio1",
+                    "ifname": "five1",
+                    "mode": "ap",
+                    "network": "ex_two",
+                    "encryption": "psk2",
+                    "ssid": "Jhb-South Wireless",
+                    "key": "12345678",
+                    "hidden": false,
+                    "isolate": false,
+                    "auth_server": "",
+                    "auth_secret": "",
+                    "disabled": false,
+                    "nasid": "md_51_1_126"
+                },
+                "lists": []
+            },
+            {
+                "wifi-iface": "one_0",
+                "options": {
+                    "device": "radio0",
+                    "ifname": "one0",
+                    "mode": "ap",
+                    "encryption": "psk-mixed",
+                    "network": "one",
+                    "ssid": "meshdesk_config",
+                    "key": "radiusdesk",
+                    "hidden": "1"
+                }
+            }
+        ],
+        "network": [
+            {
+                "interface": "loopback",
+                "options": {
+                    "device": "lo",
+                    "proto": "static",
+                    "ipaddr": "127.0.0.1",
+                    "netmask": "255.0.0.0"
+                }
+            },
+            {
+                "device": "br-lan",
+                "options": {
+                    "name": "br-lan",
+                    "type": "bridge"
+                },
+                "lists": {
+                    "ports": [
+                        "wan"
+                    ]
+                }
+            },
+            {
+                "interface": "lan",
+                "options": {
+                    "proto": "dhcp",
+                    "device": "br-lan"
+                }
+            },
+            {
+                "interface": "bat0",
+                "options": {
+                    "proto": "batadv",
+                    "routing_algo": "BATMAN_V",
+                    "aggregated_ogms": 1,
+                    "ap_isolation": 0,
+                    "bonding": 0,
+                    "fragmentation": 1,
+                    "gw_mode": "server",
+                    "orig_interval": 1000,
+                    "bridge_loop_avoidance": 1,
+                    "distributed_arp_table": 1,
+                    "multicast_mode": 1,
+                    "network_coding": 0,
+                    "hop_penalty": 30,
+                    "isolation_mark": "0x00000000\/0x00000000",
+                    "log_level": 0
+                }
+            },
+            {
+                "interface": "mesh",
+                "options": {
+                    "proto": "batadv_hardif",
+                    "master": "bat0",
+                    "mtu": 2304
+                }
+            },
+            {
+                "device": "br-one",
+                "options": {
+                    "name": "br-one",
+                    "type": "bridge",
+                    "stp": 1
+                },
+                "lists": {
+                    "ports": [
+                        "bat0.1"
+                    ]
+                }
+            },
+            {
+                "interface": "one",
+                "options": {
+                    "device": "br-one",
+                    "proto": "static",
+                    "ipaddr": "10.5.5.1",
+                    "netmask": "255.255.255.0"
+                }
+            },
+            {
+                "device": "br-ex_two",
+                "options": {
+                    "name": "br-ex_two",
+                    "type": "bridge",
+                    "stp": 1
+                },
+                "lists": {
+                    "ports": [
+                        "bat0.2"
+                    ]
+                }
+            },
+            {
+                "interface": "ex_two",
+                "options": {
+                    "device": "br-ex_two",
+                    "proto": "none"
+                }
+            },
+            {
+                "device": "br-ex_three",
+                "options": {
+                    "name": "br-ex_three",
+                    "type": "bridge",
+                    "stp": 1
+                },
+                "lists": {
+                    "ports": [
+                        "bat0.3"
+                    ]
+                }
+            },
+            {
+                "interface": "ex_three",
+                "options": {
+                    "device": "br-ex_three"
+                }
+            }
+        ],
+        "system": {
+            "password_hash": "$1$eF2hkqai$VSxYzAHrCftg4ar0ftfPF.",
+            "heartbeat_dead_after": 900,
+            "timezone": "SAST-2",
+            "syslog1_ip": "",
+            "syslog1_port": "514",
+            "syslog2_ip": "",
+            "syslog2_port": "514",
+            "syslog3_ip": "",
+            "syslog3_port": "514",
+            "gw_dhcp_timeout": 120,
+            "gw_use_previous": true,
+            "gw_auto_reboot": true,
+            "gw_auto_reboot_time": 600,
+            "report_adv_enable": true,
+            "report_adv_proto": "http",
+            "report_adv_light": 60,
+            "report_adv_full": 600,
+            "report_adv_sampling": 60,
+            "hostname": "Wally-1",
+            "mqtt_user": "openwrt",
+            "mqtt_password": "openwrt",
+            "mqtt_server_url": "cloud.radiusdesk.com",
+            "mqtt_command_topic": "\/RD\/NODE\/COMMAND\/RESPONSE"
+        },
+        "gateways": [],
+        "gateway_details": [],
+        "captive_portals": [
+            {
+                "id": 21,
+                "mesh_exit_id": 57,
+                "radius_1": "164.160.89.129",
+                "radius_2": "",
+                "radius_secret": "testing123",
+                "radius_nasid": "mcp_57",
+                "uam_url": "https:\/\/cloud.radiusdesk.com\/cake4\/rd_cake\/dynamic-details\/chilli-browser-detect\/",
+                "uam_secret": "greatsecret",
+                "walled_garden": "164.160.89.129",
+                "swap_octets": false,
+                "created": "2023-09-05T07:47:24+00:00",
+                "modified": "2023-10-27T08:52:42+00:00",
+                "mac_auth": true,
+                "proxy_enable": false,
+                "proxy_ip": "",
+                "proxy_port": 3128,
+                "proxy_auth_username": "",
+                "proxy_auth_password": "",
+                "coova_optional": "ssid jhb-south\n",
+                "dns_manual": false,
+                "dns1": "",
+                "dns2": "",
+                "uamanydns": false,
+                "dnsparanoia": false,
+                "dnsdesk": false,
+                "mesh_exit_upstream_id": 0,
+                "softflowd_enabled": false,
+                "hslan_if": "br-ex_three",
+                "network": "ex_three",
+                "hswan_if": "br-lan"
+            }
+        ],
+        "accel_servers": [
+            {
+                "modules": [
+                    "log_file",
+                    "pppoe",
+                    "auth_pap",
+                    "radius",
+                    "ippool",
+                    "shaper"
+                ],
+                "core": {
+                    "log-error": "\/var\/log\/accel-ppp\/core.log",
+                    "thread-count": 4
+                },
+                "ppp": {
+                    "verbose": "1",
+                    "min-mtu": "1280",
+                    "mtu": "1400",
+                    "mru": "1400",
+                    "ipv4": "require",
+                    "ipv6": "deny",
+                    "ipv6-intf-id": "0:0:0:1",
+                    "ipv6-peer-intf-id": "0:0:0:2",
+                    "ipv6-accept-peer-intf-id": 1,
+                    "lcp-echo-interval": "20",
+                    "lcp-echo-timeout": "120",
+                    "unit-cache": 1
+                },
+                "pppoe": {
+                    "verbose": "1",
+                    "called-sid": "mac",
+                    "interface": "br-ex_two"
+                },
+                "dns": {
+                    "dns1": "1.1.1.1",
+                    "dns2": "8.8.8.8"
+                },
+                "radius": {
+                    "dictionary": "\/usr\/share\/accel-ppp\/radius\/dictionary",
+                    "nas-identifier": "mpppoe_64_126",
+                    "dae-server": "127.0.0.1:3799,testing123",
+                    "verbose": "1",
+                    "acct-interim-interval": "120",
+                    "server": "server=164.160.89.129,testing123,auth-port=1812,acct-port=1813,req-limit=50,fail-timeout=0,max-fail=10,weight=1"
+                },
+                "client-ip-range": [
+                    "10.0.0.0\/8"
+                ],
+                "ip-pool": {
+                    "gw-ip-address": "192.168.0.1",
+                    "attr": "Framed-Pool",
+                    "pools": "192.168.0.2-255\n192.168.1.1-255,name=pool1\n192.168.2.1-255,name=pool2\n192.168.3.1-255,name=pool3\n192.168.4.1-255,name=pool4,next=pool1\n192.168.4.0\/24"
+                },
+                "log": {
+                    "log-file": "\/var\/log\/accel-ppp\/accel-ppp.log",
+                    "log-emerg": "\/var\/log\/accel-ppp\/emerg.log",
+                    "log-fail-file": "\/var\/log\/accel-ppp\/auth-fail.log",
+                    "copy": 1,
+                    "level": 3
+                },
+                "shaper": {
+                    "vendor": "Mikrotik",
+                    "attr": "Mikrotik-Rate-Limit",
+                    "up-limiter": "police",
+                    "down-limiter": "tbf",
+                    "verbose": "1"
+                },
+                "cli": {
+                    "verbose": "1",
+                    "telnet": "127.0.0.1:2000",
+                    "tcp": "127.0.0.1:2001",
+                    "password": "testing123"
+                }
+            }
+        ],
+        "openvpn_bridges": [],
+        "adv_firewall": {
+            "macs": [],
+            "entries": [],
+            "sets": {
+                "-1": {
+                    "name": "md_internet_not",
+                    "elements": "10.0.0.0\/8,172.16.0.0\/12,192.168.0.0\/16,255.255.255.255",
+                    "comment": "Private IP Addr Excl For Internet"
+                },
+                "-2": {
+                    "name": "md_lan",
+                    "elements": "10.0.0.0\/8,172.16.0.0\/12,192.168.0.0\/16",
+                    "comment": "Private IP Addr LAN"
+                }
+            }
+        }
+    },
+    "timestamp": 1,
+    "mode": "mesh",
+    "meta_data": {
+        "mode": "mesh",
+        "mac": "C4-4B-D1-00-97-49",
+        "node_id": 126,
+        "two0": 50,
+        "three1": 50,
+        "four0": 51,
+        "five1": 51,
+        "one0": 0,
+        "WbwActive": false,
+        "QmiActive": false
+    },
+    "success": true
+}

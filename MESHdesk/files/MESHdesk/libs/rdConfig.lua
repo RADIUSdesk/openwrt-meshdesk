@@ -329,7 +329,15 @@ function rdConfig:configureDevice(config,doWanSynch)
             end        
         end             
     end
-             
+    
+    -- Nov 2023 Accel-ppp servers support
+    if(o.config_settings.accel_servers ~= nil)then
+        print("Doing Accel-ppp")
+        require("rdAccel");
+	    local a = rdAccel();
+	    a:configureFromTable(o.config_settings.accel_servers);	    
+    end
+               
     ret_table.config_success = true;
     return ret_table;
     
