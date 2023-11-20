@@ -2,7 +2,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=MESHdesk
 PKG_VERSION:=9.5.5
-PKG_RELEASE:=08
+PKG_RELEASE:=09
 
 include $(INCLUDE_DIR)/package.mk
 
