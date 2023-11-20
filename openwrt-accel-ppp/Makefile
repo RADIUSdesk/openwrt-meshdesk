@@ -29,7 +29,7 @@ define Package/accel-ppp
   SECTION:=net
   CATEGORY:=Network
   TITLE:=accel-ppp IPoE VPN server
-  DEPENDS:=+libpcre +libopenssl +libpthread +librt +libatomic +libucontext +kmod-sched-core
+  DEPENDS:=+libpcre +libopenssl +libpthread +librt +libatomic +libucontext +kmod-sched-core +kmod-pptp +kmod-pppoe +kmod-ppp
 endef
 
 CMAKE_OPTIONS += \
