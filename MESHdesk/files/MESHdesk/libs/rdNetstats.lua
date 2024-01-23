@@ -409,6 +409,24 @@ function rdNetstats._getWifiUbus(self)
 			
 			for a, b in ipairs(ws[k]['interfaces']) do
 			    local ifname   = b['ifname'];
+			    local vlans    = {0}; --prime it with the basic interface (no VLAN)
+			    
+			    --Here we will look if config.dynamic_vlan is present and set to "1"
+			    --If so we need to call ubus call iwinfo devices '{ }' to see if there are any VLAN interfaces to get the stats from them
+			    if(b['config']['dynamic_vlan'])then
+			        if(b['config']['dynamic_vlan'] == 1)then
+			            --print("==== VLAN ALERT FOR ".. ifname .."====");
+			            local devices   = conn:call("iwinfo", "devices", { });
+			            for m, n in ipairs(devices['devices'])do			                
+			                if(n:match("^"..ifname.."."))then
+			                    vlan = n:gsub("^"..ifname..".","");
+			                    --print("==== VLAN NUMBER ".. vlan .."====");
+			                    table.insert(vlans,vlan);  
+			                end
+			            end			            
+			        end
+			    end
+			    
 			    local i_info   = conn:call("iwinfo", "info", { device = ifname });
 			    i_info['name'] = ifname;
 			    i_info['mac']  = i_info['bssid'];
@@ -425,27 +443,37 @@ function rdNetstats._getWifiUbus(self)
 			        i_info['type'] = 'IBSS';    
 			    end
 			    i_info['stations'] = {};
-			    local  assoclist   = conn:call("iwinfo", "assoclist", { device = ifname });
-			    for c, d in ipairs(assoclist['results'])do			    
-		            d['connected time'] = d['connected_time'];
-		            d['inactive time']  = d['inactive'];	            
-		            d['MFP']            = d['mfp'];
-                    d['TDLS peer']      = d['dtls'];    
-                    d['tx failed']      = d['tx']['failed'];
-                    d['tx retries']     = d['tx']['retries'];
-                    d['WMM/WME']        = d['wme'];
-		            d['signal avg']     = d['signal_avg'];
-		            d['signal']         = d['signal'];
-		            d['rx packets']     = d['rx']['packets']; 
-		            d['tx packets']     = d['tx']['packets']; 
-		            d['rx bytes']       = d['rx']['bytes']; --We're not using 1500 (mtu since most packets might be smaller - mesh managment packets)
-		            d['tx bytes']       = d['tx']['bytes']; --We're not using 1500 (mtu since most packets might be smaller - mesh managment packets)
-		            d['tx bitrate']     = self._toM(self,d['tx']['rate']);
-		            d['rx bitrate']     = self._toM(self,d['rx']['rate']);
-		            --print("TX BITRATE "..d['tx bitrate']);
-		            --print("RX BITRATE "..d['rx bitrate']);    
-			        table.insert(i_info['stations'],d); 
-			    end			    			    
+			    
+			    for o, p in ipairs(vlans) do		    
+			        --Here we have to loop though a list of 'devices' which might include the VLAN numbers
+			        if(p ~= 0)then
+			            ifname = ifname..'.'..p; --if it is zero we do not chenge the ifname
+			        end	
+			        --print("==== STATIONS FOR ".. ifname .."====");    
+			        local  assoclist   = conn:call("iwinfo", "assoclist", { device = ifname });
+			        for c, d in ipairs(assoclist['results'])do			    
+		                d['connected time'] = d['connected_time'];
+		                d['inactive time']  = d['inactive'];	            
+		                d['MFP']            = d['mfp'];
+                        d['TDLS peer']      = d['dtls'];    
+                        d['tx failed']      = d['tx']['failed'];
+                        d['tx retries']     = d['tx']['retries'];
+                        d['WMM/WME']        = d['wme'];
+		                d['signal avg']     = d['signal_avg'];
+		                d['signal']         = d['signal'];
+		                d['rx packets']     = d['rx']['packets']; 
+		                d['tx packets']     = d['tx']['packets']; 
+		                d['rx bytes']       = d['rx']['bytes']; --We're not using 1500 (mtu since most packets might be smaller - mesh managment packets)
+		                d['tx bytes']       = d['tx']['bytes']; --We're not using 1500 (mtu since most packets might be smaller - mesh managment packets)
+		                d['tx bitrate']     = self._toM(self,d['tx']['rate']);
+		                d['rx bitrate']     = self._toM(self,d['rx']['rate']);
+		                d['vlan']           = p;
+		                --print("TX BITRATE "..d['tx bitrate']);
+		                --print("RX BITRATE "..d['rx bitrate']);    
+			            table.insert(i_info['stations'],d); 
+			        end			        	
+			    end
+			    			    		    			    
 			    table.insert(w['radios'][phy]['interfaces'],i_info);	
 			end			
         end

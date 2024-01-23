@@ -466,6 +466,11 @@ function rdJsonReports._addStationDetail(self,s_tbl)
     if (type(tx_bitrate) == "string") then
         rx_bitrate  = self:_numberOnly(s_tbl['rx bitrate']);
     end
+    
+    local i_vlan = 0;
+    if(s_tbl['vlan'])then
+        i_vlan = self:_numberOnly(s_tbl['vlan']);
+    end
         
     local authorized        = self:_bool(s_tbl['authorized']);
     local authenticated     = self:_bool(s_tbl['authenticated']);
@@ -496,6 +501,7 @@ function rdJsonReports._addStationDetail(self,s_tbl)
         mpf             = mpf,
         tdls_peer       = tdls_peer,
         connected_time  = i_connected_time,
+        vlan            = i_vlan,
         unix_timestamp  = ts,
         InterfaceId     = s_tbl['InterfaceId']
     };
