@@ -469,7 +469,7 @@ function rdJsonReports._addStationDetail(self,s_tbl)
     
     local i_vlan = 0;
     if(s_tbl['vlan'])then
-        i_vlan = self:_numberOnly(s_tbl['vlan']);
+        i_vlan = tonumber(s_tbl['vlan']);
     end
         
     local authorized        = self:_bool(s_tbl['authorized']);
