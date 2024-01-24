@@ -446,11 +446,13 @@ function rdNetstats._getWifiUbus(self)
 			    
 			    for o, p in ipairs(vlans) do		    
 			        --Here we have to loop though a list of 'devices' which might include the VLAN numbers
+			        local dev = ifname;
 			        if(p ~= 0)then
-			            ifname = ifname..'.'..p; --if it is zero we do not chenge the ifname
+			            dev = dev..'.'..p; --if it is zero we do not chenge the ifname
 			        end	
-			        --print("==== STATIONS FOR ".. ifname .."====");    
-			        local  assoclist   = conn:call("iwinfo", "assoclist", { device = ifname });
+			        --print("==== STATIONS FOR ".. dev .."====");
+			            
+			        local  assoclist   = conn:call("iwinfo", "assoclist", { device = dev });
 			        for c, d in ipairs(assoclist['results'])do			    
 		                d['connected time'] = d['connected_time'];
 		                d['inactive time']  = d['inactive'];	            
