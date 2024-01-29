@@ -32,7 +32,8 @@ end
 
 function rdVis:getVis()
 	self:log("==Get batadv-vis formatted to out liking ==")
-	return self:_getVisNoAlfred();
+	--return self:_getVisNoAlfred();
+	return self:_getVisJson();
 	--return self:_getVis()
 end
 
@@ -69,6 +70,56 @@ function rdVis._getVis(self)
     end
 	return self.json.encode(fb_data)
 end
+
+
+function rdVis._getVisJson(self)
+    self:log("Getting Vis Results without Alfred");
+    local orig_j    = self.util.exec("/usr/sbin/batctl oj");
+    local neigh_j   = self.util.exec("/usr/sbin/batctl nj");
+    local mesh_j    = self.util.exec("/usr/sbin/batctl mj");
+    local t_nbr     = {};
+    local t_orig    = {};
+    local algo_name = 'BATMAN_IV'; --Default
+    
+    local mesh_t    = self.json.decode(mesh_j);
+    algo_name       = mesh_t.algo_name; --Find out which algo they use
+    
+    local mesh_if   = nil;   
+    local orig_t    = self.json.decode(orig_j);
+    for i, row in ipairs(orig_t) do                   
+        if(row.best)then
+            mesh_if = row.hard_ifname;
+            if(algo_name == 'BATMAN_IV')then
+                t_orig[row.orig_address]= row.tq
+            end           
+            if(algo_name == 'BATMAN_V')then
+                t_orig[row.orig_address]= row.throughput
+            end           
+        end                                              
+    end
+    
+    if(mesh_if)then
+        local router    = self.util.trim(self.util.exec("cat /sys/class/net/" .. mesh_if .. "/address"));   
+        local neigh_t   = self.json.decode(neigh_j);   
+        for i, row in ipairs(neigh_t) do                   
+            mesh_if = row.hard_ifname;
+            local value = t_orig[row.neigh_address];
+            local new_entry = {};           
+            if(algo_name == 'BATMAN_IV')then
+                new_entry['tq']     = value; 
+            end          
+            if(algo_name == 'BATMAN_V')then
+                new_entry['tp']     = value; 
+            end           
+            new_entry['algo_name']  = algo_name; 
+            new_entry['neighbor']   = row.neigh_address;
+            new_entry['router']     = router;
+            table.insert(t_nbr,new_entry);                                                      
+        end
+    end
+    return self.json.encode(t_nbr);    
+end
+
 
 function rdVis._getVisNoAlfred(self)
     self:log("Getting Vis Results without Alfred");
