@@ -106,7 +106,12 @@ function rdVis._getVisJson(self)
             local value = t_orig[row.neigh_address];
             local new_entry = {};           
             if(algo_name == 'BATMAN_IV')then
-                new_entry['tq']     = value; 
+            
+                new_entry['tq'] = value;
+                local metric    = value/255; --Add this for backwards compatibility 
+                metric          = rdVis:round(metric,3);
+                new_entry['metric'] = metric;
+                  
             end          
             if(algo_name == 'BATMAN_V')then
                 new_entry['tp']     = value; 
