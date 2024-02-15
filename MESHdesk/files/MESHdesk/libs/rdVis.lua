@@ -19,6 +19,7 @@ function rdVis:rdVis()
 	self.ethmap		= 110
 	self.mac_map	= {};	
 	self.util       = require "luci.util";
+	self.nfs        = require "nixio.fs";
 end
         
 function rdVis:getVersion()
@@ -49,8 +50,12 @@ end
 ========================================================
 --]]--
 
-function rdVis._getVis(self)
-	local fb_data = {}
+function rdVis._getVis(self)	
+	--If there is no bat0 interface; just leave returning {};
+    if(self.nfs.dir('/sys/class/net/bat0') == nil) then
+        return {};
+    end
+    local fb_data = {}
 	fd    = io.popen("batadv-vis -f jsondoc")
 	if fd then
         output = fd:read("*a")
@@ -73,7 +78,14 @@ end
 
 
 function rdVis._getVisJson(self)
+    
+    --If there is no bat0 interface; just leave returning {};
+    if(self.nfs.dir('/sys/class/net/bat0') == nil) then
+        return {};
+    end
     self:log("Getting Vis Results without Alfred");
+    
+    
     local orig_j    = self.util.exec("/usr/sbin/batctl oj");
     local neigh_j   = self.util.exec("/usr/sbin/batctl nj");
     local mesh_j    = self.util.exec("/usr/sbin/batctl mj");
@@ -127,6 +139,10 @@ end
 
 
 function rdVis._getVisNoAlfred(self)
+    --If there is no bat0 interface; just leave returning {};
+    if(self.nfs.dir('/sys/class/net/bat0') == nil) then
+        return {};
+    end
     self:log("Getting Vis Results without Alfred");
     local fb_o      = self.util.exec("/usr/sbin/batctl o");
     local fb_n      = self.util.exec("/usr/sbin/batctl n");
