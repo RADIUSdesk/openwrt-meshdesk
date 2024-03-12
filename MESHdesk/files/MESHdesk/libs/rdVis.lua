@@ -53,7 +53,7 @@ end
 function rdVis._getVis(self)	
 	--If there is no bat0 interface; just leave returning {};
     if(self.nfs.dir('/sys/class/net/bat0') == nil) then
-        return {};
+        return;
     end
     local fb_data = {}
 	fd    = io.popen("batadv-vis -f jsondoc")
@@ -81,7 +81,7 @@ function rdVis._getVisJson(self)
     
     --If there is no bat0 interface; just leave returning {};
     if(self.nfs.dir('/sys/class/net/bat0') == nil) then
-        return {};
+        return;
     end
     self:log("Getting Vis Results without Alfred");
     
@@ -141,7 +141,7 @@ end
 function rdVis._getVisNoAlfred(self)
     --If there is no bat0 interface; just leave returning {};
     if(self.nfs.dir('/sys/class/net/bat0') == nil) then
-        return {};
+        return;
     end
     self:log("Getting Vis Results without Alfred");
     local fb_o      = self.util.exec("/usr/sbin/batctl o");
