@@ -364,7 +364,10 @@ function afterReport(clear_flag)
         end                            
     end
     if(ok_flag)then
-        internetLED('1'); -- NOTE Here we can swap thme around eg make it 0 to turn off a red LED when the internet is OK
+        -- March 2024 We make things simpler 
+        --local alarm     = x:get('meshdesk', 'settings', 'internet_led_alarm');
+        -- if alarm set to '1' and ok_flag then it will be turned off        
+        internetLED('1'); -- (OLD WAY ---> NOTE Here we can swap thme around eg make it 0 to turn off a red LED when the internet is OK)
         checkForContollerReboot('1');
     else
         internetLED('0');
@@ -417,11 +420,21 @@ function checkReporting(r)
     end
 end
 
-function internetLED(state)
-    local hardware  = x:get('meshdesk', 'settings', 'hardware');
-    local led       = x:get('meshdesk', hardware, 'internet_led');
-    os.execute('echo '..state..' > ' .. led );
-end
+function internetLED(state)                                                                
+    local led       = x:get('meshdesk', 'settings', 'internet_led');                      
+    local alarm     = x:get('meshdesk', 'settings', 'internet_led_alarm');                    
+    if(alarm == '1')then                                                
+        if(state == '1')then            
+            state = '0';                                                  
+        else                                                                    
+           if(state == '0')then                                                  
+               state = '1';                                                                                                             
+           end                                                            
+        end                                                             
+    end                                         
+    os.execute('echo '..state..' > ' .. led );                            
+end     
+
 
 function fetchWbwInfo()
     local wbw_info  = {};

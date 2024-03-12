@@ -38,21 +38,6 @@ function rdNetstats:getWifiUbus()
 	return self:_getWifiUbus()
 end
 
-function rdNetstats:getEthernet()
-
-	local wifi = self.x:get('meshdesk', 'settings','hardware')
-	self.x:foreach('meshdesk', 'hardware',
-		function(a)
-			if(a['.name'] == hardware)then
-				self.led = a['morse_led']
-				if(a['swap_on_off'] == '1')then
-					--print("Swapping on and off")
-					self:swapOnOff()
-				end
-			end	
-		end)
-end
-
 function rdNetstats:mapEthWithMeshMac()
 	--Prime the object with easy lookups
 	self:_createWirelessLookup()

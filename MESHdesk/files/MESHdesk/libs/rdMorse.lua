@@ -64,23 +64,7 @@ function rdMorse:rdMorse()
 
 	--Fast ones
 	self.fast_error	= ". "; 
-
-	
-	--Determine the LED to use--
-	--This is specified in the meshdesk config file under settings hardware
-	--and has to match a hardware definition in the same file
-	local hardware = self.x:get('meshdesk', 'settings','hardware')
-	self.x:foreach('meshdesk', 'hardware',
-		function(a)
-			if(a['.name'] == hardware)then
-				self.led = a['morse_led']
-				if(a['swap_on_off'] == '1')then
-					--print("Swapping on and off")
-					self:swapOnOff()
-				end
-			end	
-		end)
-	
+	self.led = self.x:get('meshdesk', 'settings','morse_led');
 end
         
 function rdMorse:getVersion()

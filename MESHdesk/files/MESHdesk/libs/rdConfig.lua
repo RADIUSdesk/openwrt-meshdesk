@@ -145,18 +145,6 @@ function rdConfig:configureDevice(config,doWanSynch)
             self:reboot();
 	        return;  
         end
-             
-        --Also an option return to base server (return_to_base)
-        if((o.return_to_base ~= nil)and(o.return_to_base == true))then
-            self:log("Returning the Hardware to Base server");
-            local base_dns  = self.x:get('meshdesk','internet1','base_dns');
-            local base_ip   = self.x:get('meshdesk','internet1','base_ip');
-            self.x:set('meshdesk','internet1','dns',base_dns);
-            self.x:set('meshdesk','internet1','ip',base_ip);
-            self.x:commit('meshdesk');
-            self:reboot();
-	        return;  
-        end
     end
     
     --Do we have wbw settings; if ensure its off
@@ -619,15 +607,12 @@ function rdConfig._get_ip_for_hostname(self)
 	local local_ip_v6   = self.n:getIpV6ForInterface('br-lan');
 	local v6_enabled    = false;
 	
-	local base_ip       = self.x:get('meshdesk','internet1','base_ip');
-    local base_dns      = self.x:get('meshdesk','internet1','base_dns');
-
 	if(local_ip_v6)then
 	    v6_enabled = true;
 	end
     
     --For now we're not updating it     
-    local return_table  = {fallback=true, ip=server, hostname=h_name,ip_6=server_6, v6_enabled=v6_enabled,base_ip=base_ip,base_dns=base_dns};
+    local return_table  = {fallback=true, ip=server, hostname=h_name,ip_6=server_6, v6_enabled=v6_enabled};
     
     --Current controller DNS Check
     local a             = self.nixio.getaddrinfo(h_name);
@@ -643,18 +628,7 @@ function rdConfig._get_ip_for_hostname(self)
         return_table.ip = ip;
         return_table.fallback = false;     
     end
-      
-    --Current controller DNS Check
-    local b             = self.nixio.getaddrinfo(base_dns);
-    if(b)then
-        local b_ip = b[1]['address'];       
-        if(b_ip ~= base_ip)then --Only if it was changed
-            self.x:set('meshdesk','internet1','base_ip', b_ip);
-	        self.x:save('meshdesk');
-	        self.x:commit('meshdesk'); 
-        end
-        return_table.base_ip = b_ip;    
-    end   
+    
     return return_table;
 end
 
