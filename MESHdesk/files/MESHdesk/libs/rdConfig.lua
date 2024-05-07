@@ -190,8 +190,20 @@ function rdConfig:configureDevice(config,doWanSynch)
 	    if(doWanSynch)then
 	        self.n:doWanSynch();
 	    end           
-	end 
+	end
 	
+	-- Before the wireless settings we should look if there are any PPSK files that we need to write
+	if(o.config_settings.ppsk_files ~= nil)then  
+		print("Doing ppsk files")         
+	    for k in pairs(o.config_settings.ppsk_files) do
+	    	
+            local ppsk_file_name 	= '/etc/hostapd-'..k..'.wpa_psk';
+            local ppsk_text 		= o.config_settings.ppsk_files[k];
+            self.fs.unlink(ppsk_file_name);
+            self.fs.writefile(ppsk_file_name,ppsk_text);
+        end
+	end  
+		
 	-- Do we have some wireless settings?      
 	if(o.config_settings.wireless ~= nil)then  
 		print("Doing wireless")         
