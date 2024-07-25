@@ -337,6 +337,13 @@ function rdConfig:configureDevice(config,doWanSynch)
 	    local a = rdAccel();
 	    a:configureFromTable(o.config_settings.accel_servers);	    
     end
+    
+    -- Jul 2024 SQM Profiles support
+    if o.config_settings and o.config_settings.sqm then
+    	require("rdSqm");
+	    local sqm = rdSqm();
+		sqm:configureFromTable(o.config_settings.sqm);
+	end
                
     ret_table.config_success = true;
     return ret_table;
