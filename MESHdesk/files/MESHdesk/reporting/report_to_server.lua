@@ -174,13 +174,22 @@ function fullReport()
     local mode  = network:getMode();
       
     local curl_data =   '{"report_type":"full","unix_timestamp":'..ts..',"mac":"'..id..'",'..n_stats..','..s_stats..',"vis":'..vis_string..',"gateway":"'..gateway..'","mode":"'..mode..'"}';
+    local curl_table= j.decode(curl_data);
+    
+    -- Include SQM info--
+    require('rdSqm');
+    local sqm   = rdSqm();
+    local sqm_table = sqm:getStatsTable();
+    if #sqm_table > 0 then
+    	curl_table['sqm'] = sqm_table;
+    end
+    -- END SQM info -- 
     
     local f   = nfs.access(gw_file);
     
     if f then  
         ----Include LAN INFO----
         local lan_info      = {};
-        local s_lan_info    = '';
         require('ubus');
         local conn = ubus.connect();
         if conn then
@@ -208,8 +217,7 @@ function fullReport()
                                 
                                 local id_if = x:get('meshdesk','settings','id_if');
                                 local id    = network:getMac(id_if);
-                                lan_info['mac'] = id;                   
-                                s_lan_info = j.encode(lan_info);
+                                lan_info['mac'] = id;
                             end
                         end
                     end
@@ -234,8 +242,7 @@ function fullReport()
                                 
                                 local id_if = x:get('meshdesk','settings','id_if');
                                 local id    = network:getMac(id_if);
-                                lan_info['mac'] = id;                   
-                                s_lan_info = j.encode(lan_info);
+                                lan_info['mac'] = id;
                             end
                         end
                     end
@@ -257,8 +264,7 @@ function fullReport()
                         local uci   = require("uci");    
                         local id_if = x:get('meshdesk','settings','id_if');
                         local id    = network:getMac(id_if);
-                        lan_info['mac'] = id;                   
-                        s_lan_info = j.encode(lan_info);
+                        lan_info['mac'] = id;
                     end
                 end 
                 
@@ -278,15 +284,14 @@ function fullReport()
                         local uci   = require("uci");    
                         local id_if = x:get('meshdesk','settings','id_if');
                         local id    = network:getMac(id_if);
-                        lan_info['mac'] = id;                   
-                        s_lan_info = j.encode(lan_info);
+                        lan_info['mac'] = id;
                     end
                 end 
                                   
             end
         end
-        --END LAN INFO--	    
-        curl_data= '{"report_type":"full","unix_timestamp":'..ts..',"mac":"'..id..'",'..n_stats..','..s_stats..','..'"lan_info":'..s_lan_info..',"vis":'..vis_string..',"gateway":"'..gateway..'","mode":"'..mode..'"}';
+        --END LAN INFO--
+        curl_table['lan_info'] = lan_info;
     end
 
     local proto     = x:get("meshdesk", "reporting", "report_adv_proto");
@@ -323,12 +328,13 @@ function fullReport()
     end
 	
     local query     = proto .. "://" .. server .. port_string .. url;
-    print(query);
-    --print(curl_data);
+    --print(query);
+    local curl_string = j.encode(curl_table);
+    print(curl_string);
     os.remove(result_file)
-    os.execute('curl -k -o '..result_file..' -X POST -H "Content-Type: application/json" -d \''..curl_data..'\' '..query) 
+    os.execute('curl -k -o '..result_file..' -X POST -H "Content-Type: application/json" -d \''..curl_string..'\' '..query) 
     afterReport(true);
-
+    
 end
 
 function afterReport(clear_flag)
@@ -524,5 +530,4 @@ if(report == 'full')then
 end
 
 print("Doing the "..report.." report");
-
 
