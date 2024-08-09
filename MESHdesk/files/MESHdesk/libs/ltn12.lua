@@ -1,3 +1,7 @@
+-- SPDX-FileCopyrightText: 2024 Diego Nehab <diego@tecgraf.puc-rio.br>
+--
+-- SPDX-License-Identifier: MIT
+
 -----------------------------------------------------------------------------
 -- LTN12 - Filters, sources, sinks and pumps.
 -- LuaSocket toolkit.

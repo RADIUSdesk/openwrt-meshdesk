@@ -1,3 +1,8 @@
+-- SPDX-FileCopyrightText: 2024 Dirk van der Walt <dirkvanderwalt@gmail.com>
+--
+-- SPDX-License-Identifier: GPL-3.0-or-later
+
+
 local nfs = require("nixio.fs")
 local json = require("json")
 local http = require("socket.http")

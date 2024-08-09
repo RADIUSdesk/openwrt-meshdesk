@@ -1,5 +1,10 @@
 #!/usr/bin/lua
 
+-- SPDX-FileCopyrightText: 2024 Dirk van der Walt <dirkvanderwalt@gmail.com>
+--
+-- SPDX-License-Identifier: GPL-3.0-or-later
+
+
 file_lan_up='/tmp/lan_up'
 file_lan_down='/tmp/lan_down'
 file_wifi_up='/tmp/wifi_up'

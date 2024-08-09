@@ -1,5 +1,7 @@
 #!/usr/bin/lua
-
+-- SPDX-FileCopyrightText: 2024 Dirk van der Walt <dirkvanderwalt@gmail.com>
+--
+-- SPDX-License-Identifier: GPL-3.0-or-later
 --[[--
 
 This test script will test the rdSqliteReports object class's various methods

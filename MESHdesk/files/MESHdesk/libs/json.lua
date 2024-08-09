@@ -1,3 +1,7 @@
+-- SPDX-FileCopyrightText: 2024 Craig Mason-Jones <http://json.luaforge.net/>
+--
+-- SPDX-License-Identifier: MIT
+
 -----------------------------------------------------------------------------
 -- JSON4Lua: JSON encoding / decoding support for the Lua language.
 -- json Module.

@@ -1,5 +1,10 @@
 #!/usr/bin/lua
 
+-- SPDX-FileCopyrightText: 2024 Dirk van der Walt <dirkvanderwalt@gmail.com>
+--
+-- SPDX-License-Identifier: GPL-3.0-or-later
+
+
 --[[
     24 May 2018
     This script can  be called when trouble arises as a gentle way to attempt to bring back the hardware to a working state.

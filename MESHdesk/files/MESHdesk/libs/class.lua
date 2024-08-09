@@ -1,3 +1,8 @@
+-- SPDX-FileCopyrightText: 2024 Andrew McWatters <andrew@andrewmcwatters.org>
+--
+-- SPDX-License-Identifier: MIT
+
+
 -------------------------------------------------------------------------------
 -- Lua with Classes
 -- lclass

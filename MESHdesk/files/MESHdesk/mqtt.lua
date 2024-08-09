@@ -1,5 +1,10 @@
 #!/usr/bin/lua
 
+-- SPDX-FileCopyrightText: 2024 Dirk van der Walt <dirkvanderwalt@gmail.com>
+--
+-- SPDX-License-Identifier: GPL-3.0-or-later
+
+
 -- Include Libraries
 package.path    = "libs/?.lua;" .. package.path
 local mqtt      = require("mosquitto");

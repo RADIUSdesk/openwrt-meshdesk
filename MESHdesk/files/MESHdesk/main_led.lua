@@ -1,5 +1,10 @@
 #!/usr/bin/lua
 
+-- SPDX-FileCopyrightText: 2024 Dirk van der Walt <dirkvanderwalt@gmail.com>
+--
+-- SPDX-License-Identifier: GPL-3.0-or-later
+
+
 start_stop = arg[1]
 what_to_flash = arg[2]
 

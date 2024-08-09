@@ -1,3 +1,7 @@
+-- SPDX-FileCopyrightText: 2024 Dirk van der Walt <dirkvanderwalt@gmail.com>
+--
+-- SPDX-License-Identifier: GPL-3.0-or-later
+
 require( "class" )
 
 -- 17 FEB 2023 --

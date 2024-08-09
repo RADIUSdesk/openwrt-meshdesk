@@ -1,5 +1,10 @@
 #!/usr/bin/lua
 
+-- SPDX-FileCopyrightText: 2024 Dirk van der Walt <dirkvanderwalt@gmail.com>
+--
+-- SPDX-License-Identifier: GPL-3.0-or-later
+
+
 local uci = require('uci')
 local y = uci.cursor(nil,'/var/state')
 

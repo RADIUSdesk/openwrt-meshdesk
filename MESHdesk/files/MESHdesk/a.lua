@@ -1,4 +1,9 @@
 #!/usr/bin/lua
+
+-- SPDX-FileCopyrightText: 2024 Dirk van der Walt <dirkvanderwalt@gmail.com>
+--
+-- SPDX-License-Identifier: GPL-3.0-or-later
+
 --[[--
 Startup script to get the config of the device from the config server
 --]]--
