@@ -184,7 +184,7 @@ function fullReport()
     require('rdSqm');
     local sqm   = rdSqm();
     local sqm_table = sqm:getStatsTable();
-    if #sqm_table > 0 then
+    if sqm_table and #sqm_table > 0 then
     	curl_table['sqm'] = sqm_table;
     end
     -- END SQM info -- 
@@ -207,7 +207,7 @@ function fullReport()
                     local info = conn:call("network.interface.lan", "status",{});
                     if(info['ipv4-address'] ~= nil)then
                         if(info['ipv4-address'][1]['address']~= '10.50.50.50')then --The Web-By-WiFi has a fixed IP if 10.50.50.50
-                            gateway = 'lan';
+                            curl_table['gateway'] = 'lan';
                             if(info['up'] == true)then
                                 lan_info['lan_proto'] = info['proto'];
                                 if(info['ipv4-address'] ~= nil)then
@@ -232,7 +232,7 @@ function fullReport()
                     local info = conn:call("network.interface.lan_6", "status",{});
                     if(info['ipv6-address'] ~= nil)then
                         if(info['ipv6-address'][1]['address']~= '10.50.50.50')then --The Web-By-WiFi has a fixed IP if 10.50.50.50
-                            gateway = 'lan';
+                            curl_table['gateway'] = 'lan';
                             if(info['up'] == true)then
                                 lan_info['lan_proto'] = info['proto'];
                                 if(info['ipv6-address'] ~= nil)then
@@ -255,7 +255,7 @@ function fullReport()
                 --Web-By-Wifi (We had to shorten the name to web_by_w for pppoe
                 if(n == 'network.interface.web_by_w')then
                     local info = conn:call("network.interface.web_by_w", "status",{});
-                    gateway = 'wifi';
+                    curl_table['gateway'] = 'wifi';
                     if(info['up'] == true)then
                         lan_info['lan_proto'] = info['proto'];
                         if(info['ipv4-address'] ~= nil)then
@@ -275,7 +275,7 @@ function fullReport()
                 --wwan
                 if(n == 'network.interface.wwan_4')then
                     local info = conn:call("network.interface.wwan_4", "status",{});
-                    gateway = '3g';
+                    curl_table['gateway'] = '3g';
                     if(info['up'] == true)then
                         lan_info['lan_proto'] = info['proto'];
                         if(info['ipv4-address'] ~= nil)then
