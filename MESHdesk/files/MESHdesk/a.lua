@@ -15,6 +15,7 @@ require("rdExternal");
 require("rdConfig");
 require("rdNetwork");
 require("rdWireless");
+require("rdMwan");
 
 local socket            = require("socket");
 local uci    	        = require("uci");
@@ -28,6 +29,7 @@ local l			        = rdLogger();
 local ext 			    = rdExternal();
 local n                 = rdNetwork();
 local c 				= rdConfig();
+local mwan				= rdMwan();
 local lan_up_file       = uci_cursor:get('meshdesk','settings','lan_up_file');
 local wifi_up_file      = uci_cursor:get('meshdesk','settings','wifi_up_file');
 local wbw_up_file       = uci_cursor:get('meshdesk','settings','wbw_up_file');
@@ -248,10 +250,16 @@ function try_for_connectivity()
     local cp_config_file	= uci_cursor:get('meshdesk','settings','cp_config_file');
     local wifi_captive      = false;
     local found_config      = false;
- 
-    --First try LAN
+    
     os.execute("/etc/MESHdesk/main_led.lua start lan");
-    local ret_tbl   = c:tryForConfigServer('lan');
+    --IF MWAN active start with it--
+    local ret_tbl = {};
+    if(mwan:startMwan())then
+		print("=====MWAN ACTIVE====");
+		ret_tbl   = c:tryForConfigServer('mwan');
+	else
+		ret_tbl   = c:tryForConfigServer('lan');
+	end   
     dns_works       = ret_tbl.dns_works;
        
     if(ret_tbl.got_settings)then

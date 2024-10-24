@@ -5,6 +5,7 @@ START=15
 STOP=90
 
 NETWORK_FILE="/etc/MESHdesk/configs/wan_network"
+MWAN_FILE="/etc/config/mwan_network"
 
 boot() {
     logger "==MESHDESK== BOOT PREP"
@@ -15,18 +16,17 @@ start() {
 
     DISABLED=`uci get meshdesk.internet1.disabled`
     echo "$DISABLED"
-    if [ $DISABLED == 1 ]; then
+    if [ "$DISABLED" = 1 ]; then  # Use = for comparison in shell scripts
         logger "==MESHDESK== DISABLED"
         exit
     fi
 
     logger "==MESHDESK== START PREP"
-    cp $NETWORK_FILE  /etc/config/network
+    cp $NETWORK_FILE /etc/config/network
     /etc/MESHdesk/mac_setter.lua
     
     DUMMY_CHECK=`cat /proc/modules | grep dummy`
-    if [ -z "$DUMMY_CHECK" ];
-    then
+    if [ -z "$DUMMY_CHECK" ]; then
         echo "dummy kernel module missing"
     else
         echo "dummy kernel module found"
@@ -36,14 +36,20 @@ start() {
             /sbin/ip link set name eth10$i dev dummy$i
         done
     fi
-  
-    #This file is used as a reference by UCI (rdNetwork) to compare and determine if there are changes that needs to be included in wan_network
-    cp $NETWORK_FILE  /etc/config/wan_network
+
+    # Check if MWAN_FILE exists before copying it
+    if [ -f "$MWAN_FILE" ]; then
+        logger "==MESHDESK== MWAN file found, copying it to /etc/config/network"
+        cp $MWAN_FILE /etc/config/network
+    else
+        logger "==MESHDESK== MWAN file not found, using NETWORK_FILE as fallback"
+        cp $NETWORK_FILE /etc/config/network
+    fi
+
     rm /etc/config/wireless
 }
 
 stop() {
     logger "==MESHDESK== END PREP"
 }
-
 

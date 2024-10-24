@@ -349,6 +349,13 @@ function rdConfig:configureDevice(config,doWanSynch)
 	    local sqm = rdSqm();
 		sqm:configureFromTable(o.config_settings.sqm);
 	end
+	
+	-- Oct 2024 Multi-WAN Profiles support
+	if o.config_settings and o.config_settings.mwan then
+		require('rdMwan');
+		local mwan = rdMwan();
+		mwan:configureFromTable(o.config_settings.mwan);
+	end
                
     ret_table.config_success = true;
     return ret_table;
@@ -386,7 +393,12 @@ function rdConfig:tryForConfigServer(method)
     end
     if(method == 'wbw')then
         sleep = 15; --going onto an unknown SSID
-    end   
+    end 
+    
+    if(method == 'mwan')then
+    	sleep = 30; -- to be safe
+    end	
+      
     self:_sleep(sleep);
     
 	local got_settings	    = false; 
@@ -621,6 +633,10 @@ function rdConfig._is_interface_still_up(self,method)
     if(method == 'wbw')then
         return self:_file_exists(self.wbw_up_file);
     end
+    
+    if(method == 'mwan')then
+    	return true; --for now
+    end    
 end
 
 
