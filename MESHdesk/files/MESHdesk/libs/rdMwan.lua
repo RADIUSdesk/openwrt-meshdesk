@@ -137,13 +137,101 @@ function rdMwan:_configureFromTable(mwan)
 
 	if mwan.wireless then
 		self:log("Found Wireless MWAN Process it")
-		self:_doMwanWireless(mwan.wireless);	
+		--self:_doMwanWireless(mwan.wireless);
+	else
+		--FIXME Remove any left ower wireless files if there might be (/etc/config/mwan_wireless)	
 	end
 	if mwan.network then
 		self:log("Found Network MWAN Process it")
-		self:_doMwanNetwork(mwan.network);	
+		--self:_doMwanNetwork(mwan.network);	
 	end
 	
+	if mwan.firewall then
+		self:log("Found MWAN Friewall entries")
+		self:_doMwanFirewall(mwan.firewall);	
+	end
+	
+end
+
+function rdMwan:_doMwanFirewall(tbl)
+	-- First we look for existing firewall entries starting with 'mw' and make a list of them
+	-- Then we compare them with this list of interfaces (tbl) --
+	-- If there are existing ones not in the current list; we remove them --
+	-- Then we add the new ones --
+	-- Then we add forwarding rules --
+
+	local x = self.uci:cursor();
+	local existing_fw_items = {}
+	local exit_points = tbl.forwarding;
+
+	-- Collect existing firewall items that start with 'mw'
+	x:foreach('firewall','zone', function(a)    
+		if a['name']:sub(1, 2) == 'mw' then  -- Check if it starts with 'mw'
+			table.insert(existing_fw_items, {name = a['name'], uci_name = a['.name']})
+		end
+	end)
+
+	-- 1. Remove items that are in existing_fw_items but not in tbl.masq_zones
+	for _, existing_fw in ipairs(existing_fw_items) do
+		local found = false
+		for _, fw_item in ipairs(tbl.masq_zones) do
+			if fw_item == existing_fw['name'] then
+				found = true
+				break
+			end
+		end
+		if not found then
+			x:delete('firewall', existing_fw['uci_name'])
+			--Also delete any forwarding rules--
+			x:foreach('firewall','forwarding', function(b) 
+				if(b['dest'] == existing_fw['name'])then
+					x:delete('firewall', b['.name'])	
+				end			
+			end)			
+		end
+	end
+		
+	-- 2. Add items that are in tbl but not in existing_fw_items
+	for _, fw_item in ipairs(tbl.masq_zones) do
+		local found = false
+		for _, existing_fw in ipairs(existing_fw_items) do
+			if fw_item == existing_fw['name'] then
+				found = true
+				break
+			end
+		end
+		if not found then
+			-- Here you would add the firewall entry
+			local zone_name = x:add('firewall','zone')
+		    x:set('firewall',zone_name,'name', fw_item)	
+		    x:set('firewall',zone_name,'network', fw_item)	
+		    x:set('firewall',zone_name,'input',	'ACCEPT')	
+		    x:set('firewall',zone_name,'output','ACCEPT')	
+		    x:set('firewall',zone_name,'forward','ACCEPT')
+		    x:set('firewall',zone_name,'masq',	1)
+		    x:set('firewall',zone_name,'mtu_fix',	1)		        		    
+		end
+		
+		-- 3 Add forwarding rules for this zone for each ex_ zone --
+		for _, exit_point in ipairs(exit_points) do
+			local fw_found = false;
+			x:foreach('firewall','forwarding', function(b) 
+				if ((b['dest'] == fw_item) and (b['src'] == exit_point)) then
+					fw_found = true	
+				end			
+			end)
+			if not fw_found then
+				local forwarding_name = x:add('firewall',	'forwarding')
+				x:set('firewall',forwarding_name,'src', 	exit_point)	
+				x:set('firewall',forwarding_name,'dest', 	fw_item)					
+			end	
+		end						
+	end
+		
+	-- Finally, commit the changes if you have any additions/removals
+	x:save('firewall')
+	x:commit('firewall')
+	self.util.exec("/etc/init.d/firewall reload")	
 end
 
 

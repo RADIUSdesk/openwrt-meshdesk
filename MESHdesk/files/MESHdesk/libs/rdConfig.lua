@@ -355,6 +355,8 @@ function rdConfig:configureDevice(config,doWanSynch)
 		require('rdMwan');
 		local mwan = rdMwan();
 		mwan:configureFromTable(o.config_settings.mwan);
+	else
+		--FIXME Clean up any MWAN files (/etc/config/mwan_network and /etc/config/mwan_wireless)
 	end
                
     ret_table.config_success = true;
