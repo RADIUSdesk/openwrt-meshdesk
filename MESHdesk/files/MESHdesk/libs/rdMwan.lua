@@ -478,7 +478,10 @@ function rdMwan:_doMwan3(table)
 		    self.util.exec("rm " .. new_filepath)  -- Remove the new file since it's identical
 		else
 		    self.util.exec("mv " .. new_filepath .. " " .. old_filepath)  -- Replace the old file
+		    self.util.exec("/etc/init.d/mwan3 restart")
 		end
+	else
+		self.util.exec("/etc/init.d/mwan3 restart")	
 	end	          
 end
 
