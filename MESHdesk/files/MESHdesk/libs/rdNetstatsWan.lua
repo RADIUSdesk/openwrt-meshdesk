@@ -1,4 +1,4 @@
--- SPDX-FileCopyrightText: 2024 FIXME REPLACE WITH YOUR INFO ... format: Dirk van der Walt <dirkvanderwalt@gmail.com>
+-- SPDX-FileCopyrightText: 2024 FIXME REPLACE WITH YOUR INFO ... format: Mathis Arthur Boumaza <maboum2000@gmail.com>
 --
 -- SPDX-License-Identifier: GPL-3.0-or-later
 
