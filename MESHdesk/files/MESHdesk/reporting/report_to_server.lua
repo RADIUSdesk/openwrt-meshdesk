@@ -9,6 +9,8 @@ require("rdNetwork");
 require("rdSoftflowLogs");
 require("rdConfig");
 require("rdOpenvpnstats");
+require('rdNetstatsWan');
+
 local utl           = require "luci.util";
 
 --Some variables
@@ -23,6 +25,7 @@ local util          = require("luci.util");
 local network       = rdNetwork();
 local config        = rdConfig();
 local vpn	        = rdOpenvpnstats();
+local wanStats		= rdNetstatsWan();
 local report        = 'light'; -- can be light or full
 
 if(arg[1])then
@@ -34,93 +37,58 @@ function file_exists(name)
         if f~=nil then io.close(f) return true else return false end                
 end
 
-function lightReport()
-    local proto     = x:get("meshdesk", "reporting", "report_adv_proto");
-    local url       = x:get("meshdesk", "internet1", "status_url");
-    url             = url.."?_dc="..os.time(); 
-    
-    local server_tbl= config:getIpForHostname();
-    local server    = server_tbl.hostname;
-	if(server_tbl.fallback)then
-	    server = server_tbl.ip;
-	end
- 
-	local local_ip_v6   = network:getIpV6ForInterface('br-lan');
-	if(local_ip_v6)then
-	    server      = x:get("meshdesk", "internet1", "ip_6");
-	    server      = '['..server..']';
-	end
-	
-	local http_port     = x:get('meshdesk','internet1','http_port');
-    local https_port    = x:get('meshdesk','internet1','https_port');
-    local port_string   = '/';
-    
-    if(proto == 'http')then
-        if(http_port ~= '80')then
-            port_string = ":"..http_port.."/";
-        end
+local function get_report_url()
+    local proto 		= x:get("meshdesk", "reporting", "report_adv_proto");
+    local url 			= x:get("meshdesk", "internet1", "status_url");
+    local server_tbl 	= config:getIpForHostname()
+    local server 		= server_tbl.hostname;
+    if server_tbl.fallback then server = server_tbl.ip end
+
+    local local_ip_v6 = network:getIpV6ForInterface('br-lan');
+    if local_ip_v6 then
+        server = x:get("meshdesk", "internet1", "ip_6");
+        server = '[' .. server .. ']';
     end
-    
-    if(proto == 'https')then
-        if(https_port ~= '443')then
-            port_string = ":"..https_port.."/";
-        end
+
+    local http_port 	= x:get('meshdesk', 'internet1', 'http_port');
+    local https_port 	= x:get('meshdesk', 'internet1', 'https_port');
+    local port_string 	= '';
+
+    if proto == 'http' and http_port ~= '80' then
+        port_string = ':' .. http_port
+    elseif proto == 'https' and https_port ~= '443' then
+        port_string = ':' .. https_port
     end
-	
-    local query     = proto .. "://" .. server .. port_string .. url;
-    print(query);
+
+    local query = string.format("%s://%s%s/%s?_dc=%d", proto, server, port_string, url, os.time())
+    return query
+end
+
+local function get_report_data()
+    local curl_table = {};
     
+    --We start with the very basic data and add those items where detected
     local id_if = x:get('meshdesk','settings','id_if');
     local id    = network:getMac(id_if);
     local mode  = network:getMode();
-    local curl_data= '{"report_type":"light","mac":"'..id..'","mode":"'..mode..'"}';
-
+    local curl_table = { report_type = 'light', mac = id , mode = mode };
+    
     --Check if OpenVPN is active
     local vpn_enabled = false;
     local vpn_stats = vpn:getStats()
     if(string.len(vpn_stats) > 20)then
         vpn_enabled = true;
-        curl_data= '{"report_type":"light","mac":"'..id..'","mode":"'..mode..'","vpn_info":'..vpn_stats..'}';
+        curl_table.vpn_info = j.decode(vpn_stats);
     end
-      
     
-    
-    local pid_sf = util.exec("pidof softflowd");
-    local softflows_enabled = false;
-    if(pid_sf ~= '')then
-        softflows_enabled   = true;
-        local s             = rdSoftflowLogs();
-        local flows_table   = s:doDumpFlows();
-        local flows_string  = j.encode(flows_table);
-	    print("==FLOWS==");
-	    print(flows_string);
-	    print("==END FLOWS==");
-        curl_data= '{"report_type":"light","mac":"'..id..'","mode":"'..mode..'","flows":'..flows_string..'}';
-    end 
-    
-    --Check if accel-pppd is implemented 
-    local pid_accel = util.exec("pidof accel-pppd");
-    local accel_enabled = false;
-    if(pid_accel ~= '')then
-        accel_enabled   = true;
-        os.execute("/etc/MESHdesk/reporting/accel_report_to_server.lua");
-    end 
-           
     --WBW--
     local wbw_dis   = x:get('meshdesk','web_by_wifi','disabled');
     if(wbw_dis == '0')then
         print("WBW Active find detail");
-        local wbw_table     = fetchWbwInfo();
-        local wbw_string    = j.encode(wbw_table);
-        curl_data = '{"report_type":"light","mac":"'..id..'","mode":"'..mode..'","wbw_info":'..wbw_string..'}';
-        if(softflows_enabled == true)then
-            curl_data = '{"report_type":"light","mac":"'..id..'","mode":"'..mode..'","wbw_info":'..wbw_string..',"flows":'..flows_string..'}';
-        end
-        if(vpn_enabled == true)then
-            curl_data = '{"report_type":"light","mac":"'..id..'","mode":"'..mode..'","wbw_info":'..wbw_string..'","vpn_info":'..vpn_stats..'}';
-        end        
+        local wbw_table     = fetchWbwInfo();      
+        curl_table.wbw_info = wbw_table;   
     end
-    --END WBW--
+    -- END WBW --
     
     --QMI--
     local conf_file = x:get('meshdesk', 'settings','config_file');
@@ -131,22 +99,50 @@ function lightReport()
         if(o.success == true)then
             if(o.meta_data)then
                 if(o.meta_data.QmiActive == true)then
-                    local signal_info = util.exec("uqmi -d /dev/cdc-wdm0 --get-signal-info");
-                    local system_info = util.exec("uqmi -d /dev/cdc-wdm0 --get-system-info");
-                    curl_data = '{"report_type":"light","mac":"'..id..'","mode":"'..mode..'","qmi_info":{"signal" : '..signal_info..',"system":'..system_info..'}}';
-                    if(vpn_enabled == true)then
-                        curl_data = '{"report_type":"light","mac":"'..id..'","mode":"'..mode..'","qmi_info":{"signal" : '..signal_info..',"system":'..system_info..'}","vpn_info":'..vpn_stats..'}';
-                    end 
+                    local signal_info = util.exec("uqmi -t 1000 -d /dev/cdc-wdm0 --get-signal-info");
+                    local system_info = util.exec("uqmi -t 1000 -d /dev/cdc-wdm0 --get-system-info");
+                    curl_table.qmi_info = {
+                    	signal 	= signal_info,
+                    	system	= system_info
+                    }
                 end
             end
         end
     end 
     --END QMI--
-       
-    --print(curl_data);
-    os.remove(result_file)  
-    os.execute('curl -k -o '..result_file..' -X POST -H "Content-Type: application/json" -d \''..curl_data..'\' '..query);
-    afterReport();     
+    
+    --2024 Include WAN stats
+    local wanStats = wanStats:getWanStats()
+    curl_table.wan_stats = wanStats;
+      
+    return curl_table
+end
+
+local function do_accel()
+
+	--Check if accel-pppd is implemented 
+    local pid_accel = util.exec("pidof accel-pppd");
+    local accel_enabled = false;
+    if(pid_accel ~= '')then
+        accel_enabled   = true;
+        os.execute("/etc/MESHdesk/reporting/accel_report_to_server.lua");
+    end 
+    
+end
+
+local function send_report(report_data, query)
+    local json_data = j.encode(report_data)
+    print(json_data);
+    local curl_cmd = "curl -k -o "..result_file.." -X POST -H 'Content-Type: application/json' -d '"..json_data.."' "..query
+    os.execute(curl_cmd)
+end
+
+local function lightReport()
+	do_accel();	
+    local report_data 	= get_report_data()
+    local query  		=  get_report_url();
+    send_report(report_data, query)
+    afterReport()
 end
 
 function fullReport()
