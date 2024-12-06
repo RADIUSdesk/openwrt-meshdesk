@@ -15,7 +15,7 @@ package.path = "../libs/?.lua;" .. package.path
 function main()
 	require("rdNetstatsWan")
 	local nsw = rdNetstatsWan()
-	print("Version is " .. nsw:getVersion())	
+	print("Version is  " .. nsw:getVersion())	
 	printWanStats(nsw:getWanStats())
 end
 
