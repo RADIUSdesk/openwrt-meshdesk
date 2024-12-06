@@ -1,4 +1,4 @@
--- SPDX-FileCopyrightText: 2024 FIXME REPLACE WITH YOUR INFO ... format: Mathis Arthur Boumaza <maboum2000@gmail.com>
+-- SPDX-FileCopyrightText: 2024 Mathis Arthur Boumaza <maboum2000@gmail.com>
 --
 -- SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -54,8 +54,6 @@ function rdNetstatsWan:_getHostname(json_file)
 	return self.sys.hostname();
 end
 
-
-
 function rdNetstatsWan:_getWanStats(json_file)
 	self:log("Getting WAN Stats using ubus");
 	local wanStats = {}; --Start with empty
@@ -64,20 +62,21 @@ function rdNetstatsWan:_getWanStats(json_file)
 		error("Failed to connect to ubusd")
 	end
 	local interfaces = conn:call("network.interface", "dump", { })
-	local wan_pattern = "^mw(%d+)$"
 	for _, interface in ipairs(interfaces['interface']) do
-		if(string.match(interface.interface, wan_pattern) and interface.up and interface.l3_device) then
-			table.insert(wanStats, {
-				interface = interface.interface,
-				up = interface.up,
-				statistics = self:_getDeviceStats(interface.l3_device)
-			})
+		if(self:_matchesPattern(interface.interface))then
+			if(string.match(interface.interface, wan_pattern) and interface.up and interface.l3_device) then
+				table.insert(wanStats, {
+					interface = interface.interface,
+					up = interface.up,
+					statistics = self:_getDeviceStats(interface.l3_device)
+				})
+			end
 		end
 	end
+			
 	conn:close();
 	return wanStats;
 end
-
 
 
 function rdNetstatsWan:_getDeviceStats(device)
@@ -85,4 +84,9 @@ function rdNetstatsWan:_getDeviceStats(device)
 	local device = conn:call("network.device", "status", { name = device })
 	conn:close();
 	return device.statistics;
+end
+
+function rdNetstatsWan:_matchesPattern(value)
+    -- Match 'lan' or strings starting with 'mw' followed by one or more digits
+    return value == "lan" or value:match("^mw%d+$") ~= nil
 end
