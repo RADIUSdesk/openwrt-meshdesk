@@ -96,7 +96,8 @@ function rdNetstatsWan:_getWanStats(json_file)
 		end
 	end
 	
-	if(self.fs.stat('/etc/config/mwan_network','size')>0)then
+	local size = self.fs.stat('/etc/config/mwan_network', 'size')
+	if size and size > 0 then
 		mwanStatus = conn:call("mwan3", "status", {})
 	end
 		
