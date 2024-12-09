@@ -73,10 +73,17 @@ function rdNetstatsWan:_getWanStats(json_file)
 	for _, interface in ipairs(interfaces['interface']) do
 		if(self:_matchesPattern(interface.interface))then				
 			if(interface.up)then
-				local dev = interface.l3_device;
+				local ipv4_address = interface['ipv4-address'];
+				local ipv6_address = interface['ipv6-address'];			
+				if(interface.proto == 'qmi')then
+					--We find the IP Address for qmi interfaces a bit different
+					ipv4_address = self:_getIpForQmi(interfaces, interface.interface,'4');
+					ipv6_address = self:_getIpForQmi(interfaces, interface.interface,'6');
+				end	
+				local dev 	= interface.l3_device;
 				local stats = self:_getDeviceStats(interface.l3_device)
 				-- Adding a new interface dynamically
-				table.insert(ifUsage, { interface = interface.interface, statistics = stats});
+				table.insert(ifUsage, { interface = interface.interface, ipv4_address = ipv4_address , ipv6_address =  ipv6_address, statistics = stats});
 				if(interface.proto == 'qmi')then
 					local lteStats = self:_getLteStats(interface.interface);
 					lteStats.interface = interface.interface;
@@ -129,6 +136,18 @@ function rdNetstatsWan:_getDeviceStats(device)
 	conn:close();
 	return stats;
 end
+
+function rdNetstatsWan:_getIpForQmi(interfaces,interface,version)
+	local if_name 	= interface.."_"..version;
+	local key	  	= 'ipv'..version..'-address';
+	local value		= nil;
+	for _, interface in ipairs(interfaces['interface']) do
+		if(interface.interface == if_name)then
+			value = interface[key];
+		end	
+	end	
+	return value;
+end	
 
 function rdNetstatsWan:_getLteStats(interface)
 
