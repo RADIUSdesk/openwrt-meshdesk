@@ -156,11 +156,12 @@ function rdMwan:_configureFromTable(mwan)
 		self:_doMwan3(mwan.mwan3);
 	end
 	
-	if mwan.collectd then
-		self:log("Found Collectd configs");
-		self:_doCollectd(mwan.collectd);
+	if mwan.mode then
+		if(mwan.mode == 'mesh')then
+			self.util.exec("/etc/init.d/mwan3 restart"); --When doing Batman-adv mesh we need to restart the mwan3 service afterwards
+		end
 	end
-	
+		
 end
 
 function rdMwan:_doMwanFirewall(tbl)
@@ -480,95 +481,13 @@ function rdMwan:_doMwan3(table)
 
 		-- Compare the MD5 checksums
 		if md5sum_old == md5sum_new then
-		    self.util.exec("rm " .. new_filepath)  -- Remove the new file since it's identical
+		    self.util.exec("rm " .. new_filepath)  -- Remove the new file since it's identical	    
 		else
 		    self.util.exec("mv " .. new_filepath .. " " .. old_filepath)  -- Replace the old file
 		    self.util.exec("/etc/init.d/mwan3 restart")
 		end
 	else
 		self.util.exec("/etc/init.d/mwan3 restart")	
-	end	          
-end
-
-function rdMwan:_doCollectd(table)
-	local old_file = 'collectd'
-	local new_file = 'collectd_new'
-	local config   = old_file
-	local existing = false
-	
-	if(self.nfs.stat('/etc/config/'..old_file) ~= nil)then
-		config   = new_file
-		existing = true
-	end
-	
-	self.util.exec("touch /etc/config/"..config)
-	
-	local x = self.uci:cursor();
-	                                                        
-	for i, setting_entry in ipairs(table) do                                 
-		local entry_type                                                 
-	    local entry_name                                                  
-	    local options = {} -- New empty array for this entry
-	    local lists   = {};
-		for key, val in pairs(setting_entry) do                           
-        	-- If it is not an options entry; it is a type with value
-            if((key ~= 'options') and (key ~= 'lists'))then                                                      
-            	entry_type  = key                                                
-                entry_name  = val                                                
-         	else                                                                                                   
-                -- Run through all the options
-                if(key == 'options')then
-                    for ko, vo in pairs(val) do                                                                  
-                        options[ko] = vo                                                                     
-                    end
-                end
-                if(key == 'lists')then
-                    for kl, vl in pairs(val) do                                                                  
-                        lists[kl] = vl                                                                     
-                    end
-                end                 	                                                                                            
-            end                                                                                                    
-    	end
-
-        x:set(config, entry_name, entry_type);   	
-        x:commit(config)     
-             
-    	-- Set all options
-		for key, val in pairs(options) do
-			local val_str = tostring(val)
-			if type(val) == 'boolean' then
-				val_str = val and "1" or "0"
-			end
-			x:set(config, entry_name, key, val_str)
-		end
-		x:commit(config)
-        
-        --Set all the lists
-        for key, val in pairs(lists) do       
-            x:set(config, entry_name,key, val);
-            x:commit(config)           
-        end    
-    end
-    
-    --It existing, compare the two and if different replace the old one else delete the new one (since it is the same)
-	if( existing )then
-		print("Existing file found, comparing checksums...")    
-		local old_filepath = "/etc/config/" .. old_file
-		local new_filepath = "/etc/config/" .. new_file
-
-		-- Get the MD5 checksums of the old and new files
-		local md5sum_old = self:get_md5sum(old_filepath)
-		local md5sum_new = self:get_md5sum(new_filepath)
-
-		-- Compare the MD5 checksums
-		if md5sum_old == md5sum_new then
-		    self.util.exec("rm " .. new_filepath)  -- Remove the new file since it's identical
-		else
-		    self.util.exec("mv " .. new_filepath .. " " .. old_filepath)  -- Replace the old file
-		    self.util.exec("/etc/init.d/collectd restart")
-		end
-	else
-		self.util.exec("/etc/init.d/collectd restart")	
 	end	          
 end
 
