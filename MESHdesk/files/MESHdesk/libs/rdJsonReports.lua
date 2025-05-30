@@ -167,6 +167,7 @@ function rdJsonReports._getStations(self,interface_id)
     
     local s = self.json.decode(self.nfs.readfile(self.jStations));
     
+    
     for a, row_s in ipairs(s) do        
         if(row_s.InterfaceId == interface_id)then
             empty = false;
@@ -185,6 +186,7 @@ function rdJsonReports._getStations(self,interface_id)
 	                rx_packets          = 0,
 	                tx_bytes            = 0,
 	                tx_packets          = 0,
+	               	                
 	                
 	                total_rx_bytes      = 0,
 	                total_rx_packets    = 0,
@@ -194,17 +196,43 @@ function rdJsonReports._getStations(self,interface_id)
 	                tx_retries          = row_s.tx_retries,
 	                tx_failed           = row_s.tx_failed, 
 	                signal_now          = row_s.signal,     
-	                signal_avg          = row_s.avg,
+	                signal_avg          = row_s.signal_avg,
 	                tx_bitrate          = row_s.tx_bitrate,
-	                rx_bitrate          = row_s.rx_bitrate,   
-	                authorized          = row_s.authorized, 
-	                authenticated       = row_s.authenticated,     
-	                preamble            = row_s.preamble,
-	                wmm_wme             = row_s.wmm_wme,
-	                mpf                 = row_s.mpf,
-	                tdls_peer           = row_s.tdls_peer,
+	                rx_bitrate          = row_s.rx_bitrate,          
+ 
+	                --preamble            = row_s.preamble,
+	                --wmm_wme             = row_s.wmm_wme,
+	                --mpf                 = row_s.mpf,
+	                --tdls_peer           = row_s.tdls_peer,
+	                
 	                unix_timestamp      = row_s.unix_timestamp,
-	                connected_time      = row_s.connected_time
+	                connected_time      = row_s.connected_time,
+	                
+	                --May 2025 add more info
+                    tx_mcs      		= row_s.tx_mcs,
+					tx_nss       		= row_s.tx_nss,
+					tx_short_gi  		= row_s.tx_short_gi,
+					tx_ht        		= row_s.tx_ht,
+					tx_vht       		= row_s.tx_vht,
+					tx_he        		= row_s.tx_he,
+					tx_eht       		= row_s.tx_eht,
+					tx_mhz       		= row_s.tx_mhz,
+					
+					rx_mcs         		= row_s.rx_mcs,
+					rx_short_gi    		= row_s.rx_short_gi,
+					rx_ht          		= row_s.rx_ht,
+					rx_vht         		= row_s.rx_vht,
+					rx_he          		= row_s.rx_he,
+					rx_eht        		= row_s.rx_eht,
+					rx_mhz         		= row_s.rx_mhz,
+					
+					noise         		= row_s.noise,
+					vlan         		= row_s.vlan,
+					wme            		= row_s.wme,
+					mfp            		= row_s.mfp,
+					tdls           		= row_s.tdls,
+					inactive    		= row_s.inactive,	        
+	               	                
                 }
             else
                 --We got some entry now we have to be cautious
@@ -227,7 +255,7 @@ function rdJsonReports._getStations(self,interface_id)
 	                temp_s[mac]['tx_packets']       = row_s.tx_packets - temp_s[mac]['first_tx_packets'];
 
                     temp_s[mac]['signal_now']       = self:_round((tonumber(temp_s[mac]['signal_now'])+tonumber(row_s.signal))/2);
-	                temp_s[mac]['signal_avg']       = self:_round((tonumber(temp_s[mac]['signal_avg'])+tonumber(row_s.avg))/2);  
+	                temp_s[mac]['signal_avg']       = self:_round((tonumber(temp_s[mac]['signal_avg'])+tonumber(row_s.signal_avg))/2);  
                     temp_s[mac]['tx_bitrate']       = self:_round((tonumber(temp_s[mac]['tx_bitrate'])+tonumber(row_s.tx_bitrate))/2);
 	                temp_s[mac]['rx_bitrate']       = self:_round((tonumber(temp_s[mac]['rx_bitrate'])+tonumber(row_s.rx_bitrate))/2); 
 	                
@@ -256,7 +284,7 @@ function rdJsonReports._getStations(self,interface_id)
                     
                     
                     temp_s[mac]['signal_now']       = row_s.signal;
-	                temp_s[mac]['signal_avg']       = row_s.avg;  
+	                temp_s[mac]['signal_avg']       = row_s.signal_avg;  
                     temp_s[mac]['tx_bitrate']       = row_s.tx_bitrate;
 	                temp_s[mac]['rx_bitrate']       = row_s.rx_bitrate;   
                 end 
@@ -264,31 +292,78 @@ function rdJsonReports._getStations(self,interface_id)
                     temp_s[mac]['tx_retries']       = row_s.tx_retries;
 	                temp_s[mac]['tx_failed']        = row_s.tx_failed;     
                     temp_s[mac]['connected_time']   = row_s.connected_time;
-                    temp_s[mac]['unix_timestamp']   = row_s.unix_timestamp;    
+                    temp_s[mac]['unix_timestamp']   = row_s.unix_timestamp; 
+                    
+                    --May 2025 add more info
+                    temp_s[mac]['tx_mcs']      		= row_s.tx_mcs;
+					temp_s[mac]['tx_nss']       	= row_s.tx_nss;
+					temp_s[mac]['tx_short_gi']  	= row_s.tx_short_gi;
+					temp_s[mac]['tx_ht']        	= row_s.tx_ht;
+					temp_s[mac]['tx_vht']       	= row_s.tx_vht;
+					temp_s[mac]['tx_he']        	= row_s.tx_he;
+					temp_s[mac]['tx_eht']       	= row_s.tx_eht;
+					temp_s[mac]['tx_mhz']       	= row_s.tx_mhz;
+					
+					temp_s[mac]['rx_mcs']         	= row_s.rx_mcs;
+					temp_s[mac]['rx_short_gi']    	= row_s.rx_short_gi;
+					temp_s[mac]['rx_ht']          	= row_s.rx_ht;
+					temp_s[mac]['rx_vht']         	= row_s.rx_vht;
+					temp_s[mac]['rx_he']          	= row_s.rx_he;
+					temp_s[mac]['rx_eht']        	= row_s.rx_eht;
+					temp_s[mac]['rx_mhz']         	= row_s.rx_mhz;
+					
+					temp_s[mac]['noise']         	= row_s.noise;
+					temp_s[mac]['vlan']         	= row_s.vlan;
+					temp_s[mac]['wme']            	= row_s.wme;
+					temp_s[mac]['mfp']            	= row_s.mfp;
+					temp_s[mac]['tdls']           	= row_s.tdls;
+					temp_s[mac]['inactive']    		= row_s.inactive;	                                
             end
-        
-            --[[table.insert(stations,{ 
-	            mac             = row_s.mac,
-	            inactive_time   = row_s.inactive_time, 
-	            rx_bytes        = row_s.rx_bytes, 
-	            rx_packets      = row_s.rx_packets,
-	            tx_bytes        = row_s.tx_bytes,
-	            tx_packets      = row_s.tx_packets,
-	            tx_retries      = row_s.tx_retries,
-	            tx_failed       = row_s.tx_failed, 
-	            rx_signal       = row_s.signal,     
-	            avg             = row_s.avg,
-	            tx_bitrate      = row_s.tx_bitrate,
-	            rx_bitrate      = row_s.rx_bitrate,   
-	            authorized      = row_s.authorized, 
-	            authenticated   = row_s.authenticated,     
-	            preamble        = row_s.preamble,
-	            wmm_wme         = row_s.wmm_wme,
-	            mpf             = row_s.mpf,
-	            tdls_peer       = row_s.tdls_peer,
-	            connected_time  = row_s.connected_time,
-	            unix_timestamp  = row_s.unix_timestamp,
-            });--]]
+                 
+            --[[
+            	local sta = {
+					mac			   = d.mac,
+					signal         = d.signal,
+					signal_avg     = d.signal_avg,
+					noise          = d.noise,
+					connected_time = d.connected_time,
+					inactive_time  = d.inactive,
+
+					rx_bitrate     = self:_toM(rx.rate),
+					rx_mcs         = rx.mcs,
+					rx_short_gi    = rx.short_gi,
+					rx_packets     = rx.packets,
+					rx_bytes       = rx.bytes,
+					rx_ht          = rx.ht,
+					rx_vht         = rx.vht,
+					rx_he          = rx.he,
+					rx_eht         = rx.eht,
+					rx_mhz         = rx.mhz,
+
+					tx_bitrate     = self:_toM(tx.rate),
+					tx_mcs         = tx.mcs,
+					tx_nss         = tx.nss,
+					tx_short_gi    = tx.short_gi,
+					tx_packets     = tx.packets,
+					tx_bytes       = tx.bytes,
+					tx_failed      = tx.failed,
+					tx_retries	   = tx.retries,
+					tx_ht          = tx.ht,
+					tx_vht         = tx.vht,
+					tx_he          = tx.he,
+					tx_eht         = tx.eht,
+					tx_mhz         = tx.mhz,
+
+					wme            = d.wme,
+					mfp            = d.mfp,
+					tdls           = d.tdls,
+					vlan		   = p,
+					StationId 	   = StationId,
+    				unix_timestamp = ts,  
+						         
+           		}
+           	--]] 
+                        
         end
     end   
     --return stations;
@@ -336,10 +411,8 @@ end
 function rdJsonReports._doWifi(self)
 
     local n_stats           = self.netstats:getWifiUbus();
-    --print(n_stats);
     local radio_structure   = self.json.decode(n_stats);
-    
-    
+       
     for kr, vr in pairs(radio_structure['radios']) do
         --print("RADIO NUMBER "..kr)
         if (self:_getRadioId(kr) == nil)then
@@ -432,85 +505,15 @@ function rdJsonReports._doWifi(self)
 end
 
 function rdJsonReports._addStationDetail(self,s_tbl)
-    local ts    = os.time();
-           
+    local ts   	= os.time();  
+    self.lStaNr	= self.lStaNr +1;                 
+    local station 		= s_tbl;                     
+    station.StationId 	= self.lStaNr;
+    station.unix_timestamp = ts;   
     --self.util.dumptable(s_tbl);
-    --print(s_tbl['connected time']);
-    --print(s_tbl['inactive time']);
-    
-    local i_inactive_time   = s_tbl['inactive time'];
-    if (type(i_inactive_time) == "string") then
-        i_inactive_time  = self:_numberOnly(s_tbl['inactive time']);
-    end
-    
-    local i_connected_time   = s_tbl['connected time'];
-    if (type(i_inactive_time) == "string") then
-        i_connected_time  = self:_numberOnly(s_tbl['connected time']);
-    end
-    
-    local signal   = s_tbl['signal'];
-    if (type(signal) == "string") then
-        signal      = self:_signalOnly(s_tbl['signal']);
-    end
-           
-    local avg   = signal;
-    if(s_tbl['signal avg'])then
-        avg     = s_tbl['signal avg'];
-        if (type(avg) == "string") then
-            avg  = self:_signalOnly(s_tbl['signal avg']);
-        end
-    end
-
-    local tx_bitrate        = s_tbl['tx bitrate'];
-    if (type(tx_bitrate) == "string") then
-        tx_bitrate  = self:_numberOnly(s_tbl['tx bitrate']);
-    end
-    
-    local rx_bitrate        = s_tbl['rx bitrate'];
-    if (type(tx_bitrate) == "string") then
-        rx_bitrate  = self:_numberOnly(s_tbl['rx bitrate']);
-    end
-    
-    local i_vlan = 0;
-    if(s_tbl['vlan'])then
-        i_vlan = tonumber(s_tbl['vlan']);
-    end
-        
-    local authorized        = self:_bool(s_tbl['authorized']);
-    local authenticated     = self:_bool(s_tbl['authenticated']);
-    local wmm_wme           = self:_bool(s_tbl['WMM/WME']);
-    local mpf               = self:_bool(s_tbl['MFP']);
-    local tdls_peer         = self:_bool(s_tbl['TDLS peer']);
-    
-    self.lStaNr = self.lStaNr +1;
-    
-    local station = {
-        StationId       =  self.lStaNr,
-        mac             = s_tbl['mac'],
-        inactive_time   = i_inactive_time,
-        rx_bytes        = tonumber(s_tbl['rx bytes']),
-        rx_packets      = tonumber(s_tbl['rx packets']),
-        tx_bytes        = tonumber(s_tbl['tx bytes']),
-        tx_packets      = tonumber(s_tbl['tx packets']),
-        tx_retries      = tonumber(s_tbl['tx retries']),
-        tx_failed       = tonumber(s_tbl['tx failed']),
-        signal          = signal,
-        avg             = avg,
-        tx_bitrate      = tx_bitrate,
-        rx_bitrate      = rx_bitrate,
-        authorized      = authorized,
-        authenticated   = authorized,
-        preamble        = s_tbl['preamble'],
-        wmm_wme         = wmm_wme,
-        mpf             = mpf,
-        tdls_peer       = tdls_peer,
-        connected_time  = i_connected_time,
-        vlan            = i_vlan,
-        unix_timestamp  = ts,
-        InterfaceId     = s_tbl['InterfaceId']
-    };
       
     local stations = self.json.decode(self.nfs.readfile(self.jStations));
+    --luci.util.dumptable(station);
     table.insert(stations,station)
     self.nfs.writefile(self.jStations,self.json.encode(stations));
 end

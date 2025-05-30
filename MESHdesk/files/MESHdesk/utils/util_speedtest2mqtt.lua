@@ -31,9 +31,9 @@ local utils     = require("rdMqttUtils");
 local mqtt      = require("mosquitto");
 local client    = mqtt.new();
 
-MQTT_USER = 'openwrt';
-MQTT_PASS = 'openwrt';
-MQTT_HOST = '192.168.8.131';
+MQTT_USER       = 'openwrt';
+MQTT_PASS       = 'openwrt';
+MQTT_HOST       = '192.168.8.140';
 
 client:login_set(MQTT_USER, MQTT_PASS)
 client:connect(MQTT_HOST)
@@ -56,6 +56,7 @@ function speed2mqtt(mode,id)
     local json   = require("luci.jsonc") -- or require("cjson")
     local result = {}
 
+    --local handle = io.popen("stdbuf -oL speedtest --latency --output verbose", "r")
     local handle = io.popen("stdbuf -oL speedtest --output verbose", "r")
     if not handle then
         result.error = "Failed to run speedtest"
@@ -114,10 +115,12 @@ function speed2mqtt(mode,id)
 
             if buffer:match("Download:%s*([%d%.]+)%s*Mbit/s") then
                 result.download = buffer:match("Download:%s*([%d%.]+)%s*Mbit/s")
+                result.dl_live  = result.download; -- update the 'live' one
             end
 
             if buffer:match("Upload:%s*([%d%.]+)%s*Mbit/s") then
                 result.upload   = buffer:match("Upload:%s*([%d%.]+)%s*Mbit/s")
+                result.ul_live  = result.upload; -- update the 'live' one
                 result.done     = true --upload test is last
             end
 
@@ -133,6 +136,8 @@ function speed2mqtt(mode,id)
             
             if buffer:match("Testing upload speed %(%d+%)%:%s+[%d%.]+%s+Mbit/s") then           
                 result.ul_live  = buffer:match("Testing upload speed %(%d+%)%:%s+([%d%.]+)")
+                --Tweak it to be halve of it 
+                result.ul_live = string.format("%.2f", result.ul_live / 2)
                 buffer = ""
             end
         end
@@ -142,7 +147,7 @@ function speed2mqtt(mode,id)
             local current_json = json.stringify(result, true)
             if current_json ~= last_json then
                -- print(current_json)
-                local topic = "/"..mode.."/" .. id .. "/speedtest/"
+                local topic = "/"..mode.."/" .. id .. "/speedtest"
                 print(topic);
                 client:publish(topic, current_json, 0, false)
                 last_json = current_json
