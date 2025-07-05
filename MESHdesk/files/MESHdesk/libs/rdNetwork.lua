@@ -31,7 +31,35 @@ function rdNetwork:rdNetwork()
 	self.new_file   = self.x:get('meshdesk', 'settings','config_file');
     self.old_file   = self.x:get('meshdesk', 'settings','previous_config_file');
     self.wan_network= 'wan_network';
-    self.w_items    = { ssid=true, encryption=true, disabled=true, device=true, mode=true, key=true, network=true, ifname=true};
+    --self.w_items    = { ssid=true, encryption=true, disabled=true, device=true, mode=true, key=true, network=true, ifname=true};
+    self.w_items = { 
+    ssid=true,
+    encryption=true,
+    disabled=true,
+    device=true,
+    mode=true,
+    key=true,
+    network=true,
+    ifname=true,
+    anonymous_identity=true,
+    identity=true,
+    password=true,
+    eap_type=true,
+    auth=true,
+    encryption=true,
+--    ca_cert=true,
+    iw_enabled=true,
+    iw_realm=true,
+    iw_rcois=true,
+    ieee80211w=true,
+    ca_cert_usesystem=true,
+--    domain_suffix_match=true                                                         
+};                                                                                 
+                                                                               
+self.w_lists = {                                                                                     
+        domain_suffix_match=true                                              
+}          
+
     --Only these items will be modified when synching (based on the value of proto)
     self.sta_items  = { dns=true, ipaddr=true, netmask=true, gateway=true};
     self.ppp_items  = { mtu=true, mac=true, username=true, password=true};
@@ -316,6 +344,15 @@ function rdNetwork.__includeWebByWifi(self)
 	                                    self.x:set('wireless',val,'disabled','0') --Enable the specified radio also
 	                                end
 	                            end
+				     if self.w_lists[key] then
+                                                local l = {}     
+                                   
+                                                for domain in string.gmatch(val, '([^,]+)') do
+                                                        table.insert(l, domain:match("^%s*(.-)%s*$")) -- trim whitespace     
+                                                end   
+                                                self.x:set('wireless', iface_name_wireless,key, l); 
+                                                      
+                                        end  
 	                        end
 	                    end
 	                    self.x:commit('wireless');

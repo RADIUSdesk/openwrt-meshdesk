@@ -26,7 +26,33 @@ function rdWireless:rdWireless()
 	self.x		= uci.cursor()
 	self.socket = require("socket")
 	self.l_uci  = require("luci.model.uci");
-	self.w_items = { ssid=true, encryption=true, disabled=true, device=true, mode=true, key=true, network=true, ifname=true};
+	--self.w_items = { ssid=true, encryption=true, disabled=true, device=true, mode=true, key=true, network=true, ifname=true};
+self.w_items = { 
+    ssid=true,
+    encryption=true,
+    disabled=true,
+    device=true,
+    mode=true,
+    key=true,
+    network=true,
+    ifname=true,
+    anonymous_identity=true,
+    identity=true,
+    password=true,
+    eap_type=true,
+    auth=true,
+    encryption=true,
+--    ca_cert=true,
+    iw_enabled=true,
+    iw_realm=true,
+    iw_rcois=true,
+    ieee80211w=true,
+    ca_cert_usesystem=true,
+};
+
+self.w_lists = {
+	domain_suffix_match=true
+}
 	
 end
         
@@ -97,13 +123,23 @@ function rdWireless.__includeWebByWifi(self)
 		                for key, val in pairs(a) do
 		                    if(string.find(key, '.', 1, true) == nil)then
 		                        if self.w_items[key] then --Only those in the list
-	                                self.x:set('wireless', iface_name_wireless,key, val)
-	                                if(key == 'device')then
-	                                    self.x:set('wireless',val,'disabled','0') --Enable the specified radio also
+	                                    self.x:set('wireless', iface_name_wireless,key, val)
+	                                    if(key == 'device')then
+	                                        self.x:set('wireless',val,'disabled','0') --Enable the specified radio also
+	                                    end
 	                                end
-	                            end
+					if self.w_lists[key] then
+						local l = {}
+
+						for domain in string.gmatch(val, '([^,]+)') do
+    							table.insert(l, domain:match("^%s*(.-)%s*$")) -- trim whitespace
+						end
+						self.x:set('wireless', iface_name_wireless,key, l);
+
+					end
 	                        end
 	                    end
+
 	                    self.x:save('wireless');
 	                    self.x:commit('wireless');
 	                    
