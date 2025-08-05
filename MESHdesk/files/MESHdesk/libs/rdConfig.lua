@@ -358,7 +358,13 @@ function rdConfig:configureDevice(config,doWanSynch)
 	else
 		--FIXME Clean up any MWAN files (/etc/config/mwan_network and /etc/config/mwan_wireless)
 	end
-               
+	
+	-- Aug 2025 Network Stats Option (using nlbwmon)	
+	require('rdInterfaceStats');
+	local ifStats = rdInterfaceStats();
+	ifStats:configureFromTable(o.meta_data);
+	
+	               
     ret_table.config_success = true;
     return ret_table;
     

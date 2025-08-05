@@ -1,0 +1,375 @@
+{
+    "config_settings": {
+        "wireless": [
+            {
+                "wifi-device": "radio0",
+                "options": {
+                    "channel": "1",
+                    "disabled": 0,
+                    "hwmode": "11g",
+                    "htmode": "HE20",
+                    "band": "2g",
+                    "cell_density": 0,
+                    "country": "US",
+                    "txpower": 21
+                },
+                "lists": []
+            },
+            {
+                "wifi-device": "radio1",
+                "options": {
+                    "channel": "44",
+                    "disabled": 0,
+                    "hwmode": "11a",
+                    "htmode": "HE80",
+                    "band": "5g",
+                    "cell_density": 0,
+                    "country": "US",
+                    "txpower": 22
+                },
+                "lists": []
+            },
+            {
+                "wifi-iface": "zro",
+                "options": {
+                    "device": "radio0",
+                    "ifname": "zro0",
+                    "mode": "ap",
+                    "network": "ex_zro",
+                    "encryption": "none",
+                    "ssid": "MWAN-2024",
+                    "key": "",
+                    "hidden": false,
+                    "isolate": false,
+                    "disabled": false
+                },
+                "lists": []
+            },
+            {
+                "wifi-iface": "one",
+                "options": {
+                    "device": "radio0",
+                    "ifname": "one0",
+                    "mode": "ap",
+                    "network": "ex_one",
+                    "encryption": "psk2",
+                    "ssid": "MWAN-2024-B",
+                    "key": "11223344",
+                    "hidden": false,
+                    "isolate": false,
+                    "disabled": false
+                },
+                "lists": []
+            }
+        ],
+        "network": [
+            {
+                "interface": "loopback",
+                "options": {
+                    "device": "lo",
+                    "proto": "static",
+                    "ipaddr": "127.0.0.1",
+                    "netmask": "255.0.0.0"
+                }
+            },
+            {
+                "device": "br-mw25",
+                "options": {
+                    "name": "br-mw25",
+                    "type": "bridge"
+                },
+                "lists": {
+                    "ports": [
+                        "wan"
+                    ]
+                }
+            },
+            {
+                "interface": "mw25",
+                "options": {
+                    "proto": "dhcp",
+                    "device": "br-mw25",
+                    "metric": 1
+                }
+            },
+            {
+                "interface": "mw26",
+                "options": {
+                    "proto": "qmi",
+                    "disabled": "0",
+                    "ifname": "mw26",
+                    "wan_bridge": "0",
+                    "metric": 2,
+                    "device": "\/dev\/cdc-wdm0",
+                    "auth": "none"
+                }
+            },
+            {
+                "device": "br-ex_zro",
+                "options": {
+                    "name": "br-ex_zro",
+                    "type": "bridge",
+                    "stp": 0
+                },
+                "lists": {
+                    "ports": [
+                        "eth1"
+                    ]
+                }
+            },
+            {
+                "interface": "ex_zro",
+                "options": {
+                    "device": "br-ex_zro",
+                    "ipaddr": "10.200.100.1",
+                    "netmask": "255.255.255.0",
+                    "proto": "static"
+                }
+            },
+            {
+                "device": "br-ex_one",
+                "options": {
+                    "name": "br-ex_one",
+                    "type": "bridge",
+                    "stp": 0
+                }
+            },
+            {
+                "interface": "ex_one",
+                "options": {
+                    "device": "br-ex_one",
+                    "ipaddr": "10.200.101.1",
+                    "netmask": "255.255.255.0",
+                    "proto": "static"
+                }
+            }
+        ],
+        "system": {
+            "password_hash": "$1$.e91DLq9$NS8DdE6fBfhBiH9FMLO6O\/",
+            "heartbeat_dead_after": 900,
+            "timezone": "SAST-2",
+            "gw_dhcp_timeout": 120,
+            "gw_use_previous": true,
+            "gw_auto_reboot": false,
+            "gw_auto_reboot_time": 600,
+            "report_adv_enable": true,
+            "report_adv_proto": "http",
+            "report_adv_light": 60,
+            "report_adv_full": 600,
+            "report_adv_sampling": 60,
+            "hostname": "ZA-Cell-C",
+            "mqtt_user": "openwrt",
+            "mqtt_password": "openwrt",
+            "mqtt_server_url": "cloud.radiusdesk.com",
+            "mqtt_command_topic": "\/RD\/NODE\/COMMAND\/RESPONSE"
+        },
+        "gateways": [
+            "ex_zro",
+            "ex_one"
+        ],
+        "gateway_details": [],
+        "captive_portals": [],
+        "accel_servers": [],
+        "openvpn_bridges": [],
+        "adv_firewall": {
+            "macs": [],
+            "entries": [],
+            "sets": {
+                "-1": {
+                    "name": "md_internet_not",
+                    "elements": "10.0.0.0\/8,172.16.0.0\/12,192.168.0.0\/16,255.255.255.255",
+                    "comment": "Private IP Addr Excl For Internet"
+                },
+                "-2": {
+                    "name": "md_lan",
+                    "elements": "10.0.0.0\/8,172.16.0.0\/12,192.168.0.0\/16",
+                    "comment": "Private IP Addr LAN"
+                }
+            }
+        },
+        "sqm": [
+            {
+                "detail": {
+                    "upload": 4096,
+                    "download": 4096,
+                    "linklayer": "none",
+                    "qdisc": "cake",
+                    "script": "piece_of_cake.qos",
+                    "enabled": 1,
+                    "debug_logging": 0,
+                    "verbosity": 5
+                },
+                "interfaces": [
+                    "br-ex_zro"
+                ]
+            }
+        ],
+        "ppsk_files": [],
+        "mwan": {
+            "mwan3": [
+                {
+                    "globals": "globals",
+                    "options": {
+                        "mmx_mask": "0x3F00"
+                    }
+                },
+                {
+                    "interface": "mw25",
+                    "options": {
+                        "enabled": 1,
+                        "family": "ipv4"
+                    },
+                    "lists": []
+                },
+                {
+                    "member": "mw25_m2_w1",
+                    "options": {
+                        "metric": 2,
+                        "weight": 1,
+                        "interface": "mw25"
+                    }
+                },
+                {
+                    "interface": "mw26",
+                    "options": {
+                        "enabled": 1,
+                        "family": "ipv4",
+                        "count": "1",
+                        "size": "56",
+                        "max_ttl": "60",
+                        "timeout": "4",
+                        "interval": "30",
+                        "reliability": "1",
+                        "up": "1",
+                        "down": "5"
+                    },
+                    "lists": {
+                        "track_ip": [
+                            "164.160.89.129"
+                        ]
+                    }
+                },
+                {
+                    "member": "mw26_m1_w1",
+                    "options": {
+                        "metric": 1,
+                        "weight": 1,
+                        "interface": "mw26"
+                    }
+                },
+                {
+                    "policy": "rd_fail_over",
+                    "lists": {
+                        "use_member": [
+                            "mw25_m2_w1",
+                            "mw26_m1_w1"
+                        ]
+                    }
+                },
+                {
+                    "rule": "https",
+                    "options": {
+                        "sticky": "1",
+                        "dest_port": 433,
+                        "proto": "tcp",
+                        "use_policy": "rd_fail_over"
+                    }
+                },
+                {
+                    "rule": "default_rule_v4",
+                    "options": {
+                        "dest_ip": "0.0.0.0\/0",
+                        "family": "ipv4",
+                        "use_policy": "rd_fail_over"
+                    }
+                }
+            ],
+            "firewall": {
+                "masq_zones": [
+                    "mw25",
+                    "mw26"
+                ],
+                "forwarding": [
+                    "ex_zro",
+                    "ex_one"
+                ]
+            },
+            "network": [
+                {
+                    "interface": "loopback",
+                    "options": {
+                        "device": "lo",
+                        "proto": "static",
+                        "ipaddr": "127.0.0.1",
+                        "netmask": "255.0.0.0"
+                    }
+                },
+                {
+                    "device": "br-mw25",
+                    "options": {
+                        "name": "br-mw25",
+                        "type": "bridge"
+                    },
+                    "lists": {
+                        "ports": [
+                            "wan"
+                        ]
+                    }
+                },
+                {
+                    "interface": "mw25",
+                    "options": {
+                        "proto": "dhcp",
+                        "device": "br-mw25",
+                        "metric": 1
+                    }
+                },
+                {
+                    "interface": "mw26",
+                    "options": {
+                        "proto": "qmi",
+                        "disabled": "0",
+                        "ifname": "mw26",
+                        "wan_bridge": "0",
+                        "metric": 2,
+                        "device": "\/dev\/cdc-wdm0",
+                        "auth": "none"
+                    }
+                }
+            ]
+        }
+    },
+    "timestamp": 1,
+    "mode": "ap",
+    "meta_data": {
+        "mode": "ap",
+        "mac": "20-05-B6-FF-94-46",
+        "ap_id": 133,
+        "node_id": 133,
+        "exits": [
+            {
+                "id": 199,
+                "ap_profile_exit_id": 199,
+                "type": "nat",
+                "device": "br-ex_zro",
+                "sqm": true,
+                "interface": "ex_zro",
+                "stats": true
+            },
+            {
+                "id": 200,
+                "ap_profile_exit_id": 200,
+                "type": "nat",
+                "device": "br-ex_one",
+                "sqm": false,
+                "interface": "ex_one",
+                "stats": true
+            }
+        ],
+        "zro0": 124,
+        "one0": 125,
+        "WbwActive": false,
+        "QmiActive": false
+    },
+    "success": true
+}
