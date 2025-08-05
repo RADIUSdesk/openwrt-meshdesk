@@ -156,11 +156,12 @@ function rdMwan:_configureFromTable(mwan)
 		self:_doMwan3(mwan.mwan3);
 	end
 	
-	if mwan.mode then
-		if(mwan.mode == 'mesh')then
+	-- Aug 2025 -- **Restart regardless** -> We had startup routing issues on APdesk and removing this made it rock solid
+	--if mwan.mode then
+	--	if(mwan.mode == 'mesh')then
 			self.util.exec("/etc/init.d/mwan3 restart"); --When doing Batman-adv mesh we need to restart the mwan3 service afterwards
-		end
-	end
+	--	end
+	--end
 		
 end
 
