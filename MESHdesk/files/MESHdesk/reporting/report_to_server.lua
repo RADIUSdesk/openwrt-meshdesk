@@ -179,12 +179,21 @@ function fullReport()
     -- Include SQM info--
     require('rdSqm');
     local sqm   = rdSqm();
-    local sqm_table = sqm:getStatsTable();
-    if sqm_table and #sqm_table > 0 then
-    	curl_table['sqm'] = sqm_table;
+    local sqm_t = sqm:getStatsTable();
+    if sqm_t and next(sqm_t) ~= nil then
+    	curl_table['sqm'] = sqm_t;
     end
     -- END SQM info -- 
     
+    -- Include Nlbw Stats --
+    require('rdNlbwStats');
+    local nlbw   = rdNlbwStats();
+    local nlbw_t = nlbw:tableStats();
+    if nlbw_t and next(nlbw_t) ~= nil then
+    	curl_table['nlbw'] = nlbw_t
+	end
+    -- END Nlbw Stats -- 
+     
     local f   = nfs.access(gw_file);
     
     if f then  

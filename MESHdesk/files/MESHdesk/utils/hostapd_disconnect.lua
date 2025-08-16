@@ -29,8 +29,8 @@ function mainPart()
             if(tonumber(value) ==  tonumber(entry_id))then
                 mac    = string.lower(string.gsub(mac,'-',':'));
                 --ubus call hostapd.two0 del_client "{'addr':'0c:c6:fd:7b:8b:aa', 'reason':5, 'deauth':true, 'ban_time':0}"
-                
-                local command = "ubus call hostapd."..key.." del_client \"{'addr':'"..mac.."', 'reason':5, 'deauth':true, 'ban_time':0}\"";
+                --Ban for 10 seconds to ensure a new session ID is sent to RADIUS
+                local command = "ubus call hostapd."..key.." del_client \"{'addr':'"..mac.."', 'reason':5, 'deauth':true, 'ban_time':10000}\"";
                 l_u.exec(command);
                 --print(command);
             end           
