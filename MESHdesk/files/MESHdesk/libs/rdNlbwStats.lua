@@ -143,6 +143,9 @@ function rdNlbwStats:_tableStats()
 			end
 			local exit_type  = ex.type or self.json.null
 			local newrow = { unpack(row) }
+			if(newrow[11] == nil)then
+				newrow[11] = 'other'; --other proto = IP and layer7 = nill so we mark it as 'other' else the further inserts gets skewed
+			end
 			table.insert(newrow, l3if);
 			table.insert(newrow, l3dev);
 			table.insert(newrow, exit_id);
