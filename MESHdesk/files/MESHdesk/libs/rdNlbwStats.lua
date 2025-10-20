@@ -93,10 +93,6 @@ end
 ========================================================
 --]]--
 
-function rdNlbwStats:_jsonStats()
-
-
-end
 
 function rdNlbwStats:_tableStats()
 
@@ -153,11 +149,17 @@ function rdNlbwStats:_tableStats()
 			table.insert(newdata, newrow)
 		end
 	end		
+	-- Convert totals -> deltas on-device
+	-- (emit first baseline once, then only positive deltas; skip zero slices)
 	obj.data = newdata;
-	--self.util.dumptable(obj);
-	return obj;			
+	obj.data = self:_computeDeltas(obj.data, {
+		skip_zero = true,
+		first_emit_baseline = true
+	})
+	------self.util.dumptable(obj);
+	return obj
+				
 end
-
 
 function rdNlbwStats:_getStatsInterfaces()
 	local stats = {interfaces={},devices={}};
@@ -177,7 +179,6 @@ function rdNlbwStats:_getStatsInterfaces()
 	end
     return stats;
 end
-
 
 function rdNlbwStats:_getSubnets()
 
@@ -238,4 +239,122 @@ function rdNlbwStats:slurp(cmd)
   local s = f:read("*a") or ""; f:close(); return s
 end
 
+-- ======================================================--
+-- ========= ADDITION TO REPORT DELTAS ==================--
+-- ======================================================--
 
+function rdNlbwStats:_statePath()
+    return "/tmp/nlbw_state.json"
+end
+
+function rdNlbwStats:_loadState()
+    local path = self:_statePath()
+    local f = io.open(path, "r")
+    if not f then return {} end
+    local s = f:read("*a"); f:close()
+    if not s or #s == 0 then return {} end
+    local ok, t = pcall(self.json.decode, s)
+    return (ok and t) or {}
+end
+
+function rdNlbwStats:_atomicWrite(path, contents)
+    local tmp = path .. ".tmp"
+    local f = assert(io.open(tmp, "w"))
+    f:write(contents)
+    f:flush(); f:close()
+    os.rename(tmp, path)  -- atomic on same FS
+end
+
+function rdNlbwStats:_saveState(tbl)
+    local path = self:_statePath()
+    local s = self.json.encode(tbl)
+    self:_atomicWrite(path, s)
+end
+
+function rdNlbwStats:_key(row)
+    -- row indices from your code (after enrich):
+    --  1:family, 2:proto, 3:port, 4:mac, 5:ip, 16:exit_id, 12:layer7
+    local function S(v) return v and tostring(v) or "" end
+    return table.concat({
+        S(row[1]), S(row[2]), S(row[3]), S(row[4]), S(row[5]),
+        S(row[16]), S(row[12])
+    }, "|")
+end
+
+local function toint(v)
+    if type(v) == "number" then return v end
+    if type(v) == "string" then return tonumber(v) or 0 end
+    return 0
+end
+
+-- data: array of rows (totals) with your enriched columns
+-- opts:
+-- skip_zero = true  -- drop rows where all counters + conns delta == 0
+-- first_emit_baseline = true -- on first sighting, emit the current totals as a "delta"
+function rdNlbwStats:_computeDeltas(data, opts)
+    opts = opts or {}
+    local skip_zero = (opts.skip_zero ~= false)    -- default true
+    local first_emit_baseline = (opts.first_emit_baseline ~= false) -- default true
+
+    local state = self:_loadState()
+    local out = {}
+
+    for _, r in ipairs(data) do
+        local key = self:_key(r)
+        local prev = state[key]
+
+        -- Indices from your nlbw format:
+        local rx_b = toint(r[7])   -- rx_bytes
+        local rx_p = toint(r[8])   -- rx_pkts
+        local tx_b = toint(r[9])   -- tx_bytes
+        local tx_p = toint(r[10])  -- tx_pkts
+        local cns  = toint(r[6])   -- conns
+
+        local d_rx_b, d_rx_p, d_tx_b, d_tx_p, d_cns
+
+        if not prev then
+            if first_emit_baseline then
+                d_rx_b, d_rx_p, d_tx_b, d_tx_p, d_cns = rx_b, rx_p, tx_b, tx_p, cns
+            else
+                d_rx_b, d_rx_p, d_tx_b, d_tx_p, d_cns = 0, 0, 0, 0, 0
+            end
+        else
+            -- Reset if any counter decreased vs stored cumulative
+            local reset = (rx_b < prev.rx_bytes) or (rx_p < prev.rx_pkts)
+                       or (tx_b < prev.tx_bytes) or (tx_p < prev.tx_pkts)
+                       or (cns  < prev.conns)
+
+            if reset then
+                d_rx_b, d_rx_p, d_tx_b, d_tx_p, d_cns = rx_b, rx_p, tx_b, tx_p, cns
+            else
+                d_rx_b = rx_b - prev.rx_bytes
+                d_rx_p = rx_p - prev.rx_pkts
+                d_tx_b = tx_b - prev.tx_bytes
+                d_tx_p = tx_p - prev.tx_pkts
+                d_cns  = cns  - prev.conns
+            end
+        end
+
+        local changed = (d_rx_b > 0) or (d_rx_p > 0) or (d_tx_b > 0) or (d_tx_p > 0) or (d_cns > 0)
+
+        if changed or not skip_zero then
+            -- emit a row in the same shape but with deltas replacing totals
+            local newrow = { unpack(r) }
+            newrow[7]  = d_rx_b
+            newrow[8]  = d_rx_p
+            newrow[9]  = d_tx_b
+            newrow[10] = d_tx_p
+            newrow[6]  = d_cns
+            table.insert(out, newrow)
+        end
+
+        -- Update cumulative state for next run
+        state[key] = {
+            rx_bytes = rx_b, rx_pkts = rx_p,
+            tx_bytes = tx_b, tx_pkts = tx_p,
+            conns    = cns
+        }
+    end
+    self:_saveState(state)
+    return out
+end
