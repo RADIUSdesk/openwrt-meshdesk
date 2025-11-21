@@ -192,7 +192,16 @@ function fullReport()
     if nlbw_t and next(nlbw_t) ~= nil then
     	curl_table['nlbw'] = nlbw_t
 	end
-    -- END Nlbw Stats -- 
+    -- END Nlbw Stats --
+    
+     -- Include VPN Wireguard Stats --
+    require('rdWgStats');
+    local wgStats	= rdWgStats();
+    local wg_t 		= wgStats:tableStats();
+    if wg_t and next(wg_t) ~= nil then
+    	curl_table['wg_stats'] = wg_t
+	end
+    -- END Nlbw Stats --    
      
     local f   = nfs.access(gw_file);
     

@@ -5,7 +5,7 @@
 
 --[[--
 
-This test script will test the rdNlbwStats object class's various methods
+This test script will test the rdOvpnStats. It will need existing configured Wireguard interfaces
 
 --]]--
 
@@ -13,10 +13,10 @@ This test script will test the rdNlbwStats object class's various methods
 package.path = "../libs/?.lua;" .. package.path
 
 function main()
-	require('rdNlbwStats');
-	local a = rdNlbwStats();
+	require('rdOvpnStats');
+	local a = rdOvpnStats();
 	print("Version is " .. a:getVersion());
-	print("Collect Nlbw Stats");
+	print("Collect OpenVPN Stats");
 	--a:tableStats();
 	print(a:jsonStats());
 end

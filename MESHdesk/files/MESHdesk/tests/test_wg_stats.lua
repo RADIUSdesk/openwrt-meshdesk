@@ -5,7 +5,7 @@
 
 --[[--
 
-This test script will test the rdNlbwStats object class's various methods
+This test script will test the rdWgStats. It will need existing configured Wireguard interfaces
 
 --]]--
 
@@ -13,10 +13,10 @@ This test script will test the rdNlbwStats object class's various methods
 package.path = "../libs/?.lua;" .. package.path
 
 function main()
-	require('rdNlbwStats');
-	local a = rdNlbwStats();
+	require('rdWgStats');
+	local a = rdWgStats();
 	print("Version is " .. a:getVersion());
-	print("Collect Nlbw Stats");
+	print("Collect Wireguard Stats");
 	--a:tableStats();
 	print(a:jsonStats());
 end

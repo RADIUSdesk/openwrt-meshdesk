@@ -5,7 +5,7 @@
 
 --[[--
 
-This test script will test the rdAccel object class's various methods
+This test script will test the rdInterfaceStats object class's various methods
 
 --]]--
 

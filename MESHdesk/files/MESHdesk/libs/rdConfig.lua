@@ -22,7 +22,8 @@ function rdConfig:rdConfig()
         
 	self.version 	= "1.0.0"
 	self.sleep_time = 1;
-	self.json	    = require("json")
+	--self.json	    = require("json") //This parser sux
+	self.json       = require('luci.json');
 	self.logger	    = rdLogger()
 	self.external	= rdExternal()
 	self.n          = rdNetwork();
@@ -233,7 +234,9 @@ function rdConfig:configureDevice(config,doWanSynch)
 	self.external:startOne('/etc/MESHdesk/heartbeat.lua &','heartbeat.lua');
     self:log('Starting Batman neighbour scan');
     self.external:startOne('/etc/MESHdesk/batman_neighbours.lua &','batman_neighbours.lua');
-    if(o.config_settings.captive_portals ~= nil)then
+    
+    if (o.config_settings.captive_portals and next(o.config_settings.captive_portals) ~= nil) then
+
     	print("Doing Captive Portals");  	
     	--Wait for the network to come up properly--
     	--(resolv.conf.auto start out empty and are filled when DHCP is completed)
@@ -267,7 +270,7 @@ function rdConfig:configureDevice(config,doWanSynch)
     	a:setDnsMasq(o.config_settings.captive_portals);	
     end
     
-    if(o.config_settings.openvpn_bridges ~= nil)then
+    if (o.config_settings.openvpn_bridges and next(o.config_settings.openvpn_bridges) ~= nil) then
         print("Doing OpenVPN Bridges")
         require("rdOpenvpn")
 	    local v = rdOpenvpn()
@@ -364,7 +367,13 @@ function rdConfig:configureDevice(config,doWanSynch)
 	local ifStats = rdInterfaceStats();
 	ifStats:configureFromTable(o.meta_data);
 	
-	               
+	-- Nov 2025 vpn specific items --
+	if (o.config_settings.vpn and next(o.config_settings.vpn) ~= nil) then
+		require('rdVpn');
+		local vpn = rdVpn();
+		vpn:configureFromTable(o.config_settings.vpn);
+	end 
+		               
     ret_table.config_success = true;
     return ret_table;
     

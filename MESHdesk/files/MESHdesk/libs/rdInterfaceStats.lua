@@ -152,14 +152,14 @@ end
 
 function rdInterfaceStats._configureFromJson(self,json_file)
 
-	self:log("Configuring Accel-ppp from a JSON file");
+	self:log("Configuring nlbwmon from a JSON file");
 	local contents 	= self:_readAll(json_file);
 	local o			= self.json.decode(contents);
 	if(o.meta_data ~= nil)then
 		self:log("Found MetaData  - completing it");	
 		self:_configureFromTable(o.meta_data);
 	else
-		self:log("No Accel-ppp settings found, please check JSON file")
+		self:log("No nlbwmon settings found, please check JSON file")
 	end
 end
 
