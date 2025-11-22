@@ -201,7 +201,16 @@ function fullReport()
     if wg_t and next(wg_t) ~= nil then
     	curl_table['wg_stats'] = wg_t
 	end
-    -- END Nlbw Stats --    
+    -- END VPN Wireguard Stats --
+    
+     -- Include OpenVPN Stats --
+    require('rdOvpnStats');
+    local ovpnStats	= rdOvpnStats();
+    local ovpn_t    = ovpnStats:tableStats();
+    if ovpn_t and next(ovpn_t) ~= nil then
+    	curl_table['ovpn_stats'] = ovpn_t
+	end
+    -- END OpenVPN Stats --       
      
     local f   = nfs.access(gw_file);
     

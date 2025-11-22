@@ -91,6 +91,7 @@ function rdOvpnStats:_tableStats()
 		local devices    = conn:call("luci-rpc", "getNetworkDevices", {});
 		conn:close();
 		if(devices)then
+			local ovpn_stats = {}
 			for device, device_info in pairs(devices) do
 				if(self.idLookup[device])then
 					local id = self.idLookup[device];
@@ -106,11 +107,15 @@ function rdOvpnStats:_tableStats()
 						print("Got to Gateway");
 						ts = os.time();
 					end
-					
+					table.insert(ovpn_stats, { id = id, ip = ip, tx_bytes = tx_bytes, rx_bytes = rx_bytes, timestamp = ts});
 					print("For Device "..device.. " id is "..id.." ip is "..ip.." Gateway is "..gw.." timestamp "..ts);	
 								
 				end
 			end
+			if next(ovpn_stats) then
+				return ovpn_stats;
+			end
+			return nil;
 		end
 	end
 	return nil;				
