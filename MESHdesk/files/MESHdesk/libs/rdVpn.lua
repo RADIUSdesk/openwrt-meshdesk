@@ -41,6 +41,10 @@ function rdVpn:configureFromTable(tbl)
 	self:_configureFromTable(tbl)
 end
 
+function rdVpn:configureRouting(meta_data)
+	self:_configureRouting(meta_data)
+end
+
 function rdVpn:log(m,p)
 	if(self.debug)then
 		self.logger:log(m,p)
@@ -53,6 +57,66 @@ end
 ========================================================
 --]]--
 
+function rdVpn:_configureRouting(meta_data)
+
+    local current_by_id 	= {}    -- section_id -> zone_name
+    local current_by_name 	= {}  -- zone_name -> section_id
+    local new_config 		= {}
+    local changed 			= false
+    
+    local x = self.uci:cursor()
+    
+    -- Get existing entries starting with 'vpn_'
+    x:foreach('firewall', 'zone', function(s)
+        if string.match(s['name'], '^vpn_') then
+            current_by_id[s['.name']] = s['name']
+            current_by_name[s['name']] = s['.name']
+        end
+    end)
+
+    -- Build new config list
+    if meta_data.vpns and next(meta_data.vpns) ~= nil then
+        for _, vpn_config in ipairs(meta_data.vpns) do
+            local zone_name = 'vpn_' .. vpn_config['interface']
+            new_config[zone_name] = vpn_config
+        end
+    end
+    
+    -- Check for items to ADD (in new_config but not in current_by_name)
+    for zone_name, vpn_config in pairs(new_config) do
+        if not current_by_name[zone_name] then
+            --print(zone_name .. ' not found - adding it')
+            local item_name = x:add('firewall', 'zone')
+            x:set('firewall', item_name, 'name', zone_name)
+            x:set('firewall', item_name, 'input', 'REJECT')
+            x:set('firewall', item_name, 'output', 'ACCEPT')
+            x:set('firewall', item_name, 'forward', 'REJECT')
+            x:set('firewall', item_name, 'masq', '1')
+            x:set('firewall', item_name, 'mtu_fix', '1')
+            -- Add the network list using the interface from vpn_config
+            x:set('firewall', item_name, 'network', { vpn_config['interface'] })
+            changed = true 
+        end
+    end
+    
+    -- Check for items to DELETE (in current_by_name but not in new_config)
+    for zone_name, section_id in pairs(current_by_name) do
+        if not new_config[zone_name] then
+            --print(zone_name .. ' should be removed (section: ' .. section_id .. ')')
+            x:delete('firewall', section_id)
+            changed = true
+        end
+    end
+    
+    if changed then
+        x:save('firewall')
+        x:commit('firewall')
+        --print("Firewall configuration updated")
+    else
+        --print("No changes needed")
+    end
+end
+
 
 function rdVpn._configureFromJson(self,json_file)
 
@@ -63,6 +127,7 @@ function rdVpn._configureFromJson(self,json_file)
 	if o.config_settings and o.config_settings.vpn then
 		self:log("Found VPN Data  - completing it");
 		self:_configureFromTable(o.config_settings.vpn);
+		self:_configureRouting(o.meta_data);
 	else
 		self:log("No VPN Data settings found, please check JSON file")
 	end

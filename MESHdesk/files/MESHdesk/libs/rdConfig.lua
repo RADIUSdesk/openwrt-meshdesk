@@ -372,6 +372,7 @@ function rdConfig:configureDevice(config,doWanSynch)
 		require('rdVpn');
 		local vpn = rdVpn();
 		vpn:configureFromTable(o.config_settings.vpn);
+		vpn:configureRouting(o.meta_data);
 	end 
 		               
     ret_table.config_success = true;
