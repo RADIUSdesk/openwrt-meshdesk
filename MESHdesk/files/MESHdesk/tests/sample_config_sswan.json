@@ -1,0 +1,177 @@
+{
+    "config_settings": {
+        "wireless": [],
+        "network": [
+            {
+                "interface": "loopback",
+                "options": {
+                    "device": "lo",
+                    "proto": "static",
+                    "ipaddr": "127.0.0.1",
+                    "netmask": "255.0.0.0"
+                }
+            },
+            {
+                "device": "br-lan",
+                "options": {
+                    "name": "br-lan",
+                    "type": "bridge",
+                    "stp": 1
+                },
+                "lists": {
+                    "ports": [
+                        "eth0"
+                    ]
+                }
+            },
+            {
+                "interface": "lan",
+                "options": {
+                    "proto": "dhcp",
+                    "device": "br-lan"
+                }
+            },
+            {
+                "device": "br-ex_zro",
+                "options": {
+                    "name": "br-ex_zro",
+                    "type": "bridge",
+                    "stp": 0
+                },
+                "lists": {
+                    "ports": [
+                        "eth1"
+                    ]
+                }
+            },
+            {
+                "interface": "ex_zro",
+                "options": {
+                    "device": "br-ex_zro",
+                    "ipaddr": "10.222.100.1",
+                    "netmask": "255.255.255.0",
+                    "proto": "static"
+                }
+            },
+            {
+                "interface": "xfrm01",
+                "options": {
+                    "proto": "none",
+                    "ifname": "xfrm01"
+                }
+            }
+        ],
+        "system": {
+            "password_hash": "$1$ysz1gO.D$328YAcla9Gr1jowWaYuOX\/",
+            "heartbeat_dead_after": 900,
+            "timezone": "SAST-2",
+            "gw_dhcp_timeout": 120,
+            "gw_use_previous": true,
+            "gw_auto_reboot": false,
+            "gw_auto_reboot_time": 600,
+            "report_adv_enable": true,
+            "report_adv_proto": "http",
+            "report_adv_light": 60,
+            "report_adv_full": 600,
+            "report_adv_sampling": 60,
+            "hostname": "SS-01",
+            "mqtt_user": "openwrt",
+            "mqtt_password": "openwrt",
+            "mqtt_server_url": "cloud.radiusdesk.com",
+            "mqtt_command_topic": "\/RD\/NODE\/COMMAND\/RESPONSE"
+        },
+        "gateways": [
+            "ex_zro"
+        ],
+        "gateway_details": {
+            "ex_zro": {
+                "ipaddr": "10.222.100.1",
+                "netmask": "255.255.255.0",
+                "pool_start": "100",
+                "pool_limit": "200",
+                "leasetime": "12",
+                "dns_1": "4.4.4.4",
+                "dns_2": "8.8.8.8"
+            }
+        },
+        "captive_portals": [],
+        "accel_servers": [],
+        "openvpn_bridges": [],
+        "adv_firewall": {
+            "macs": [],
+            "entries": [],
+            "sets": {
+                "-1": {
+                    "name": "md_internet_not",
+                    "elements": "10.0.0.0\/8,172.16.0.0\/12,192.168.0.0\/16,255.255.255.255",
+                    "comment": "Private IP Addr Excl For Internet"
+                },
+                "-2": {
+                    "name": "md_lan",
+                    "elements": "10.0.0.0\/8,172.16.0.0\/12,192.168.0.0\/16",
+                    "comment": "Private IP Addr LAN"
+                }
+            }
+        },
+        "ppsk_files": [],
+        "vpn": {
+            "ipsec": [
+                {
+                    "name": "xfrm01",
+                    "config": {
+                        "ipsec_server": "cloud.radiusdesk.com",
+                        "ipsec_server_id": "cloud.radiusdesk.com",
+                        "ipsec_if_id": 100,
+                        "ipsec_xfrm_ip": "10.3.0.3",
+                        "ipsec_xfrm_gw": "10.3.0.1",
+                        "ipsec_ca": "-----BEGIN CERTIFICATE-----\nMIIE8DCCAtigAwIBAgIIfV8NlUpgzoAwDQYJKoZIhvcNAQEMBQAwFjEUMBIGA1UE\nAxMLVlBOIFJvb3QgQ0EwHhcNMjUxMjIwMDY0NTU5WhcNMzUxMjE4MDY0NTU5WjAW\nMRQwEgYDVQQDEwtWUE4gUm9vdCBDQTCCAiIwDQYJKoZIhvcNAQEBBQADggIPADCC\nAgoCggIBALn4xjz7R6PjYszRXwcm3R7LWxb8a9pDFAegrXBsOjsWRlKWIOq93Z8p\n+GyyT8Zjc7Ij9QbWmMRKGZHZpRUQA6\/A8r2z42H7OBYoEyTpbyLqXuGXtuvgBEih\nxrpEzSVe257f5xBZOzhpzY\/3AQOzREa5aXB7zJbCRw8tJetqWtUD5BOpTeMmnXBj\ncGjcwlGozt7xAv50QYNt7dd6Bl6fjUWAuUdUEXJEPU96YTQjld3FdTrzVR4qFp\/n\nKAKDTO6BbMqyq3Qoq4yEVVHn\/zFdsNz1ND2JW2bz8Sb0NO8Uo+wmsNFmc9sFvjPw\nPas\/Eamy5TbmsyZHcVv25GpKi3A2kmi3g49SVoLt6kM8ZDnJohc40Y2g8BlnaHbC\nwj+vaxVawXfSA6NTNFGu1GCOCpFa7+Y8fh1tW9WLd92qHFeWi4RrlUe8\/ATxbHRk\nbhi8JF2qVKSZf+9NRgzenSOd5y5Tyr8AW0FeE+nD4v7TbmYdDTGumhblO20xx6vR\nqblZ\/SqcU39WKVmTS8Y8FdyIfb9e0vFwdQP41csguQhwtT8iHrIC96oWF040A+z3\n42MAz2ZHLs2mSVOK3WttOcEADHd+2TLt9hAbvrCTbIhCQ6tpD+h7kMcjQxAL79+V\nF6rDs7VXu0Vt0G1zQV7p\/QWiqp1XBUSrszKBYqQZ0p12ed+Vda+ZAgMBAAGjQjBA\nMA8GA1UdEwEB\/wQFMAMBAf8wDgYDVR0PAQH\/BAQDAgEGMB0GA1UdDgQWBBQr7teP\nBfv1XPIzStIPTxOWxX684jANBgkqhkiG9w0BAQwFAAOCAgEAZOzixwuoZOe5cja5\noDXzKG7B4Io23Hdr0CCjXuSzjf0I+xF5zk6TMp\/8uU7+w\/hLj22KaclrvaGJLdvG\nEJmf88dnJqGPciSVWmJSIJlzams8VUf8z77WfYpn3eRXww+sj7EITDhcX7lyTjYR\nBKpjOqAB2eLc\/xid9RFbC0p7K6LWaklZ3yL8WHQT54tF9xIh3rY0Nb4VYkfyd0Ha\nRwAqSnORbivo8WuJyP4Ak4IZu4eDkxlSCzXJf2iNmlP3vndvWl3\/j2vxF+Maj+P+\n9bZ8PxGxuL70I36AzE8CbzUOrKIhHUdr48aeR1OFut9fgKhf0MYdT3yqwBv4f7Tr\n5tEHrNq9+qY4wBCfjFenEzf9x9CVPvsU2wcXJXSClrX3O23LXiiBRUj+\/R2teWed\n9342b5FaVyldVQ9F3DIu4yOE6s5ZEfIQ5UrRt\/YnVYPtp0n13jIQiEaLl7dXSl1U\nb5ik2ZKsQ4uq6\/LzHyZ5c0OaWNYQWTI0wcu6+64lZuCXuTZBUiNwjV0+g6lGUZgH\nCGyBwrjEWWd+S2ZFN7ENtUFDNzqNdcq0fpCYfA2p1YR3RqcM4TiecZWSHbRcdS8G\nU8G4xIUZBGBQQe0Q7E7wi89BPAheaC6218U13T74c+wvNl7lYqwCiH2OSly0B2SV\nOND6CEiUs8KrokDTEw5BA5BrOIk=\n-----END CERTIFICATE-----",
+                        "ipsec_cert": "-----BEGIN CERTIFICATE-----\nMIIFATCCAumgAwIBAgIIEskDwvvos1UwDQYJKoZIhvcNAQEMBQAwFjEUMBIGA1UE\nAxMLVlBOIFJvb3QgQ0EwHhcNMjUxMjIwMTIyMTU2WhcNMjgwMzI0MTIyMTU2WjAQ\nMQ4wDAYDVQQDEwVDYXJvbDCCAiIwDQYJKoZIhvcNAQEBBQADggIPADCCAgoCggIB\nAM6eL6qHFEFUQZSLFBNzfh4x0MAfDlwVHsww9nuPUctcsxq2XtZ+CELRfWvtpA6w\nrynXcMlCuu6a8UFw9jLqZdDiVjJCHqcaOxwoWeR2g6d+DysRg2FFjyj3y1gyJgN2\nmurb9hLK+UZrA5PI3PBwWfGAlcLbGeItp9XXbPj7r12qscHC\/a0zau5ggdIEYGl\/\nrGfHD0Fp22bLXuf8+PNAAu+UtihXh1yhmA2Gi67C+xeerCqN4wOP1Upc0X5JgYvw\nsbbpsAam13UnH3M9G4J4GkCFViaJdikdjhSqE4sQsWU9yKwKXLI4Y1A7e7c3Ivzk\nWp9GWX9aocY\/0ZRaRhGZFTddCPX8TbJYFuw\/0KVxCGDn3lWaPHiR7DrWDHIPALE1\nkKo9NQuskKbkblgxY2B7o7cdLe+jo3jqXe9XvCe8HhRi19YLyxRx9EXQpZ\/+4cH1\nCUE\/ZW2lq\/ZyzSuIYIBYf3NTm5gS5V7Y7zkg7\/YHT+n9TrReKhUZidLL58lEAg5s\ngn9+Q9QdJ3ObLDy2uOC3gHNsHZEY6rKQ2ybBzB+NQ8AVXYcAyjxHRC8JG48ah3aX\nhynk1YXLST7ShOQ+gp0KiofD+1k0sdk39nNimMh+wkbisPhuzKUrDuFt605msNx5\ngIoGkl6qMsp1fVFwOlJ82KNneWL8SIiRDMcg1g3P5zbxAgMBAAGjWTBXMB8GA1Ud\nIwQYMBaAFCvu148F+\/Vc8jNK0g9PE5bFfrziMB8GA1UdEQQYMBaBFGNhcm9sQHN0\ncm9uZ3N3YW4ub3JnMBMGA1UdJQQMMAoGCCsGAQUFBwMCMA0GCSqGSIb3DQEBDAUA\nA4ICAQBsVwHqhtGI9+2qIJmNulFqx4KREUyo9GKiIXhKx2V89Irbt9d9p7KjxbCf\nlYHdvSd0ujjijw\/5ieHmqPuYrntJKefpRkNEN79xnz9IMyb+vef28tJ3blPEP4o9\nD2nhBsizvRgugw82WEGE4Y2iv7blNaBTMgFUpwO1DpqPDJx7pPQg6iH8Y8lzoR50\nmF4HOS\/zvat2mxJJV4LeFQCsEhpywMPx6+fEzh4uNvpnUu5cbbGCdZ1N1fP\/++w+\nnCje0sqpkwvvahE9l6dp+DY4Pm\/6x+xVajf5JJfFwT\/qRVs7iqaQEfRyJ9G244iG\nakVyDThsEh46U49qbSHg81+rWus+ugT2jJzEwhhAkimsgCOzl6ZFkbWCuVN50jZO\n9q9xV2UDit51ouQYa7seqI6R3heyFYCAN8zNSD8gcZAnVlC6CZfrST6ztJb0HPn6\nutTWZBupRsBDmOI3jh1giy5CHoshVjiC4TDhEi4TW\/lJwBFAuaT9ap2eQoVW0h\/e\nWrGoSy9YTN3QT+X2Szur4pdzhfDfdzxZI4Xs0Wu0IdU3vV+ajDljh\/rkf+codb86\nIyAlD+8yPFveF8hUE5OfSgQVfS2gHfxCDQDIula9zN43QWSwempCY2l8Ur5iVGm0\nCLZsa6LcO7BfhW94RFga7hZ4E\/bCVU\/OXBMhOlWAzwNLEYnlbA==\n-----END CERTIFICATE-----",
+                        "ipsec_key": "-----BEGIN RSA PRIVATE KEY-----\nMIIJKAIBAAKCAgEAzp4vqocUQVRBlIsUE3N+HjHQwB8OXBUezDD2e49Ry1yzGrZe\n1n4IQtF9a+2kDrCvKddwyUK67prxQXD2Mupl0OJWMkIepxo7HChZ5HaDp34PKxGD\nYUWPKPfLWDImA3aa6tv2Esr5RmsDk8jc8HBZ8YCVwtsZ4i2n1dds+PuvXaqxwcL9\nrTNq7mCB0gRgaX+sZ8cPQWnbZste5\/z480AC75S2KFeHXKGYDYaLrsL7F56sKo3j\nA4\/VSlzRfkmBi\/CxtumwBqbXdScfcz0bgngaQIVWJol2KR2OFKoTixCxZT3IrApc\nsjhjUDt7tzci\/ORan0ZZf1qhxj\/RlFpGEZkVN10I9fxNslgW7D\/QpXEIYOfeVZo8\neJHsOtYMcg8AsTWQqj01C6yQpuRuWDFjYHujtx0t76OjeOpd71e8J7weFGLX1gvL\nFHH0RdCln\/7hwfUJQT9lbaWr9nLNK4hggFh\/c1ObmBLlXtjvOSDv9gdP6f1OtF4q\nFRmJ0svnyUQCDmyCf35D1B0nc5ssPLa44LeAc2wdkRjqspDbJsHMH41DwBVdhwDK\nPEdELwkbjxqHdpeHKeTVhctJPtKE5D6CnQqKh8P7WTSx2Tf2c2KYyH7CRuKw+G7M\npSsO4W3rTmaw3HmAigaSXqoyynV9UXA6UnzYo2d5YvxIiJEMxyDWDc\/nNvECAwEA\nAQKCAgAD67dIl3\/cRgCpFJMM0\/EZmlUlYil7+JghJJA208dH8kJBUGLgE9vtBavp\nPYUSlMp8IycUIKCquLS5is7XNEC6nCLp2PybK+mhfQgIqHGS3vbjeLV7Je5jpwEc\nMzZqtChYKtSicmjUy+DRX\/tGUkF4rlmZLR5yfu6LhacfGeqP3tZ48G3vKJW\/wIPS\nJAxe0CIJxZqd4Yf87UDHqvKf7g\/oMzSaMyAB01yu7AXQSwmn\/vYyKAdd6M+xta1x\nhaxQRyDeMVTKaYXW5qdHgOo52XTZEtapzEu6V8HblUch6U8OdmPNlPRBmwWSbxCH\nz2Np9FzeXx\/BZYtCl3EvDR\/9gz\/GaJJn0Upn4v4iOlWv2WAndXlTbEThDj5Cc6AL\n0YxuYzVhdMexjUXg8fYRyC3Rqfl+vrluBujUwLXCBTLbE4LcFPtPlcqSeHLRdqiz\nbDJBc\/HNVRbH6aVWRVGvDlISX0FafpcRpVJUvrqM3uVn\/zUiHsRb3zf4tqIDwkpf\nGEeCAWThAxdeC1nA\/ycRAJfl2WyqIyO6DcaVZ9MI9JpUuOV0RFdb+DJRiRduHLQe\nuuVYzcJYoGY4I9I6beiTQHZdEe8WEyY09pwQPjpcND4F9v6XP4m3bHQFfJBcxTor\nQRR60NekqMyjmSyA2jlwIe1oH5oJRWgvMB4aYGueZpI4Jig0wQKCAQEA5i5pRWwW\ngU2\/JsUhsqCvAPM\/zsU8Rhe6PDrVRQ8wOsJA5wVjH0EJT5Q7fAPN5gPy\/rJxojQK\nGP9+Va6LFV5eD6hksQ+AspZIAT9SN5kCQiJYD8G\/pAOiYyjcQ1IQCCezO1g3wywg\n8Hn3QHA\/O80k\/V22vdWvjBSD8RX9tCng1Ny18r\/B4R06sGGwpDD2aJobr6ZdKEMh\nYpNVl+64TRu66wDuD92XsBBANNpJTw2wiReFF1oL+LKeRXyOgotkr4u3fXdPdKWc\nGMibIejlEgRgRTF8Gct\/Nm9J2cjcf8RRmIOCkW6Mx\/apPMiQYA\/bFhIrFTcO6P2J\n\/KynuLILdzPf4QKCAQEA5csoz6Pk\/PDpRt02R6eeoPKr3ZHgsY7VYhxzUPsdXv\/8\nxO2kFOc0bNZA\/WZl4V6sHj2VJTSGw+Iwe6ijMFI7fbCMYH1odp3zoBJgoods1Cvk\nCVqNHH7KIqQNZZsY8MGb00paLycTIWRU2hYVaTdpmORhKhnl2kvTaSNIqW0GrmRf\nQWIhKk0afxE5hPpuWJJlDcdQ3Ie52uXaJB6KEdRcLdxkVcHbB9x7ZaPc1XgjIVFU\nhawmumcGNmuZRV9ZBjryFtriMAZMp6l4t58YP1CSAppvJgE84+dJpWMPU2+WXaom\nAyqVHo2+aw3DH6XjfyK3h2c7snvOyriFQ2xYhSR5EQKCAQA5LsR2O6DnpIHdRtHV\nR3fSW5u5aWRM4W4hslfzHQ\/VORbYjY0PYZ\/HhkK0z1kiUE7YmUoDirwLc8VV0dO5\njkT9zM6e8gP92bmvnaR2LWvTNCb+WxqZy1FXIvp9OvDCpeIv1v2bXeYc95\/GAVyk\nJZWP3+0bAe\/nc91HUjhBvrmdB+unj53Bp\/pBgTNZxtQgLlC8dS7lZq\/vhjyYTvS4\nKzBnW0bI6DrbwV3CA4x8uCDoHdCxeWxJ703EY2of4jM0LRh7cd1qVA4QVh278die\nfjnQVrfGzLggtMr68JxenU3L\/re8G2Ob9ZobgJPlWWsK856CWbg5h2r1O4s7JfgV\nN+zhAoIBABKugZLf8C3gKBbqxQ7uQac0E2TgBzRoOFDRn05mG+0tQo+AAmbwpQJ0\nKLRxLrczyypqN0XfD1W9fdOP0jSLeuqs\/7yYdXWvQa8xz0lnWSGmr9NS2UYHyMco\nLy6jfVOVaeWzlcFfm96LGZrhULxNFPipGH0jvdwRbg6OH8omYvSqlFPsdmXJ\/u11\nqQd2lKH+xNhp69kB78osBaAKG493hEb2M\/IE4JmzAxUwTTPNoI2E3yo+5Kci2Q5z\nkPJi3gnzoNra0Ki22mSHEplbBc2f7z7m70JXt2uP0hzwAL73w3G5830uaREi1Og\/\nJi3cfrJHUERh0CiiiB1TAwKIPGoWnQECggEBANHId9+FB\/bdM1jtABZYlFqHGplh\nLzrCMwibyA3TkJLLpo6T1YG\/HYOXgdof9AOxXnyfS9fx2Ph+djGxSPJnYjTIka87\nxvkH1rdw5DtWwM7poq4Omq0jbdzFaHY5NJoy5\/ogriKCTf65+9ZweFrOf662ujo4\nL09A1rkBhdZntrZB6pw3h1q1A0y0hwvqjVtFvdDY5BpA2dJDuEHzO4Bzz5jYnevp\nf5Fr2dGpwy8ALl0i0a2sanoZGgR\/cR6g1DG+MBZcb\/g75yH6AbCN5TLk4ZzAmgUH\nHeVCbS2oQYIA6rIXSCOA7otnfc76\/O8e\/mc2mterfgr84Fhyf\/42QWy+j9I=\n-----END RSA PRIVATE KEY-----",
+                        "ipsec_client_id": "carol@strongswan.org",
+                        "ipsec_proposals": "aes128-sha1-modp2048",
+                        "ipsec_esp_proposals": "aes128-sha1-modp2048"
+                    }
+                }
+            ]
+        }
+    },
+    "timestamp": 1,
+    "mode": "ap",
+    "meta_data": {
+        "mode": "ap",
+        "mac": "08-00-27-E8-62-C1",
+        "ap_id": 154,
+        "node_id": 154,
+        "admin_state": "active",
+        "exits": [
+            {
+                "id": 357,
+                "ap_profile_exit_id": 357,
+                "type": "nat",
+                "device": "br-ex_zro",
+                "sqm": false,
+                "interface": "ex_zro",
+                "stats": false,
+                "ipaddr": "10.222.100.1",
+                "netmask": "255.255.255.0"
+            }
+        ],
+        "vpns": [
+            {
+                "id": 1,
+                "interface": "xfrm01",
+                "type": "ipsec",
+                "stats": true,
+                "routing": {
+                    "exit_points": [
+                        null
+                    ],
+                    "macs": []
+                }
+            }
+        ],
+        "WbwActive": false,
+        "QmiActive": false
+    },
+    "success": true
+}

@@ -16,15 +16,16 @@ class "rdVpn"
 --Init function for object
 function rdVpn:rdVpn()
     require('rdLogger');
-	self.version 	= "1.0.1";
-	self.tag	    = "MESHdesk";
-	self.uci 		= require("uci");
-	self.util       = require('luci.util');
+	self.version 		= "1.0.1";
+	self.tag	    	= "MESHdesk";
+	self.uci 			= require("uci");
+	self.util       		= require('luci.util');
 	self.logger	    = rdLogger();
 	self.debug	    = true
-	self.json       = require('luci.json');
-	self.fs         = require('nixio.fs');
-	self.ovpnFound  = false;	
+	self.json       	= require('luci.json');
+	self.fs         		= require('nixio.fs');
+	self.ovpnFound  = false;
+	self.ipsecFound  = false;
 end
         
 function rdVpn:getVersion()
@@ -121,8 +122,8 @@ end
 function rdVpn._configureFromJson(self,json_file)
 
 	self:log("Configuring VPN items from a JSON file");
-	local contents 	= self:_readAll(json_file);
-	local o			= self.json.decode(contents);
+	local contents 	= self.fs.readfile(json_file);
+	local o					= self.json.decode(contents);
 	
 	if o.config_settings and o.config_settings.vpn then
 		self:log("Found VPN Data  - completing it");
@@ -133,7 +134,6 @@ function rdVpn._configureFromJson(self,json_file)
 	end
 end
 
-
 function rdVpn:_configureFromTable(vpn_data)
 
 	for vpn_type, vpn_configs in pairs(vpn_data) do
@@ -142,37 +142,69 @@ function rdVpn:_configureFromTable(vpn_data)
 				self:_configureOvpn(config)
 			end
         end
+         if(vpn_type == 'ipsec')then
+        	for _, config in ipairs(vpn_configs) do
+				self:_configureIpsec(config)
+			end
+        end
     end
     --Check what needs to be restarted
     self:_restartCheck();  
 end
 
+function rdVpn._configureIpsec(self,config)
+	self.ipsecFound 	= true; --Set this flag to check later	
+	print("==== IPSEC =====");
+	local ss_name = config.name;
+	local ss_conf	= config.config;
+	local cert 		= ss_name..'_cert.pem';
+	local key 		    = ss_name..'_cert.key';
+	local ca_cert   	= ss_name..'_ca.crt';
+	local tpl           = '/etc/MESHdesk/configs/swanctl.conf.tpl';
+	local final	  	= '/etc/swanctl/conf.d/'..ss_name..'.conf';
+	
+	local vars = {
+	    SS_NAME				= ss_name,
+		REMOTE_ADDR   = ss_conf.ipsec_server,
+		LOCAL_ID      		= ss_conf.ipsec_client_id,
+		REMOTE_ID    		= ss_conf.ipsec_server_id,
+		LOCAL_CERT    	= cert,
+		IF_ID         			= ss_conf.ipsec_if_id,
+		ESP_PROPOSALS = ss_conf.ipsec_esp_proposals,
+		IKE_PROPOSALS = ss_conf.ipsec_proposals,
+		CA_CERT				= ca_cert
+	}
+	
+	local template  = self.fs.readfile(tpl);
+	for k, v in pairs(vars) do
+		template = template:gsub("%${" .. k .. "}", v)
+	end
+	
+	--Write the config to /tmp and get md5sum
+	local temp  = ss_name..'.conf';
+	
+	self:_checkAndReplace(temp,final,template);
+	
+	local ca_file 	= '/etc/swanctl/x509ca/'..ss_name..'_ca.crt';
+	local t_ca_file  = ss_name..'_ca.crt';
+	self:_checkAndReplace(t_ca_file,ca_file,ss_conf.ipsec_ca);
+	
+	local cert_file	= '/etc/swanctl/x509/'..ss_name..'_cert.pem';
+	local t_cert_file= ss_name..'_cert.pem';
+	self:_checkAndReplace(t_cert_file,cert_file,ss_conf.ipsec_cert);
+	
+	local key_file	= '/etc/swanctl/private/'..ss_name..'_cert.key';
+	local t_key_file= ss_name..'_cert.key';
+	self:_checkAndReplace(t_key_file,key_file,ss_conf.ipsec_key);
+	
+end
 
 function rdVpn._configureOvpn(self,config)
 
 	self.ovpnFound 	= true; --Set this flag to check later
 	local final 	= '/etc/openvpn/'..config.name..'.ovpn';
-	
-	--Write the config to /tmp and get md5sum
-	local temp  = '/tmp/'..config.name..'.ovpn';
-	self.fs.writefile(temp,config.config);
-	local temp_md5 = self.util.exec("md5sum "..temp);
-	local temp_md5 = string.match(temp_md5, '^(%x+)');
-	
-	--Compare with existing (If there are any)	
-	local f=io.open(final,"r")                                                   
-    if f~=nil then 
-		io.close(f)
-		local final_md5 = self.util.exec("md5sum "..final);
-		local final_md5 = string.match(final_md5, '^(%x+)');
-		if(temp_md5 ~= final_md5)then 
-			self.fs.move(temp,final);
-		else
-			self.fs.unlink(temp);	
-		end
-	else
-		self.fs.move(temp,final);
-	end
+	local temp  = config.name..'.ovpn';
+	self:_checkAndReplace(temp,final,config.config)
 	
 	--Set the config if not present
 	local x = self.uci:cursor()
@@ -197,16 +229,29 @@ function rdVpn._configureOvpn(self,config)
 end
 
 function rdVpn._restartCheck(self)
-
 	if(self.ovpnFound)then
 		os.execute("/etc/init.d/openvpn restart")
 	end
 end
 
-
-function rdVpn._readAll(self,file)
-	local f = io.open(file,"rb")
-	local content = f:read("*all")
-	f:close()
-	return content
+function rdVpn._checkAndReplace(self,temp,final,contents)
+	temp = '/tmp/'..temp;
+	self.fs.writefile(temp,contents);
+	local temp_md5 = self.util.exec("md5sum "..temp);
+	local temp_md5 = string.match(temp_md5, '^(%x+)');
+	
+	--Compare with existing (If there are any)	
+	local f=io.open(final,"r")                                                   
+    if f~=nil then 
+		io.close(f)
+		local final_md5 = self.util.exec("md5sum "..final);
+		local final_md5 = string.match(final_md5, '^(%x+)');
+		if(temp_md5 ~= final_md5)then 
+			self.fs.move(temp,final);
+		else
+			self.fs.unlink(temp);	
+		end
+	else
+		self.fs.move(temp,final);
+	end
 end
