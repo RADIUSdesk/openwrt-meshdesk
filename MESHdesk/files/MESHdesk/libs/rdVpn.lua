@@ -16,16 +16,16 @@ class "rdVpn"
 --Init function for object
 function rdVpn:rdVpn()
     require('rdLogger');
-	self.version 		= "1.0.1";
-	self.tag	    	= "MESHdesk";
-	self.uci 			= require("uci");
-	self.util       		= require('luci.util');
+	self.version 	= "1.0.1";
+	self.tag	    = "MESHdesk";
+	self.uci 		= require("uci");
+	self.util       = require('luci.util');
 	self.logger	    = rdLogger();
 	self.debug	    = true
-	self.json       	= require('luci.json');
-	self.fs         		= require('nixio.fs');
+	self.json       = require('luci.json');
+	self.fs         = require('nixio.fs');
 	self.ovpnFound  = false;
-	self.ipsecFound  = false;
+	self.ipsecFound = false;
 end
         
 function rdVpn:getVersion()
@@ -162,6 +162,7 @@ function rdVpn._configureIpsec(self,config)
 	local ca_cert   	= ss_name..'_ca.crt';
 	local tpl           = '/etc/MESHdesk/configs/swanctl.conf.tpl';
 	local final	  	= '/etc/swanctl/conf.d/'..ss_name..'.conf';
+	local temp  		= ss_name..'.conf';
 	
 	local vars = {
 	    SS_NAME				= ss_name,
@@ -178,11 +179,7 @@ function rdVpn._configureIpsec(self,config)
 	local template  = self.fs.readfile(tpl);
 	for k, v in pairs(vars) do
 		template = template:gsub("%${" .. k .. "}", v)
-	end
-	
-	--Write the config to /tmp and get md5sum
-	local temp  = ss_name..'.conf';
-	
+	end	
 	self:_checkAndReplace(temp,final,template);
 	
 	local ca_file 	= '/etc/swanctl/x509ca/'..ss_name..'_ca.crt';
@@ -196,6 +193,8 @@ function rdVpn._configureIpsec(self,config)
 	local key_file	= '/etc/swanctl/private/'..ss_name..'_cert.key';
 	local t_key_file= ss_name..'_cert.key';
 	self:_checkAndReplace(t_key_file,key_file,ss_conf.ipsec_key);
+		
+	self:_prepXfrm(ss_name,ss_conf);
 	
 end
 
@@ -232,6 +231,20 @@ function rdVpn._restartCheck(self)
 	if(self.ovpnFound)then
 		os.execute("/etc/init.d/openvpn restart")
 	end
+end
+
+function rdVpn._prepXfrm(self,ss_name,ss_conf)
+	local gw = ss_conf.ipsec_xfrm_gw;
+	local ip   = ss_conf.ipsec_xfrm_ip;
+	local id   = ss_conf.ipsec_if_id;
+	self.util.exec("ip link add "..ss_name.." type xfrm if_id "..id.." 2>/dev/null || true");
+	self.util.exec("ip addr add "..ip.."/32 dev xfrm01 2>/dev/null || true");
+	self.util.exec("ip link set "..ss_name.." up");
+	self.util.exec("sleep 5");
+	self.util.exec("ip route add "..gw.."/32 dev "..ss_name.." 2>/dev/null || true");
+	self.util.exec("sleep 5");
+	self.util.exec("/etc/init.d/swanctl stop");
+	self.util.exec("/etc/init.d/swanctl start");
 end
 
 function rdVpn._checkAndReplace(self,temp,final,contents)
