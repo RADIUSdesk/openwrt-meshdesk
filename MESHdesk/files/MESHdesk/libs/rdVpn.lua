@@ -10,7 +10,6 @@ require( "class" )
 -- Class to configure VPN items specified in the config returned by AP / Mesh node ---
 --------------------------------------------------------------------------------------
 
-
 class "rdVpn"
 
 --Init function for object
@@ -26,6 +25,7 @@ function rdVpn:rdVpn()
 	self.fs         = require('nixio.fs');
 	self.ovpnFound  = false;
 	self.ipsecFound = false;
+	self.ztFound = false;
 end
         
 function rdVpn:getVersion()
@@ -118,7 +118,6 @@ function rdVpn:_configureRouting(meta_data)
     end
 end
 
-
 function rdVpn._configureFromJson(self,json_file)
 
 	self:log("Configuring VPN items from a JSON file");
@@ -145,6 +144,11 @@ function rdVpn:_configureFromTable(vpn_data)
          if(vpn_type == 'ipsec')then
         	for _, config in ipairs(vpn_configs) do
 				self:_configureIpsec(config)
+			end
+        end
+        if(vpn_type == 'zt')then
+        	for _, config in ipairs(vpn_configs) do
+				self:_configureZeroTier(config)
 			end
         end
     end
@@ -227,9 +231,60 @@ function rdVpn._configureOvpn(self,config)
 			
 end
 
+function rdVpn._configureZeroTier(self,config)
+
+	self.ztFound 	= true; --Set this flag to check later
+	local tpl           = '/etc/MESHdesk/configs/zerotier.tpl';
+	
+	--Set the config if not present
+	local x = self.uci:cursor()
+	local section_exists = false
+
+	-- Check if named section already exists
+	x:foreach('zerotier', 'zerotier', function(s)
+		if( s['.name'] == 'global')then
+			if((s['secret']) and (string.len(s['secret']) > 20))then
+				print("Secret Found and Set");
+			else
+				print("No Secret Found -> Create one from template");
+				self.util.exec('cp '..tpl..' /etc/config/zerotier');
+				self.util.exec("/etc/init.d/zerotier restart")
+			end
+		end
+	end)
+	
+	--Set the config if not present
+	local x = self.uci:cursor()
+	local section_exists = false
+
+	-- Check if named section already exists
+	x:foreach('zerotier', 'network', function(s)
+		if s['.name'] == config.config.zt_network_id then
+		    section_exists = true
+		end
+	end)
+
+	if not section_exists then
+		-- Create named section directly
+		x:set('zerotier', config.config.zt_network_id, 'network')
+		x:set('zerotier', config.config.zt_network_id, 'id', config.config.zt_network_id)
+		x:set('zerotier', config.config.zt_network_id, 'allow_managed', '1')
+		x:set('zerotier', config.config.zt_network_id, 'allow_global', '0')
+		x:set('zerotier', config.config.zt_network_id, 'allow_default', '0')
+		x:set('zerotier', config.config.zt_network_id, 'allow_dns', '0')
+		x:save('zerotier')
+		x:commit('zerotier')
+	end		
+end
+
+
 function rdVpn._restartCheck(self)
 	if(self.ovpnFound)then
 		os.execute("/etc/init.d/openvpn restart")
+	end
+	if(self.ztFound)then
+		os.execute("sleep 20")
+		os.execute("/etc/init.d/zerotier restart")
 	end
 end
 

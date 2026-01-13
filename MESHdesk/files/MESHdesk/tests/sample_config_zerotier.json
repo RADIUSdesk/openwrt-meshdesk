@@ -1,0 +1,160 @@
+{
+    "config_settings": {
+        "wireless": [],
+        "network": [
+            {
+                "interface": "loopback",
+                "options": {
+                    "device": "lo",
+                    "proto": "static",
+                    "ipaddr": "127.0.0.1",
+                    "netmask": "255.0.0.0"
+                }
+            },
+            {
+                "device": "br-lan",
+                "options": {
+                    "name": "br-lan",
+                    "type": "bridge",
+                    "stp": 1
+                },
+                "lists": {
+                    "ports": [
+                        "eth0"
+                    ]
+                }
+            },
+            {
+                "interface": "lan",
+                "options": {
+                    "proto": "dhcp",
+                    "device": "br-lan"
+                }
+            },
+            {
+                "device": "br-ex_zro",
+                "options": {
+                    "name": "br-ex_zro",
+                    "type": "bridge",
+                    "stp": 0
+                },
+                "lists": {
+                    "ports": [
+                        "eth1"
+                    ]
+                }
+            },
+            {
+                "interface": "ex_zro",
+                "options": {
+                    "device": "br-ex_zro",
+                    "ipaddr": "10.200.100.1",
+                    "netmask": "255.255.255.0",
+                    "proto": "static"
+                }
+            },
+            {
+                "interface": "zt01",
+                "options": {
+                    "proto": "none",
+                    "ifname": "zt3jnzn36o"
+                }
+            }
+        ],
+        "system": {
+            "password_hash": "$1$omv4GT1F$3ySnd7du8nCIan9vlNN.E1",
+            "heartbeat_dead_after": 900,
+            "timezone": "SAST-2",
+            "gw_dhcp_timeout": 120,
+            "gw_use_previous": true,
+            "gw_auto_reboot": false,
+            "gw_auto_reboot_time": 600,
+            "report_adv_enable": true,
+            "report_adv_proto": "http",
+            "report_adv_light": 60,
+            "report_adv_full": 600,
+            "report_adv_sampling": 60,
+            "hostname": "ZT-01",
+            "mqtt_user": "openwrt",
+            "mqtt_password": "openwrt",
+            "mqtt_server_url": "cloud.radiusdesk.com",
+            "mqtt_command_topic": "\/RD\/NODE\/COMMAND\/RESPONSE"
+        },
+        "gateways": [
+            "ex_zro"
+        ],
+        "gateway_details": [],
+        "captive_portals": [],
+        "accel_servers": [],
+        "openvpn_bridges": [],
+        "adv_firewall": {
+            "macs": [],
+            "entries": [],
+            "sets": {
+                "-1": {
+                    "name": "md_internet_not",
+                    "elements": "10.0.0.0\/8,172.16.0.0\/12,192.168.0.0\/16,255.255.255.255",
+                    "comment": "Private IP Addr Excl For Internet"
+                },
+                "-2": {
+                    "name": "md_lan",
+                    "elements": "10.0.0.0\/8,172.16.0.0\/12,192.168.0.0\/16",
+                    "comment": "Private IP Addr LAN"
+                }
+            }
+        },
+        "ppsk_files": [],
+        "vpn": {
+            "zt": [
+                {
+                    "name": "zt01",
+                    "config": {
+                        "zt_network_id": "9bee8941b51fae7b",
+                        "zt_ifname": "zt3jnzn36o"
+                    }
+                }
+            ]
+        }
+    },
+    "timestamp": 1,
+    "mode": "ap",
+    "meta_data": {
+        "mode": "ap",
+        "mac": "08-00-27-7F-90-60",
+        "ap_id": 156,
+        "node_id": 156,
+        "admin_state": "active",
+        "exits": [
+            {
+                "id": 361,
+                "ap_profile_exit_id": 361,
+                "type": "nat",
+                "device": "br-ex_zro",
+                "sqm": false,
+                "interface": "ex_zro",
+                "stats": false,
+                "ipaddr": "10.200.100.1",
+                "netmask": "255.255.255.0"
+            }
+        ],
+        "vpns": [
+            {
+                "id": 7,
+                "interface": "zt01",
+                "type": "zt",
+                "network_id": "9bee8941b51fae7b",
+                "ifname": "zt3jnzn36o",
+                "stats": true,
+                "routing": {
+                    "exit_points": [
+                        361
+                    ],
+                    "macs": []
+                }
+            }
+        ],
+        "WbwActive": false,
+        "QmiActive": false
+    },
+    "success": true
+}

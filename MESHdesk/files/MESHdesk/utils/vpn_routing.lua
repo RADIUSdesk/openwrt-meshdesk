@@ -54,16 +54,17 @@ local function network_from_gateway(gateway, netmask)
     )
 end
 
-
-
-
 function add_routing(table_number,vpn)
 
     print("Table Number is "..table_number);
     print("VPN Type is "..vpn.type);
     for _, exit_id in ipairs(vpn.routing.exit_points) do
         print(exit_id);
-        add_exit_route(table_number,exit_id,vpn.type,vpn.interface)
+        if(vpn.type == 'zt')then
+            add_exit_route(table_number,exit_id,vpn.type,vpn.ifname)  
+        else
+        	add_exit_route(table_number,exit_id,vpn.type,vpn.interface)
+        end
     end
 end
 
@@ -102,7 +103,6 @@ function check_for_vpn(int,action)
 	              
 	    end
 	end
-
 end
 
 
@@ -117,6 +117,7 @@ function interface_action()
 	
 	if string.find(int, "^xfrm") or --Filter for only VPN type of interfaces
        string.find(int, "^ovpn") or 
+       string.find(int, "^zt") or 
        string.find(int, "^wg") then
         check_for_vpn(int,act);
     end

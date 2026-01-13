@@ -210,7 +210,16 @@ function fullReport()
     if ovpn_t and next(ovpn_t) ~= nil then
     	curl_table['ovpn_stats'] = ovpn_t
 	end
-    -- END OpenVPN Stats --       
+    -- END OpenVPN Stats --  
+    
+     -- Include IPSecVPN Stats --
+    require('rdIpsecStats');
+    local ipsecStats	= rdIpsecStats();
+    local ipsec_t    = ipsecStats:tableStats();
+    if ipsec_t and next(ipsec_t) ~= nil then
+    	curl_table['ipsec_stats'] = ipsec_t
+	end
+    -- END IPSecVPN Stats --           
      
     local f   = nfs.access(gw_file);
     

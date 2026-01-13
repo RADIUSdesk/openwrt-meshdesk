@@ -369,6 +369,7 @@ function rdConfig:configureDevice(config,doWanSynch)
 	
 	-- Nov 2025 vpn specific items --
 	if (o.config_settings.vpn and next(o.config_settings.vpn) ~= nil) then
+		 print("===== VPN VPN VPN===")
 		require('rdVpn');
 		local vpn = rdVpn();
 		vpn:configureFromTable(o.config_settings.vpn);
