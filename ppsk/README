@@ -1,0 +1,6 @@
+1.) Either replace /lib/netifd/hostapd.sh with these files (matching your OpenWrt version)
+2.) Or look for the following item and chage it from:
+        append bss_conf "wpa_psk_radius=2" "$N"
+    To:
+        append bss_conf "wpa_psk_radius=3" "$N"
+
