@@ -219,7 +219,16 @@ function fullReport()
     if ipsec_t and next(ipsec_t) ~= nil then
     	curl_table['ipsec_stats'] = ipsec_t
 	end
-    -- END IPSecVPN Stats --           
+    -- END IPSecVPN Stats -- 
+    
+    -- Include Zerotier Stats --
+    require('rdZerotierStats');
+    local zerotierStats	= rdZerotierStats();
+    local zerotier_t        = zerotierStats:tableStats();
+    if zerotier_t and next(zerotier_t) ~= nil then
+    	curl_table['zerotier_stats'] = zerotier_t
+	end
+    -- END Zerotier Stats --          
      
     local f   = nfs.access(gw_file);
     
