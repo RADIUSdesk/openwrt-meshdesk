@@ -1,7 +1,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=MESHdesk
-PKG_VERSION:=9.5.6
+PKG_VERSION:=9.6.1
 PKG_RELEASE:=01
 
 include $(INCLUDE_DIR)/package.mk
@@ -57,8 +57,7 @@ define Package/MESHdesk/install
 	mkdir -p $(1)/etc/config
 	$(INSTALL_DATA) ./files/MESHdesk/meshdesk $(1)/etc/config
 	mkdir -p $(1)/etc/hotplug.d/iface
-	cp ./files/MESHdesk/files/common/70-meshdesk $(1)/etc/hotplug.d/iface/
-	cp ./files/MESHdesk/files/common/50-dnsmasq $(1)/etc/hotplug.d/iface/
+	cp -r ./files/MESHdesk/hotplug_dir/hotplug.d/iface/* $(1)/etc/hotplug.d/iface
 	mkdir -p $(1)/etc/chilli/www
 	cp ./files/MESHdesk/files/common/radiusdesk.html $(1)/etc/chilli/www
 endef
