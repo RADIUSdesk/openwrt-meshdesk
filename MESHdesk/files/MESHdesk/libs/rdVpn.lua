@@ -89,9 +89,19 @@ function rdVpn:_configureRouting(meta_data)
             --print(zone_name .. ' not found - adding it')
             local item_name = x:add('firewall', 'zone')
             x:set('firewall', item_name, 'name', zone_name)
-            x:set('firewall', item_name, 'input', 'REJECT')
+            
+            --========================================================================
+            --== Note if you dont want to be able to reach the AP via the VPN use the 'REJECT' rules =
+            --== If you want ot reach the AP via the VPN use the ACCEPT rules ===================
+            --== x:set('firewall', item_name, 'input', 'REJECT') ==================================
+            --========================================================================
+            x:set('firewall', item_name, 'input', 'ACCEPT')
+            
             x:set('firewall', item_name, 'output', 'ACCEPT')
-            x:set('firewall', item_name, 'forward', 'REJECT')
+            
+            --x:set('firewall', item_name, 'forward', 'REJECT')
+            x:set('firewall', item_name, 'forward', 'ACCEPT')
+            
             x:set('firewall', item_name, 'masq', '1')
             x:set('firewall', item_name, 'mtu_fix', '1')
             -- Add the network list using the interface from vpn_config

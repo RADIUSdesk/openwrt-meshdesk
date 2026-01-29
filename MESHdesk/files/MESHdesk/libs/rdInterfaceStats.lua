@@ -163,33 +163,36 @@ function rdInterfaceStats._configureFromJson(self,json_file)
 	end
 end
 
-
 function rdInterfaceStats:_configureFromTable(meta_data)
-	--List to add
-	local values_to_add = {};
-	for _, exit in ipairs(meta_data.exits) do
+    local values_to_add = {}
+
+    for _, exit in ipairs(meta_data.exits) do
         if exit.stats then
-            --Add to values_to_add exit.interface
-            table.insert(values_to_add, exit.interface);
+            table.insert(values_to_add, exit.interface)
         end
     end
 
-	--Remove old local_network entries---
-	--Add new entries--------------------
-	local x = self.uci:cursor();
-	x:foreach('nlbwmon', 'nlbwmon', function(a)
-    	local sid = a['.name']; -- get the section ID
-    	x:delete('nlbwmon', sid, 'local_network');  -- remove 'eth0' from list
-    	x:set('nlbwmon',sid,'local_network', values_to_add);
-	end)
-		
-	x:save('nlbwmon');
-	x:commit('nlbwmon');
-	
-	self.util.exec("sysctl -w net.core.rmem_max=524288");
-	self.util.exec("/etc/init.d/nlbwmon restart");  
-end
+    -- Only touch UCI if we actually have values
+    if #values_to_add > 0 then
+        local x = self.uci:cursor()
 
+        x:foreach('nlbwmon', 'nlbwmon', function(a)
+            local sid = a['.name']
+
+            -- remove old entries
+            x:delete('nlbwmon', sid, 'local_network')
+
+            -- add new entries
+            x:set('nlbwmon', sid, 'local_network', values_to_add)
+        end)
+
+        x:save('nlbwmon')
+        x:commit('nlbwmon')
+
+        self.util.exec("sysctl -w net.core.rmem_max=524288")
+        self.util.exec("/etc/init.d/nlbwmon restart")
+    end
+end
 
 function rdInterfaceStats._readAll(self,file)
 	local f = io.open(file,"rb")
