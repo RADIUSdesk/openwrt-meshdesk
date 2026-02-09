@@ -1,0 +1,41 @@
+{
+	"model": {
+		"id": "ubnt,unifi-ap-pro",
+		"name": "Ubiquiti UniFi AP Pro"
+	},
+	"switch": {
+		"switch0": {
+			"enable": true,
+			"reset": true,
+			"ports": [
+				{
+					"num": 0,
+					"device": "eth0",
+					"need_tag": false,
+					"want_untag": false
+				},
+				{
+					"num": 1,
+					"role": "lan"
+				},
+				{
+					"num": 2,
+					"role": "lan"
+				}
+			],
+			"roles": [
+				{
+					"role": "lan",
+					"ports": "1 2 0t",
+					"device": "eth0.1"
+				}
+			]
+		}
+	},
+	"network": {
+		"lan": {
+			"device": "eth0.1",
+			"protocol": "static"
+		}
+	}
+}

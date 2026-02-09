@@ -1,0 +1,69 @@
+{
+	"model": {
+		"id": "xiaomi,mi-router-4a-100m",
+		"name": "Xiaomi Mi Router 4A (100M Edition)"
+	},
+	"led": {
+		"wan": {
+			"name": "WAN",
+			"sysfs": "blue:wan",
+			"trigger": "switch0",
+			"type": "switch",
+			"mode": "",
+			"port_mask": "0x01",
+			"speed_mask": ""
+		}
+	},
+	"switch": {
+		"switch0": {
+			"enable": true,
+			"reset": true,
+			"ports": [
+				{
+					"num": 4,
+					"role": "lan",
+					"index": 1
+				},
+				{
+					"num": 2,
+					"role": "lan",
+					"index": 2
+				},
+				{
+					"num": 0,
+					"role": "wan"
+				},
+				{
+					"num": 6,
+					"device": "eth0",
+					"need_tag": false,
+					"want_untag": false
+				}
+			],
+			"roles": [
+				{
+					"role": "lan",
+					"ports": "4 2 6t",
+					"device": "eth0.1"
+				},
+				{
+					"role": "wan",
+					"ports": "0 6t",
+					"device": "eth0.2"
+				}
+			]
+		}
+	},
+	"network": {
+		"lan": {
+			"device": "eth0.1",
+			"protocol": "static"
+		},
+		"wan": {
+			"device": "eth0.2",
+			"protocol": "dhcp",
+			"macaddr": "64:64:4a:dd:07:fd"
+		}
+	}
+}
+
