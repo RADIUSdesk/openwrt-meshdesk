@@ -1,0 +1,100 @@
+{
+	"model": {
+		"id": "cudy,tr1200-v1",
+		"name": "Cudy TR1200 v1"
+	},
+	"switch": {
+		"switch0": {
+			"enable": true,
+			"reset": true,
+			"ports": [
+				{
+					"num": 0,
+					"role": "lan"
+				},
+				{
+					"num": 1,
+					"role": "wan"
+				},
+				{
+					"num": 6,
+					"device": "eth0",
+					"need_tag": false,
+					"want_untag": false
+				}
+			],
+			"roles": [
+				{
+					"role": "lan",
+					"ports": "0 6t",
+					"device": "eth0.1"
+				},
+				{
+					"role": "wan",
+					"ports": "1 6t",
+					"device": "eth0.2"
+				}
+			]
+		}
+	},
+	"network": {
+		"lan": {
+			"device": "eth0.1",
+			"protocol": "static"
+		},
+		"wan": {
+			"device": "eth0.2",
+			"protocol": "dhcp"
+		}
+	},
+	"wlan": {
+		"phy0": {
+			"path": "platform/10300000.wmac",
+			"info": {
+				"antenna_rx": 3,
+				"antenna_tx": 3,
+				"bands": {
+					"2G": {
+						"ht": true,
+						"max_width": 40,
+						"modes": [
+							"NOHT",
+							"HT20",
+							"HT40"
+						],
+						"default_channel": 1
+					}
+				},
+				"radios": [
+				]
+			}
+		},
+		"phy1": {
+			"path": "pci0000:00/0000:00:00.0/0000:01:00.0",
+			"info": {
+				"antenna_rx": 3,
+				"antenna_tx": 3,
+				"bands": {
+					"5G": {
+						"ht": true,
+						"vht": true,
+						"max_width": 160,
+						"modes": [
+							"NOHT",
+							"HT20",
+							"VHT20",
+							"HT40",
+							"VHT40",
+							"VHT80",
+							"VHT160"
+						],
+						"default_channel": 36
+					}
+				},
+				"radios": [
+				]
+			}
+		}
+	}
+}
+
