@@ -554,7 +554,7 @@ function rdNetwork.__configureFromTable(self,table)
         	-- If it is not an options entry; it is a type with value
             if((key ~= 'options') and (key ~= 'lists'))then                                                      
             	entry_type  = key                                                
-                entry_name  = val                                                
+                entry_name  = val                                              
          	else                                                                                                   
                 -- Run through all the options
                 if(key == 'options')then
@@ -571,8 +571,9 @@ function rdNetwork.__configureFromTable(self,table)
     	end
     	os.execute("cat /etc/config/network");
     	-- Now we have gathered the info
-    	if(entry_type == 'device')then --device is anonymous
-    	    entry_name = self.x:add('network', 'device');
+    	
+    	if((entry_type == 'device')or(self:__isBooleanTrue(entry_name)))then --device is anonymous (other anonymous ones we just set to boolean true hence the bool test)
+    	    entry_name = self.x:add('network', entry_type);
         else
             self.x:set('network', entry_name, entry_type);  
     	end  	
@@ -591,6 +592,10 @@ function rdNetwork.__configureFromTable(self,table)
             self.x:commit('network')           
         end    
     end   
+end
+
+function rdNetwork.__isBooleanTrue(self,value)
+    return type(value) == "boolean" and value == true
 end
 
 function rdNetwork.__getIpForInterface(self,interface)
