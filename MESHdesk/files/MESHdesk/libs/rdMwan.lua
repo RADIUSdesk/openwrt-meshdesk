@@ -375,8 +375,8 @@ function rdMwan:_doMwanNetwork(table)
             end                                                                                                    
     	end
 
-    	if(entry_type == 'device')then --device is anonymous
-    	    entry_name = x:add(config, 'device');
+        if((entry_type == 'device')or(self:__isBooleanTrue(entry_name)))then --device is anonymous (other anonymous ones we just set to boolean true hence the bool test)
+    	    entry_name = x:add(config, entry_type );
         else
             x:set(config, entry_name, entry_type);  
     	end  	
@@ -490,6 +490,10 @@ function rdMwan:_doMwan3(table)
 	else
 		self.util.exec("/etc/init.d/mwan3 restart")	
 	end	          
+end
+
+function rdMwan.__isBooleanTrue(self,value)
+    return type(value) == "boolean" and value == true
 end
 
 function rdMwan:get_md5sum(filepath)
