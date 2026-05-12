@@ -4,6 +4,9 @@ config interface 'loopback'
     option ipaddr '127.0.0.1'
     option netmask '255.0.0.0'
         
+config globals 'globals'
+	option ula_prefix 'fd5e:648:df61::/48'
+
 config device
     option name 'br-lan'
     option type 'bridge'
@@ -33,3 +36,4 @@ config switch_vlan
 	option device 'switch0'
 	option vlan '2'
 	option ports '1 6t'
+

@@ -2,7 +2,7 @@
     "config_settings": {
         "wireless": [
             {
-                "wifi-device": "radio0",
+                "wifi-device": "radio1",
                 "options": {
                     "channel": 1,
                     "disabled": 0,
@@ -13,7 +13,7 @@
             {
                 "wifi-iface": "two",
                 "options": {
-                    "device": "radio0",
+                    "device": "radio1",
                     "ifname": "two0",
                     "mode": "ap",
                     "network": "ex_two",
@@ -29,7 +29,7 @@
             {
                 "wifi-iface": "web_by_w",
                 "options": {
-                    "device": "radio0",
+                    "device": "radio1",
                     "mode": "sta",
                     "network": "web_by_w",
                     "encryption": "psk2",
@@ -57,7 +57,7 @@
                 },
                 "lists": {
                     "ports": [
-                        "eth0.2"
+                        "eth0"
                     ]
                 }
             },           
