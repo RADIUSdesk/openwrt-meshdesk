@@ -1,0 +1,27 @@
+{
+	"model": {
+		"id": "wallys,dr40x9",
+		"name": "Wallystech DR40X9"
+	},
+	"network": {
+		"lan": {
+			"device": "lan",
+			"protocol": "static"
+		},
+		"wan": {
+			"device": "wan",
+			"protocol": "dhcp"
+		}
+	},
+	"gpioswitch": {
+		"sim_card_select": {
+			"name": "SIM card select",
+			"pin": "423",
+			"default": 0
+		}
+	},
+	"system": {
+		"compat_version": "1.1"
+	}
+}
+

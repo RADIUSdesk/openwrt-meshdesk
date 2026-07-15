@@ -37,7 +37,7 @@ print("Number of streams: " .. streams)
 print("Ping enabled: " .. tostring(pingFlag))
 
 
-local command = string.format("iperf3  -J --connect-timeout 200 -c %s -p %d -t %d -P %d", ip, port, duration, streams);
+local command = string.format("iperf3  -J --connect-timeout 500 -c %s -p %d -t %d -P %d", ip, port, duration, streams);
 
 -- if pingFlag then command = command .. " --ping" end
 -- os.execute(command)
