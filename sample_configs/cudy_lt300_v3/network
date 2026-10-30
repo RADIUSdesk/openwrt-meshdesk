@@ -1,0 +1,54 @@
+config interface 'loopback'
+	option device 'lo'
+	option proto 'static'
+	list ipaddr '127.0.0.1/8'
+
+config globals 'globals'
+	option dhcp_default_duid '0004d3d678cca51540abb40886d457fad309'
+	option ula_prefix 'fd2a:4663:b2e1::/48'
+
+config device
+	option name 'eth0.1'
+	option macaddr 'd4:0d:ab:5b:92:1f'
+
+config interface 'wan'
+	option device 'eth0.1'
+	option proto 'dhcp'
+
+config interface 'wan6'
+	option device 'eth0.1'
+	option proto 'dhcpv6'
+
+config device
+	option name 'br-lan'
+	option type 'bridge'
+	list ports 'eth0.2'
+
+config interface 'lan'
+	option device 'br-lan'
+	option proto 'static'
+	list ipaddr '192.168.1.1/24'
+	option ip6assign '60'
+
+config interface 'wwan'
+	option device 'usb0'
+	option proto 'dhcp'
+
+config interface 'wwan6'
+	option device 'usb0'
+	option proto 'dhcpv6'
+
+config switch
+	option name 'switch0'
+	option reset '1'
+	option enable_vlan '1'
+
+config switch_vlan
+	option device 'switch0'
+	option vlan '1'
+	option ports '0 6t'
+
+config switch_vlan
+	option device 'switch0'
+	option vlan '2'
+	option ports '1 6t'
